@@ -216,7 +216,10 @@ HPL solves a linear system of equations, more precisely the problem
 $Ax = b$ with $A$ being a square, real matrix with dimensions of size
 $n$ and consisting of double precision floats. 
 
-To solve this system, HPL uses a lower-upper (LU) matrix decomposition with row partial pivoting.
+To solve this system, HPL uses a lower-upper (LU) matrix decomposition
+with row partial pivoting, i.e., HPL computes a factorization of
+matrix $A$ into two triangle matrices $L$ ("lower") and $U$ ("upper")
+such that $A=LU$ holds true.
 
 The nodes used to run HPL are organized in a virtual $P \times Q$ grid and
 the data of the $n \times n+1$ extended coefficient matrix is distributed
