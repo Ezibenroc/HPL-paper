@@ -123,7 +123,7 @@
 %}
 % \def\IEEEauthorrefmark#1{#1: }
 
-\title{Predicting the Energy Consumption of MPI~Applications at Scale Using a Single Node}
+\title{On a besoin d'un titre}
 %\title{Simulating the Energy Consumption of MPI~Applications}
 % Predicting the Performance and the Power Consumption of MPI Applications With SimGrid
   %\titlerunning{Power-aware simulation for large-scale systems with SimGrid}
@@ -251,7 +251,7 @@ the data of the $n \times n+1$ extended coefficient matrix is distributed
 onto this grid by cutting the matrix first into $n/N_{B}$ square blocks of size $N_{B}$
 and then cyclically assigning a block to a process in the process grid.
 
-\CH{Describe the broadcast here; introduce the 6 algorithms; explain that panels are being broadcast to other nodes}
+\CH{See my journal entry on 2017-10-04. Describe the broadcast here; introduce the 6 algorithms; explain that panels are being broadcast to other nodes}
 
 Older versions of MPI only supported non-blocking point-to-point
 communications but did not support non-blocking collective
