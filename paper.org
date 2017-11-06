@@ -143,6 +143,36 @@
 #+END_EXPORT
 * Abstract                                                           :ignore:
 #+LaTeX: \begin{abstract}
+The Linpack benchmark, in particular the High-Performance Linpack
+(HPL) implementation, has emerged as the de-facto standard benchmark
+to rank supercomputers in the top500. With a power consumption of
+several MW per hour on a TOP500 machine, test-running HPL on the whole
+machine for hours is extremely expensive. With core-counts beyond the
+100,000 cores threshold being common and sometimes even ranging into
+the millions, an optimization of HPL parameters (problem size, grid
+arrangement, granularity, collective operation algorithms, etc.)
+specifically suited to the network topology and performance is
+essential. Such optimization can be particularly time consuming and
+can hardly be done through simple mathematical performance models. In
+this article, we explain how we both extended the SimGrid's SMPI
+simulator and slightly modified HPL to allow a fast emulation of HPL
+on a single commodity computer at the scale of a supercomputer. More
+precisely, we take as a motivating use case the large-scale run
+performed on the Stampede cluster at TACC in 2013, when it got ranked
+6th in the top500. While this qualification run required the
+dedication of 6006 computing nodes of the supercomputer and more than
+120Tb of RAM for more than two hours, we manage to simulate a similar
+configuration on a commodity computer with 16Gb of RAM in about 37
+hours. Allied to a careful modeling of stampede, this simulation
+allows us to evaluate the performance that would have been obtained
+using the freely available version of HPL. Such performance is much
+lower than what was reported and which was obtained using a
+closed-source version specifically designed by the Intel
+engineers. Our simulation allows us to hint where the main algorithmic
+improvements must have been done in HPL. We conclude with a brief
+illustration of typical capacity planning studies enabled by our
+proposal. 
+
 With supercomputers growing both in size and popularity, it has become
 important to reduce their usage for the optimization of application
 codes rather than serious research. Simulation is well-known to be
