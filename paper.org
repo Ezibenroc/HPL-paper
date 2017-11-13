@@ -368,48 +368,12 @@ emulation.
 \CH{This needs to be expanded}
     
 
-* Emulation mechanisms
+* SimGrid/SMPI in a nutshell
+\AL{We need such a section to separate our contribution from what was already there}
+
+\AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
+* Improving Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
-** TODO MPI process representation (mmap vs. dlopen)
-SimGrid folds parallel applications into a single process and hence,
-local static and global variables become an issue as it must be guaranteed that
-each rank has its own set of global variables. SMPI supports two
-mechanisms to achieve this: The usage of either =mmap= or =dlopen=.
-*** mmap
-
-When =mmap= is used, SMPI copies the =data= segment on startup for each
-rank into the heap. When control is transferred from one rank to
-another, the =data= segment is =mmap='ed to the location of this rank's
-copy on the heap. All ranks have hence the same addresses in the
-virtual address space at their disposition although they point to
-different physical addresses based on the rank. This also means
-inevitably that caches must be flushed to ensure that no data of one
-rank leaks into the other rank. This overhead makes the usage of =mmap=
-a rather expensive operation.
-\TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
-
-*** TODO dlopen
-
-With =dlopen=, copies of the global variables are still made but they
-are stored inside the =data= segment as opposed to the heap. When
-switching from one rank to another, the starting virtual address for
-the storage is readjusted rather than the addresses point
-to. This means that each rank has its own unique pool of addresses for
-global variables. The advantage of this is that caches do not need to
-be flushed as is the case for the =mmap= approach, because data
-consistency can always be guaranteed.
-\CH{This needs to be reviewed.}
-
-*** Impact of choice of mmap/dlopen
-
-The choice of mmap or dlopen influences the simulation time indirectly
-through its direct impact on system/user time and page faults.
-
-\CH{See also the note in the org-file at this place for expansion.}
-
-# See Tom's journal; there are some graphs that we might be able to use,
-# such as in https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
-
 ** STARTED Kernel modeling: Affine, easy replacement, almost no code modification.
        HPL heavily relies on commonly available BLAS functions such as
        =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
@@ -545,6 +509,45 @@ has the property to be the largest (size-wise) panel used during
 the whole execution. 
 
 \CH{Do we want a small figure?}
+** TODO MPI process representation (mmap vs. dlopen)
+SimGrid folds parallel applications into a single process and hence,
+local static and global variables become an issue as it must be guaranteed that
+each rank has its own set of global variables. SMPI supports two
+mechanisms to achieve this: The usage of either =mmap= or =dlopen=.
+*** mmap
+
+When =mmap= is used, SMPI copies the =data= segment on startup for each
+rank into the heap. When control is transferred from one rank to
+another, the =data= segment is =mmap='ed to the location of this rank's
+copy on the heap. All ranks have hence the same addresses in the
+virtual address space at their disposition although they point to
+different physical addresses based on the rank. This also means
+inevitably that caches must be flushed to ensure that no data of one
+rank leaks into the other rank. This overhead makes the usage of =mmap=
+a rather expensive operation.
+\TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
+
+*** TODO dlopen
+
+With =dlopen=, copies of the global variables are still made but they
+are stored inside the =data= segment as opposed to the heap. When
+switching from one rank to another, the starting virtual address for
+the storage is readjusted rather than the addresses point
+to. This means that each rank has its own unique pool of addresses for
+global variables. The advantage of this is that caches do not need to
+be flushed as is the case for the =mmap= approach, because data
+consistency can always be guaranteed.
+\CH{This needs to be reviewed.}
+
+*** Impact of choice of mmap/dlopen
+
+The choice of mmap or dlopen influences the simulation time indirectly
+through its direct impact on system/user time and page faults.
+
+\CH{See also the note in the org-file at this place for expansion.}
+
+# See Tom's journal; there are some graphs that we might be able to use,
+# such as in https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
 
 ** STARTED Huge pages    
     As described above, we fold the memory and realise significant
