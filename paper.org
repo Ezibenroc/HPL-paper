@@ -207,8 +207,8 @@ implementation, has emerged as the de-facto standard benchmark, although
 other benchmarks such as HPCG and HPGMG have been proposed. With
 core-counts beyond the 100,000 cores threshold being common and sometimes
 even ranging into the millions, diligent optimization of application
-parameters, such as problem size or grid arrangments 
-\CH{I mean e.g. 40x40}, become a necessity. To yield the best benchmark results,
+parameters, such as problem size or process organization, 
+become a necessity. To yield the best benchmark results,
 runtimes (such as OpenMPI) and supporting libraries such as LAPACK
 (for HPL in particular the DGEMM routine) need to be fine-tuned and adapted to the
 underlying platform (network) as well. Lastly, the platform itself and
