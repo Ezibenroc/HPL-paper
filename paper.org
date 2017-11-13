@@ -159,11 +159,11 @@ precisely, we take as a motivating use case the large-scale run
 performed on the Stampede cluster at TACC in 2013, when it got ranked
 6th in the top500. While this qualification run required the
 dedication of 6006 computing nodes of the supercomputer and more than
-120Tb of RAM for more than two hours, we manage to simulate a similar
-configuration on a commodity computer with 16Gb of RAM in about 37
+\SI{120}{\tera\byte} of RAM for more than 2 hours, we manage to simulate a similar
+configuration on a commodity computer with \SI{16}{\giga\byte} of RAM in about 37
 hours. Allied to a careful modeling of stampede, this simulation
 allows us to evaluate the performance that would have been obtained
-using the freely available version of HPL. Such performance is much
+using the freely available version of HPL. Such performance reveals much
 lower than what was reported and which was obtained using a
 closed-source version specifically designed by the Intel
 engineers. Our simulation allows us to hint where the main algorithmic
