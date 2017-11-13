@@ -263,6 +263,7 @@ paper by summarizing our work and results.
 # arbitrary dimension =n= and that O(n³) + O(n²) operations be used
 # (hence, Strassen's matrix multiplication is prohibited).
 
+** HPL
 For this work, we use the reference-implementation of the HPLinpack
 benchmark, HPL, that is freely available \CH{cite} and widely used to benchmark systems.
 HPL solves a linear system of equations, more precisely the problem
@@ -302,9 +303,14 @@ modified= algorithms seem to have had issues on some machines with getting stuck
 too many messages.
 \CH{See HPL_blonM.c, ll. 264 ff.}
 
+\AL{See www/algorithm.html and describe the main params: 0) geometry, size and granularity, 1) Panel Broadcast, 2) Look-Ahead, 3) Update.}
+** A typical run on a supercomputer
+\AL{Describe stampede and the stampede fullrun}
+
 ** Difficulties
 #+LaTeX: \label{sec:con:diff}
 
+\AL{Too detailed on simulation. Difficulties = difficulties in term of performance prediction, i.e., application, runtime and platform and no formula may account for such complexity. These difficulties are rather conclusions of the related work section.}
    Several difficulties were well-known and had to be resolved in
    order to simulate HPL:
 
