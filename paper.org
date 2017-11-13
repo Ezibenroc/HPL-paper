@@ -131,11 +131,9 @@
 
   \author{
   \IEEEauthorblockN{
-  Tom Cornebize, \\
-  Franz C. Heinrich,
-  Arnaud Legrand}
-  \IEEEauthorblockA{CNRS/Inria/Univ. Grenoble Alpes, France\\
-  firstname.lastname@imag.fr}
+  Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
+  \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG, 38000 Grenoble, France\\
+    tom.cornebize@univ-grenoble-alpes.fr, franz-christian.heinrich@inria.fr, arnaud.legrand@imag.fr}
   }
 
 
