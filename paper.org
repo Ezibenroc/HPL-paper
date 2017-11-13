@@ -649,11 +649,25 @@ the distance between any pair of linear functions is constant.
 \CH{My god, I interpreted this just from the plots. It makes sense and looks like it, but this really needs to be verified.}
 \CH{What is the size of the largest (= first) panel in each case?}
 
-* Scientific part
+\AL{The information about the time it takes to run stampede at scale should appear here}
+*** Running at scale
+
+Our simulations have been executed on a single node of the Nova
+cluster, provided by the Grid'5000 platform and featuring 
+two 8-core Xeon E5-2620\nbsp{}v4\nbsp{}CPUs with \SI{2.1}{\GHz} and
+\SI{32}{\giga\byte} RAM. Although these CPUs are
+different from the ones used by Stampede, we did not account for
+these differences since, as discussed in \ref{sec:em}, the majority of
+computations was either removed or replaced with performance models.
+\AL{Do we need to cite G5K?}
+
+On this platform, a simulation run took us around 30\nbsp{}hours.
+\CH{Not done here.}
+
+* Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
 
 ** Modeling Stampede
-
 *** Computations
 
 The Stampede cluster contains *XYZ* compute nodes, each with two 8-core Intel Xeon
@@ -679,7 +693,6 @@ and executing them on the Xeon Phi. While the accelerator's memory of \SI{8}{\gi
 small, its main advantage is that data does not need to be
 transferred from the node's CPU to the accelerator via the x16 PCIe bus.
 \CH{Not done here}
-
 
 *** Communications
 
@@ -803,20 +816,45 @@ destination within no more than 5\nbsp{}hops.
 
 Figure\ref{fig:fat_tree} depicts a fat-tree with *4 (?) levels* (*I'm tired now.*)
 
-** Running at scale
+*** Summarizing modeling uncertainties
+- MKL version ???
+- iMPI version ???
+- HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
+** Simulating HPL
+*** Performance Prediction
+- Gflop Plots, impossibility to reach the desired performance
+- Additionnal points in favorable conditions do not improve much
+  except when multiplying bw by a factor 10, which is totally
+  unrealistic.
+*** Investigation
+We explain our investigation and possible reasons for the previous
+mismatch.
+- Gantt chart + analysis + explanation that there is something wrong with communications. Three parts in the communications:
+  - synchro
+  - bcast
+  - update
+  Such an execution + tracing is very fast! :)
+- Only an overlap of computation and communication would allow to
+  obtain such performances. This is really strange as the current
+  version has almost no overlap, which can be explained by the
+  reported DEPTH=0. But setting DEPTH to 1 is a very strange choice.
+- The bcast algorithm seems very intense and ok although it was what
+  we initially focused on the most, trying to change it as much as
+  possible with little effect on the overall performance. We decided
+  to tell our TACC colleagues there was something wrong and they
+  explained us they had run the Intel binary. It appears that
+  intel_xphpl seems to have another bcast algorithm whose name is
+  "HPL_bcast_bpush" and which does non-blocking sends, unlike all
+  other algorithms. This is a possible explanation for the improved performance although the output reports blonM was used.
+- The update communication is quite long and organized in trees involving really long communications. This is expected with such algorithm but this choice is very surprising for large setups.
 
-Our simulations have been executed on a single node of the Nova
-cluster, provided by the Grid'5000 platform and featuring 
-two 8-core Xeon E5-2620\nbsp{}v4\nbsp{}CPUs with \SI{2.1}{\GHz} and
-\SI{32}{\giga\byte} RAM. Although these CPUs are
-different from the ones used by Stampede, we did not account for
-these differences since, as discussed in \ref{sec:em}, the majority of
-computations was either removed or replaced with performance models.
-\AL{Do we need to cite G5K?}
+We obviously do not aim at reverse engineering the intel_xhpl code but it appears 1) clearly that many optimizations have been done on the communication side and 2) very likely that the reported parameters are not the ones in fullrun, probably because several decisions have been hardcoded. 
 
-On this platform, a simulation run took us around 30\nbsp{}hours.
-\CH{Not done here.}
-
+We already had conducted successful small-scale validation studies. We
+conclude that our large-scale (in)validation is unfortunately not
+possible as we do not have access to the original source code used by Intel but we claim that the modifications we did were minor and should easily be applied to their version. Such a simulator would then be a valuable tuning tool.
+* Capacity Planning
+\AL{Taken from CCgrid or alike ?}
 * Conclusions
 #+LaTeX: \label{sec:cl}
 
