@@ -171,26 +171,26 @@ improvements must have been done in HPL. We conclude with a brief
 illustration of typical capacity planning studies enabled by our
 proposal. 
 
-With supercomputers growing both in size and popularity, it has become
-important to reduce their usage for the optimization of application
-codes rather than serious research. Simulation is well-known to be
-able to aid researchers to study the behavior of massively parallel
-applications. Alas, running these simulations at the scale of the
-largest supercomputers has been practically infeasible, rendering it
-almost impossible to faithfully predict resource-hungry applications. 
-In this work, we show how we adapted HPL and the SMPI simulator of the SimGrid
-simulation framework to predict HPL's behavior on the 6,006 nodes of
-the Stampede1 cluster. We first outline how we reduced the time spent executing
-code from HPL to only \SI{0.3}{\percent} without loosing accuracy by
-using empirically obtained
-performance models for the computation kernels before we discuss the
-network and communication models used
-by SMPI and how we modeled an accelerator-based cluster such as Stampede.
-We finally demonstrate the practical applicability of our
-approach through the simulation of HPL at scale on a commonly
-available single server node by accurately predicting its
-runtime on a \SI{120}{\tera\byte} large problem instance that was used
-to evaluate the Stampede1 system for the Top500 list.
+# With supercomputers growing both in size and popularity, it has become
+# important to reduce their usage for the optimization of application
+# codes rather than serious research. Simulation is well-known to be
+# able to aid researchers to study the behavior of massively parallel
+# applications. Alas, running these simulations at the scale of the
+# largest supercomputers has been practically infeasible, rendering it
+# almost impossible to faithfully predict resource-hungry applications. 
+# In this work, we show how we adapted HPL and the SMPI simulator of the SimGrid
+# simulation framework to predict HPL's behavior on the 6,006 nodes of
+# the Stampede1 cluster. We first outline how we reduced the time spent executing
+# code from HPL to only \SI{0.3}{\percent} without loosing accuracy by
+# using empirically obtained
+# performance models for the computation kernels before we discuss the
+# network and communication models used
+# by SMPI and how we modeled an accelerator-based cluster such as Stampede.
+# We finally demonstrate the practical applicability of our
+# approach through the simulation of HPL at scale on a commonly
+# available single server node by accurately predicting its
+# runtime on a \SI{120}{\tera\byte} large problem instance that was used
+# to evaluate the Stampede1 system for the Top500 list.
 #+LaTeX: \end{abstract}
 
 
