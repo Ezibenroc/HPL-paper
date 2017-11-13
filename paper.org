@@ -123,7 +123,7 @@
 %}
 % \def\IEEEauthorrefmark#1{#1: }
 
-\title{On a besoin d'un titre}
+\title{Emulating High Performance Linpack on a Commodity Computer at the Scale of a Supercomputer}
 %\title{Simulating the Energy Consumption of MPI~Applications}
 % Predicting the Performance and the Power Consumption of MPI Applications With SimGrid
   %\titlerunning{Power-aware simulation for large-scale systems with SimGrid}
