@@ -404,7 +404,17 @@ emulation.
        inserted manually. By defining the following preprocessing macro, the code
        modifications were kept to an absolute minimum:
 
-#+BEGIN_SRC C
+#+BEGIN_EXPORT latex
+\begin{figure*}%[!htb]
+  \centering
+  \begin{minipage}[b]{.9\linewidth}
+    \lstset{basicstyle=\ttfamily, frame=bt,backgroundcolor=\color{white},numbers=none,numberstyle=\tt\prettysmall,escapechar=|}\lstinputlisting{HPL_dtrsm_macro.c}%
+  \end{minipage}
+  \caption{Replacing the calls to computationnaly expensive functions by a model.\label{fig:choleskycode}}
+\end{figure*}
+#+END_EXPORT
+
+#+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro.c
 #define HPL_dtrsm(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({\
     double expected_time = (9.246e-08)*(double)M*(double)N - 1.024e-05;\
     if(expected_time > 0)\
@@ -623,7 +633,7 @@ similar, albeit non-existing platform with the following, particular features:
   \centering
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}                                                                                                                               
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
-  \caption{Time complexity is linear in the number of processes with a fixed matrix size but becomes slightly quadratic when matrix size is varied. }
+  \caption{Time complexity and memory consumption are linear in the number of processes with a fixed matrix size but remain slightly quadratic when matrix size is varied. }
   \label{fig:hpl_scalability}
   \labspace
 \end{figure}
