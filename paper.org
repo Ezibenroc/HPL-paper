@@ -374,9 +374,12 @@ emulation.
     
 
 * SimGrid/SMPI in a nutshell
+\label{sec:smpi}
 \AL{We need such a section to separate our contribution from what was already there}
 
 \AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
+- explain the =SMPI_SHARED_MALLOC= mechanism with figure 4.7 from Tom's report
+
 * Improving Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
 
@@ -508,68 +511,74 @@ treatment of the =idamax= function that returns the index of the first
 element having maximum absolute value. The cost of this function was
 ignored as well but its return value was arbitrarily set to make the
 simulation fully deterministic. In all our evaluations, this
-modification was harmless in term of performance prediction.
-** TODO Memory folding
-   
-   We've already explained how the execution of several kernels was
-   replaced with a performance model. It is clear that, as we do no
-   longer operate on the data for real, storing the whole matrix $A$ (and
-   hence the "real" data) is no longer a requirement. On the other
-   hand, processes still read or write in "their" parts of the matrix. A consequence from
-   removing most of the data is that the 
-   aforementioned, dire memory situation (caused by the fact that all
-   the data needs to be stored on one single node instead of
-   potentially thousands) is alleviated.
-   \CH{Reference memory statistics that should've appeared before}
-   
-   We will now explain how this reduction was achieved.
-   
-   HPL's pre-dominant datastructure, the =panel=, consists of both
-   shared and private memory. This is illustrated in *Figure REF*.
-   In this context, =shared= memory means memory that can be written to
-   and read from by all processes; the actual value of this memory
-   section is of little importance.
-   =private= memory, on the other hand, is sensitive, process-dependent memory that must be
-   protected from read-/write accesses by other processes. Failing to
-   do so may result in classical invalid memory accesses or even
-   deadlocks, as processes may not send/receive to/from the right process.
-   An HPL =panel= contains not only matrix data (which we can share,
-   as it doesn't need to be protected) but also
-   indices that need to be always coherent and that are therefore private.
-   Thankfully, a datastructure with some private and some shared
-   elements, called a partially shared datastructure, does not need to be
-   completely private. In SMPI, it is supported through a call to
-   =SMPI_PARTIAL_SHARED_MALLOC=, which works as follows: (*From the SimGrid Doc*)
-   
-   #+BEGIN_CENTER
-   mem = SMPI_PARTIAL_SHARED_MALLOC(500, {27,42 , 100,200}, 2);
-   #+END_CENTER
-   
-   In this example, 500 bytes are allocated to mem with the elements
-   mem[27], ..., mem[41] and mem[100], ..., mem[199] being shared
-   while all other remain private. See Figure *REFERENCE* for an
-   exampler representation.
-   #+BEGIN_EXPORT latex
-   \CH{Maybe the Figure from Slide 11 of Tom's presentation?}
-   \CH{Should we explain how SHARED\_MALLOC works in SimGrid? This is also in options.doc, search for \texttt{SMPI\_PARTIAL\_SHARED\_MALLOC}}
-   #+END_EXPORT
-   
+modification was harmless in term of performance prediction while it
+allows to speed up the simulation by an additional factor $\approx3$ to $4$
+on small scenarios ($N=20,000$) and much more on larger setups.
+** Memory folding
+As explained in Section\ref{sec:smpi}, when emulating an application
+with SMPI, all MPI process are run within the same process of a single
+node. The memory consumption of the simulation can therefore be
+ridiculously large (several \si{\tera\byte} of RAM).
 
-   Designating memory explicitly as private, shared or partially
-   shared is not only important in cases where memory is scarce, but
-   also to improve performance. As SMPI is internally aware of the
-   memory's visibility, it can avoid calling =memcopy= when large
-   messages containing shared segments are sent from one MPI rank to
-   another. In the cases of private data segments or partially shared
-   segments, SMPI identifies and only copies those parts that are designated as
-   private (as they are process-dependent) into the corresponding
-   private buffers on the receiver side.
+Yet, as we do no longer operate on the data for real, storing the whole
+matrix $A$ (and hence the "real" data) is no longer a requirement. On
+the other hand, since only a minimal modification of the code was
+done, some functions may still read or write some parts of the matrix.
+It is thus not possible to simply remove the memory allocations of
+heavy data structures but SMPI's =SHARED_MALLOC= mechanism can be used
+so that such data structures are shared between all MPI processes and
+that they only occupy a minimal amount of physical pages.
 
-   In the case of HPL, this speeds up simulation times considerably,
-   as the main datastructure that is being communicated between ranks,
-   the =panel=, is a partially shared datastructure with the largest
-   part being shared.
+The largest two allocated data structures in HPL are the matrix =A=
+which is to be factorized (and whose size is typically of several
+\si{\giga\byte} per process) and the =panel= which contains many
+information about the sub-matrix currently factorized (and whose size
+is typically of a few hundreds of \si{\mega\byte} per process).
 
+Although using the default =SHARED_MALLOC= mechanism works like a charm
+with =A=, a more careful strategy needs to be used for the
+=panel=. Indeed, =panel= is a mixed data structure with both \texttt{int}s,
+accounting for matrix indices, error codes, and pivoting information,
+and \texttt{double}s corresponding to a copy of submatrices of =A=. To
+optimize data transfers, HPL flattens this structure into a single
+allocation of \texttt{double}s. Using a fully shared memory allocation
+for the =panel= therefore leads to indices corruption that result in
+both classical invalid memory accesses and even communication
+deadlocks, as processes may not send/receive to/from the right
+process. Since {int}s and \texttt{double}s are stored in
+non-contiguous parts of this flat allocation, it is therefore
+essential to have a mechanism allowing to preserve the content of
+specific parts for each process. We have thus introduced a new
+=SMPI_PARTIAL_SHARED_MALLOC= which works as follows: 
+~mem = SMPI_PARTIAL_SHARED_MALLOC(500, {27,42 , 100,200}, 2)~.
+In this example, 500 bytes are allocated in =mem= with the elements
+=mem[27]=, ..., =mem[41]= and =mem[100]=, ..., =mem[199]= being shared between
+processes (and hence generally completely corrupted) while all other
+remain private. This mechanism allows us with a few lines of
+modification in HPL to allocate large panels that are mostly shared
+between processes and mapped into the same physical page while a small
+part in the middle (containing indices) is actually private to each
+MPI process.
+
+Designating memory explicitly as private, shared or partially shared
+is not only important in cases where memory is scarce, but also to
+improve performance. As SMPI is internally aware of the memory's
+visibility, it can avoid calling =memcopy= when large messages
+containing shared segments are sent from one MPI rank to another. In
+the cases of private data segments or partially shared segments, SMPI
+identifies and only copies those parts that are designated as private
+(as they are process-dependent) into the corresponding private buffers
+on the receiver side.
+
+In the case of HPL, this speeds up simulation times considerably, as
+the main datastructure that is being communicated between ranks, the
+=panel=, is a partially shared datastructure with the largest part being
+shared. The error made with these new allocations, in comparison with
+the version from section 4.3, is negligible (below 1%) while the
+improvement of the memory consumption is drastic. For instance, with a
+matrix of size 40,000 and 64 MPI processes, the memory consumption
+decreases from about \SI{13.5}{\giga\byte} to less than
+\SI{40}{\mega\byte}.
 ** STARTED Panel reuse
 
 The original HPL code malloc's/free's panels *in each iteration (correct?)*.
