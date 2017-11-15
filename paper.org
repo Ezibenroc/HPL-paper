@@ -375,45 +375,56 @@ emulation.
 \AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
 * Improving Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
-** STARTED Kernel modeling: Affine, easy replacement, almost no code modification.
-       HPL heavily relies on commonly available BLAS functions such as
-       =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
-       an equation of the form $Ax=b$). Our analysis of an
-       HPL simulation with a relatively small matrix with dimensions 30,000 and
-       64 processes has shown that around \SI{96}{\percent} of the time is spent in these
-       two functions. 
-       
-       As explained in Section\ref{sec:con:diff}, faithful prediction requires 
-       emulating HPL, i.e., to execute the code. Therefore, immediate and significant time savings can be
-       realised by obtaining and using a parameter-aware performance model of =dgemm= and
-       =dtrsm=. By making SMPI aware of this model, calls to the =dgemm= and
-       =dtrsm= functions can be replaced by calls to and evaluation of
-       the model. This is possible as HPL's code does not depend on the computed values of these
-       functions. 
-       Note that the parameters to the original functions
-       are always passed to the model, as they are crucial for the
-       computed runtime of these functions, and that the outcome of
-       the HPL run is no longer correct.
-
-       The execution time determined in this manner is then
-       used as an argument to =smpi_usleep=, which makes the
-       process enter a sleep-state for the entire duration,
-       effectively advancing the clock for that process by the same
-       amount as the execution would have. 
-
-       This function is not normally found in HPL and had to be
-       inserted manually. By defining the following preprocessing macro, the code
-       modifications were kept to an absolute minimum:
-
+** Kernel modeling: Affine, easy replacement, almost no code modification.
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
   \centering
-  \begin{minipage}[b]{.9\linewidth}
-    \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}%
-  \end{minipage}
-  \caption{Replacing the calls to computationnaly expensive functions by a model.\label{fig:choleskycode}}
+  \subfigure[Non-intrusive macro replacement.\label{fig:macro_simple}]{
+    \begin{minipage}[b]{.5\linewidth}
+      \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_simple.c}
+    \end{minipage}}%
+  \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
+    \begin{minipage}[b]{.5\linewidth}
+      \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_gflops.pdf}\\
+      \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_time.pdf}
+      \AL{Figures need to be regenerated (adjust font-size, remove gray box) and merged (simulation time and gflops  side by side) as only the dependency on matrix size is interesting (remove number of process). The term "kernel sampling" should also be replaced by "kernel modeling".}
+    \end{minipage}}
+  \caption{Replacing the calls to computationnaly expensive functions by a model.}
 \end{figure*}
 #+END_EXPORT
+
+       As explained in Section\ref{sec:con:diff}, faithful prediction
+       requires emulating HPL, i.e., to execute the code. However, HPL
+       heavily relies on commonly available BLAS functions such as
+       =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
+       an equation of the form $Ax=b$). A quick analysis of an HPL
+       simulation with a relatively small matrix with dimensions
+       30,000 and 64 processes shows that around \SI{96}{\percent} of
+       the time is spent in these two functions. The values computed
+       by these functions are barely used in the control flow of HPL
+       and are thus of no interest when simulating.
+
+       Therefore, immediate and significant time savings can be
+       realized by replacing such expensive calls to =dgemm= and =dtrsm=
+       by a performance model. Figure\ref{fig:macro_simple} shows how
+       every call to the =HPL_dtrsm= function can be skipped and
+       replaced by a simple evaluation of a model. The macro mechanism
+       allows to keep HPL code modifications to an absolute
+       minimum. The =(9.882e-12)= value represents the inverse of the
+       flop rate for such computation kernel and can be obtained
+       through a simple calibration. The predicted execution time is
+       then used as an argument to =smpi_execute_benched=, which makes
+       the simulated process enter a sleep-state for the entire
+       duration, effectively advancing the clock for that process by
+       the same amount as the execution would have. The gain in term
+       of simulation time for a small scenario is depicted on
+       Figure\ref{fig:kernel_sampling}. As expected this modification
+       speeds up the simulation by orders of magnitude when matrix
+       size increases. The consequence in term performance (i.e., the
+       output of HPL) prediction are a slight overestimation due to
+       the absence of performance variability when kernel models are
+       used. Such variability could however easily be accounted for in
+       the model.
 *** Hidden section with macro code                               :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({                        \
@@ -434,7 +445,7 @@ emulation.
 })
 #+END_SRC
 
-#+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_simple.c
+#+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_simple_old.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({      \
     double expected_time = (9.882e-12)*((double)M)*((double)M)*((double)N) + 4.329e-02;   \
     if(expected_time > 0)                                                                 \
@@ -442,10 +453,19 @@ emulation.
 })
 #+END_SRC
 
+#+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_simple.c
+#define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag,        \ 
+        M, N, alpha, A, lda, B, ldb) ({                    \
+    double expected_time = (9.882e-12)*((double)M)*        \
+                   ((double)M)*((double)N) + 4.329e-02;    \
+    if(expected_time > 0)                                  \
+        |\color{colorfuncall}smpi\_execute\_benched|((useconds_t)(expected_time)); \
+})
+#+END_SRC
+
 #+BEGIN_EXPORT latex
 \CH{Found this in Tom's logbook. Check if this is the final version. Also, we can apparently just call \texttt{make SMPI\_OPTS=-DSMPI\_OPTIMIZATION} (what about \texttt{arch=SMPI}?). See his logbook}
 #+END_EXPORT
-
 ** TODO Other HPL adaptations:
 #+LaTeX: \label{sec:hplchanges}
 
