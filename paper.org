@@ -568,6 +568,54 @@ where each modification has been carefully investigated.
 #+END_EXPORT
 ** Adjusting the behavior of HPL
 #+LaTeX: \label{sec:hplchanges}
+
+#+BEGIN_EXPORT latex
+    \tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
+    \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
+    \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
+    \tikzstyle{bigswitch}=[base, draw]
+    \begin{figure*}%[htbp]
+      \centering
+      \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{
+        \begin{minipage}[b]{.5\linewidth}
+          \begin{tikzpicture}
+            \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
+            \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
+            \draw[dashed] (3, 2) -- (3, 3);
+            \draw[dashed] (6, 2) -- (6, 3);
+            \node(1) at (1.5, 2.5) {matrix parts};
+            \node(2) at (4.5, 2.5) {indices};
+            \node(3) at (7.5, 2.5) {matrix parts};
+            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
+          \end{tikzpicture}
+        \end{minipage}}%
+      \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{
+        \begin{minipage}[b]{.5\linewidth}
+          \begin{center}
+          \begin{tikzpicture}
+            \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
+            \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
+            \draw[dashed] (2, 1) -- (2, 1.5);
+            \draw[dashed] (4, 1) -- (4, 1.5);
+
+            \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
+            \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
+            \draw[dashed] (2, 0) -- (2, .5);
+            \draw[dashed] (3, 0) -- (3, .5);
+
+            \draw[dotted, -latex] (2, 1) -- (2, .5);
+            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
+            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
+          \end{tikzpicture}
+          \end{center}
+        \end{minipage}
+      }
+      \caption{Panel structure and allocation strategy when simulating.\label{fig:panel_reuse}}
+    \end{figure*}
+#+END_EXPORT
+
 HPL uses huge pseudo-randomly generated matrices that need to be setup
 every time HPL is executed. HPL does not account for the time spent
 setting up the matrices nor for the validation of the computed result
@@ -621,11 +669,11 @@ is typically of a few hundreds of \si{\mega\byte} per process).
 
 Although using the default =SHARED_MALLOC= mechanism works like a charm
 with =A=, a more careful strategy needs to be used for the
-=panel=. Indeed, =panel= is a mixed data structure with both \texttt{int}s,
-accounting for matrix indices, error codes, and pivoting information,
+=panel=. Indeed, =panel= is an intricate data structure with both \texttt{int}s,
+accounting for matrix indices, error codes, MPI tags, and pivoting information,
 and \texttt{double}s corresponding to a copy of submatrices of =A=. To
 optimize data transfers, HPL flattens this structure into a single
-allocation of \texttt{double}s. Using a fully shared memory allocation
+allocation of \texttt{double}s (see Figure\ref{fig:panel_structure}). Using a fully shared memory allocation
 for the =panel= therefore leads to indices corruption that result in
 both classical invalid memory accesses and even communication
 deadlocks, as processes may not send/receive to/from the right
@@ -663,17 +711,26 @@ improvement of the memory consumption is drastic. For instance, with a
 matrix of size 40,000 and 64 MPI processes, the memory consumption
 decreases from about \SI{13.5}{\giga\byte} to less than
 \SI{40}{\mega\byte}.
-** STARTED Panel reuse
+** Panel reuse
+The original HPL code \texttt{malloc}s/\texttt{free}s panels in each
+iteration whereas the size of the panel only decreases along
+iterations. As described above, the partial sharing of panels requires
+some extra effort, introducing an overhead. At scale, repeated
+allocations / frees become a bottleneck due to this overhead. Since
+the very first allocation can fit all subsequent panels, we modified
+HPL to only allocate the very first panel and reuse it from an
+iteration to another (see Figure\ref{fig:panel_reuse}).
 
-The original HPL code malloc's/free's panels *in each iteration (correct?)*.
-SimGrid requires some extra effort to make the panels partially
-shared, as described above, introducing an overhead. Alas, repeated
-allocations / frees become a bottleneck due to this overhead. We hence
-had to modify HPL to only allocate and use the very first panel, as it
-has the property to be the largest (size-wise) panel used during
-the whole execution. 
-
-\CH{Do we want a small figure?}
+As usual, this optimization is harmless in term of simulation
+accuracy: the maximum observed error, in comparison with the previous
+version, is always lower than 1%. The gain in terms of simulation
+time, albeit less impressive than for previous optimizations, is
+significant: for a matrix of size 40,000 and 64 MPI processes, the
+simulation time decreases by four seconds, from 20.5 seconds to 16.5
+seconds, thanks to a reduction of the system time from 5.9 seconds to
+1.7 seconds. The number of page faults decreased from 2 millions to
+0.2 million, thus confirming the dramatic effect such
+series of allocation/deallocation would have at scale.
 ** TODO MPI process representation (mmap vs. dlopen)
 SimGrid folds parallel applications into a single process and hence,
 local static and global variables become an issue as it must be guaranteed that
