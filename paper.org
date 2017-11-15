@@ -292,7 +292,7 @@ Every host that is waiting for a panel to arrive enters a loop and
 tests in each iteration whether or not the panel has been received by
 calling =MPI_Iprobe=. If the panel has not been received yet, updates to
 parts of the trailing matrix are made and row-interchanges are applied.
-\CH{Check exactly what is being done here, and using which panel; see =HPL_pdupdateNT.c= and the comment of the function ("Purpose"). There are several panels involved.}
+#+LaTeX: \CH{Check exactly what is being done here, and using which panel; see  \texttt{HPL\_pdupdateNT.c} and the comment of the function ("Purpose"). There are several panels involved.}
 As soon as =MPI_Iprobe= returns that the panel has been fully received,
 no more updates are performed and the received panel is forwarded to
 the next host and only after this has been done are the remaining updates finished.
@@ -301,7 +301,7 @@ Unfortunately, in version 2.2 of HPL, this overlapping is only enabled
 in four out of six algorithms as the =bandwidth= and the =bandwidth
 modified= algorithms seem to have had issues on some machines with getting stuck due to
 too many messages.
-\CH{See HPL_blonM.c, ll. 264 ff.}
+#+LaTeX: \CH{See \texttt{HPL\_blonM.c}, ll. 264 ff.}
 
 \AL{See www/algorithm.html and describe the main params: 0) geometry, size and granularity, 1) Panel Broadcast, 2) Look-Ahead, 3) Update.}
 ** A typical run on a supercomputer
@@ -412,7 +412,9 @@ emulation.
 })
 #+END_SRC
 
-\CH{Found this in Tom's logbook. Check if this is the final version. Also, we can apparently just call ~make SMPI_OPTS=-DSMPI_OPTIMIZATION~ (what about ~arch=SMPI~?). See his logbook}
+#+BEGIN_EXPORT latex
+\CH{Found this in Tom's logbook. Check if this is the final version. Also, we can apparently just call \texttt{make SMPI\_OPTS=-DSMPI\_OPTIMIZATION} (what about \texttt{arch=SMPI}?). See his logbook}
+#+END_EXPORT
 
 ** TODO Other HPL adaptations:
 #+LaTeX: \label{sec:hplchanges}
@@ -438,7 +440,13 @@ factorization and hence accounted for by HPL; however, they all
 operate on bogus data and hence produce bogus data. We also determined
 that the they are not slow enough to be modeled seperately and they were hence just removed.
 
-\CH{See Tom's labbook; he added an option ~-DSMPI_DO_INITIALIZATION_VERIFICATION~ because there were some performance issues without the initialization} - Handling "sensitive" parts (the max pivot computation)
+#+BEGIN_EXPORT latex
+\CH{See Tom's labbook; he added an option
+  \texttt{-DSMPI\_DO\_INITIALIZATION\_VERIFICATION} because there were
+  some performance issues without the initialization} 
+#+END_EXPORT
+- Handling "sensitive" parts (the max pivot computation)
+
 ** TODO Memory folding
    
    We've already explained how the execution of several kernels was
@@ -479,9 +487,11 @@ that the they are not slow enough to be modeled seperately and they were hence j
    mem[27], ..., mem[41] and mem[100], ..., mem[199] being shared
    while all other remain private. See Figure *REFERENCE* for an
    exampler representation.
+   #+BEGIN_EXPORT latex
    \CH{Maybe the Figure from Slide 11 of Tom's presentation?}
-   \CH{Should we explain how SHARED_MALLOC works in SimGrid? This is also in options.doc, search for SMPI_PARTIAL_SHARED_MALLOC}
-
+   \CH{Should we explain how SHARED\_MALLOC works in SimGrid? This is also in options.doc, search for \texttt{SMPI\_PARTIAL\_SHARED\_MALLOC}}
+   #+END_EXPORT
+   
 
    Designating memory explicitly as private, shared or partially
    shared is not only important in cases where memory is scarce, but
@@ -565,28 +575,31 @@ through its direct impact on system/user time and page faults.
 
     This means that for a matrix of size $N=4,000,000$, the page table
     grows to 
-
-    #+LATEX: \[ PT_{size}(4,000,000) = 2.5e11 \]
-
-    bytes, i.e., to \SI{250}{\gibi\byte}. Resolving this problem requires
+    #+LATEX: $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
+    to \SI{250}{\gibi\byte}. Resolving this problem requires
     administrator (root) privileges as the Linux kernel support for
     /hugepages/ needs to be activated. With hugepages enabled, page size is
     increased by the system from \SI{4}{\kibi\byte} to 
-    \SI{2-256}{\mibi\byte}, depending on the
+    \SIrange{2}{256}{\mebi\byte}, depending on the
     configuration.\footnote{The current page size for hugetables is reported in /proc/meminfo} 
     
-    In our case, setting the page size to \SI{2}{\mibi\byte} resulted in the page
+    In our case, setting the page size to \SI{2}{\mebi\byte} resulted in the page
     table to shrink from \SI{250}{\gibi\byte} to \SI{0.488}{\gibi\byte}.
     
     It is also noteworthy that using hugetables decreases the amount
-    of page faults.\CH{Do we have performance data here; how much faster are we? See https://github.com/Ezibenroc/m2_internship_journal/tree/master/page_faults}
+    of page faults.
+    #+LaTeX: \CH{Do we have performance data here; how much faster are we? See \url{https://github.com/Ezibenroc/m2_internship_journal/tree/master/page_faults}}
 
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
 
 In Section\ref{sec:em} we described the work we did in order to run a
 large-scale simulation on a single node. We will now present the
-results of our evaluation.\footnote{For more information, see the labbook in file =intern_report.org=, available at https://github.com/Ezibenroc/m2_internship_journal/}
+results of our 
+#+BEGIN_EXPORT latex
+evaluation.\footnote{For more information, see the labbook in file \texttt{journal.org}, available at \url{https://github.com/Ezibenroc/m2_internship_journal/}}
+#+END_EXPORT
+
 \TOM{We need a reference to your Msc thesis; we need to add that each modification has been investigated}
 
 Although our goal is to model and simulate HPL on the Stampede
@@ -887,7 +900,7 @@ functions but with a fully automatic calibration procedure for any
 BLAS function results could effortlessly become more precise as the
 application could just be linked against a BLAS-replacement
 library. 
-\CH{Problem here: HPL uses HPL_dtrsm() wrappers.}
+#+LaTeX: \CH{Problem here: HPL uses \texttt{HPL\_dtrsm()} wrappers.}
 
 * Acknowledgements
 
