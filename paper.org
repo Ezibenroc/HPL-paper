@@ -42,7 +42,6 @@
 #+LATEX_HEADER: \usepackage{todonotes}
 #+LATEX_HEADER: \usepackage{fancyvrb}
 #+LATEX_HEADER: \usepackage[colorlinks=true,citecolor=pdfcitecolor,urlcolor=pdfurlcolor,linkcolor=pdflinkcolor,pdfborder={0 0 0}]{hyperref}
-# #+LATEX_HEADER: \usepackage[round-precision=3,round-mode=figures,scientific-notation=true]{siunitx}
 #+LATEX_HEADER: \usepackage{color,colortbl}
 #+LATEX_HEADER: \definecolor{gray98}{rgb}{0.98,0.98,0.98}
 #+LATEX_HEADER: \definecolor{gray20}{rgb}{0.20,0.20,0.20}
@@ -88,9 +87,14 @@
 #+LATEX_HEADER: \newcommand{\prettysmall}{\fontsize{6}{8}\selectfont}
 #+LATEX_HEADER: \let\oldtexttt=\texttt
 #+LATEX_HEADER: \renewcommand\texttt[1]{\oldtexttt{\smaller[1]{#1}}}
+# #+LATEX_HEADER: \usepackage[round-precision=3,round-mode=figures,scientific-notation=true]{siunitx}
 #+LATEX_HEADER: \usepackage[binary-units]{siunitx}
+#+LATEX_HEADER: \DeclareSIUnit\flop{Flop}
+#+LATEX_HEADER: \DeclareSIUnit\flops{\flop\per\second}
+
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
+
 
 #+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
 
