@@ -91,6 +91,10 @@
 #+LATEX_HEADER: \usepackage[binary-units]{siunitx}
 #+LATEX_HEADER: \DeclareSIUnit\flop{Flop}
 #+LATEX_HEADER: \DeclareSIUnit\flops{\flop\per\second}
+#+LATEX_HEADER:\usepackage{tikz}
+#+LATEX_HEADER:\usetikzlibrary{arrows,shapes,positioning,shadows,trees,calc}
+#+LATEX_HEADER:\usepackage{pgfplots}
+#+LATEX_HEADER:\pgfplotsset{compat=1.13}
 
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
@@ -379,6 +383,86 @@ emulation.
 
 \AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
 - explain the =SMPI_SHARED_MALLOC= mechanism with figure 4.7 from Tom's report
+
+
+    Saving the memory of the matrix allocation is as simple as replacing the call to =malloc= (resp. =free=) by
+    =SMPI_SHARED_MALLOC= (resp. =SMPI_SHARED_FREE=).
+
+    Two different mechanisms exist in Simgrid, called /local/ and /global/. The local algorithm allocates one block per call
+    location, shared by all MPI processes. The real memory footprint of this block is exactly the size of the allocation,
+    hence the memory consumption of all the MPI processes is divided by the number of processes. This mechanism is based
+    on POSIX shared memory objects, using =shm_*= functions.
+
+    The global algorithm is much more efficient in terms of memory consumption. First, it allocates a single block for
+    the whole execution, shared by all MPI processes. Moreover, the real memory footprint of this block is constant,
+    regardless of the size of the allocation, hence providing a very small memory consumption. This mechanism is
+    detailed below as we had to extend it for the panels.
+
+    The main idea is to reserve a range of virtual addresses of the desired size and map it cyclically on a small range of
+    physical addresses, as illustrated by figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the size of this
+    range of physical addresses (1MB by default).
+
+    At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
+    accessible by all the MPI processes, since they are implemented by POSIX threads.
+
+    At every call to =SMPI_SHARED_MALLOC=, a first call to =mmap= is done with the required size and the flag =MAP_ANONYMOUS=
+    (thus without any file descriptor). The effect of this call is to reserve the whole interval of virtual
+    addresses. Then, for each sub-interval, a new call to =mmap= is done with the temporary file. The address of the
+    sub-interval itself is passed with the flag =MAP_FIXED=, which forces the mapping to keep the same virtual address.
+    As a result, each of these sub-intervals of virtual addresses are mapped onto a same interval of physical
+    addresses. We therefore have a block of virtual addresses of arbitrary size backed by a constant amount of physical
+    memory. Since there are almost no computations left, this is harmless with respect to the simulation. Note that such
+    allocations cannot be fully removed as many parts of the code still access it from time to time.
+    #+BEGIN_EXPORT latex
+    \tikzset{draw half paths/.style 2 args={%
+      % From https://tex.stackexchange.com/a/292108/71579
+      decoration={show path construction,
+        lineto code={
+          \draw [#1] (\tikzinputsegmentfirst) --
+             ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$);
+          \draw [#2] ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$)
+            -- (\tikzinputsegmentlast);
+        }
+      }, decorate
+    }}
+    \begin{figure}[htbp]
+      \centering
+      \begin{tikzpicture}
+        \pgfmathtruncatemacro{\size}{4}
+        \pgfmathtruncatemacro{\width}{2}
+        \pgfmathtruncatemacro{\sizem}{\size-1}
+        \pgfmathtruncatemacro{\smallbasex}{4}
+        \pgfmathtruncatemacro{\smallbasey}{\size/2}
+        \pgfmathtruncatemacro{\smallstopx}{\smallbasex+\width}
+        \pgfmathtruncatemacro{\smallstopy}{\smallbasey+1}
+        \foreach \i in {0,\sizem}{
+	    \pgfmathtruncatemacro{\j}{\i+1}
+	    \draw (0, \i) -- (0, \j);
+	    \draw (\width, \i) -- (\width, \j);
+	    \draw[dotted] (0, \i) -- (\width, \i);
+	    \draw[dotted] (0, \j) -- (\width, \j);
+	}
+	\draw[dashed] (0, 1) -- (0, \sizem);
+	\draw[dashed] (\width, 1) -- (\width, \sizem);
+	\draw (0, 0)     -- (\width, 0);
+	\draw (0, \size) -- (\width, \size);
+        \draw (\smallbasex,\smallbasey) -- (\smallstopx,\smallbasey) -- (\smallstopx,\smallstopy) -- (\smallbasex,\smallstopy) -- cycle;
+        \foreach \i in {0,\sizem}{
+	    \pgfmathtruncatemacro{\j}{\i+1}
+	    \draw[dotted] (\width, \i) -- (\smallbasex, \smallbasey);
+	    \draw[dotted] (\width, \j) -- (\smallbasex, \smallstopy);
+	    \pgfmathsetmacro{\xleft}{\width}
+	    \pgfmathsetmacro{\xright}{\smallbasex}%{\width/2.0+\smallbasex/2.0}
+	    \pgfmathsetmacro{\yleft}{\i + 0.5}
+	    \pgfmathsetmacro{\yright}{\smallbasey + 0.5}
+	    \path [draw half paths={solid, -latex}{draw=none}]  (\xleft, \yleft) -- (\xright, \yright);
+	}
+	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
+	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
+      \end{tikzpicture}
+      \caption{\label{fig:global_shared_malloc}Global shared malloc}
+    \end{figure}
+    #+END_EXPORT
 
 * Improving Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
