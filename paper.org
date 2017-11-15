@@ -273,7 +273,10 @@ paper by summarizing our work and results.
 # arbitrary dimension =n= and that O(n³) + O(n²) operations be used
 # (hence, Strassen's matrix multiplication is prohibited).
 
-** HPL
+** TODO HPL
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:26]
+:END:
 For this work, we use the reference-implementation of the HPLinpack
 benchmark, HPL, that is freely available \CH{cite} and widely used to benchmark systems.
 HPL solves a linear system of equations, more precisely the problem
@@ -314,10 +317,16 @@ too many messages.
 #+LaTeX: \CH{See \texttt{HPL\_blonM.c}, ll. 264 ff.}
 
 \AL{See www/algorithm.html and describe the main params: 0) geometry, size and granularity, 1) Panel Broadcast, 2) Look-Ahead, 3) Update.}
-** A typical run on a supercomputer
+** TODO A typical run on a supercomputer
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:26]
+:END:
 \AL{Describe stampede and the stampede fullrun}
 
-** Difficulties
+** TODO Difficulties
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:26]
+:END:
 #+LaTeX: \label{sec:con:diff}
 
 \AL{Too detailed on simulation. Difficulties = difficulties in term of performance prediction, i.e., application, runtime and platform and no formula may account for such complexity. These difficulties are rather conclusions of the related work section.}
@@ -352,8 +361,12 @@ Requirement for the emulation of Stampede's execution:
 - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
 - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
 
-* Related Work
+* TODO Related Work
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:25]
+:END:
 #+LaTeX: \label{sec:relwork}
+\AL{This needs to be expanded}
   
 Two approaches are commonly used in order to study a parallel
 application with the help of a simulator: Offline and online simulation.
@@ -382,10 +395,11 @@ applications on complex platforms exists. The extreme-scale simulator
 xSim\cite{xsim}, although it is not publicly available, 
 SST\cite{sstmacro} just as SimGrid/SMPI\cite{simgrid} all support online
 emulation.
-\CH{This needs to be expanded}
     
-
-* SimGrid/SMPI in a nutshell
+* TODO SimGrid/SMPI in a nutshell
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:25]
+:END:
 \label{sec:smpi}
 \AL{We need such a section to separate our contribution from what was already there}
 
@@ -899,7 +913,10 @@ simulations spend less than 10% of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
 Therefore, the simulation of the largest supercomputers is now within
 reach.
-* Modeling Stampede and Simulating HPL
+* TODO Modeling Stampede and Simulating HPL
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:25]
+:END:
 #+LaTeX: \label{sec:science}
 
 ** Modeling Stampede
@@ -1088,9 +1105,15 @@ We obviously do not aim at reverse engineering the intel_xhpl code but it appear
 We already had conducted successful small-scale validation studies. We
 conclude that our large-scale (in)validation is unfortunately not
 possible as we do not have access to the original source code used by Intel but we claim that the modifications we did were minor and should easily be applied to their version. Such a simulator would then be a valuable tuning tool.
-* Capacity Planning
+* TODO Capacity Planning
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:26]
+:END:
 \AL{Taken from CCgrid or alike ?}
-* Conclusions
+* TODO Conclusions
+:LOGBOOK:
+- State "TODO"       from              [2017-11-15 mer. 16:26]
+:END:
 #+LaTeX: \label{sec:cl}
 
 Prediction of makespan of applications running on large-scale clusters
