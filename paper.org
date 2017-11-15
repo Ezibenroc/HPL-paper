@@ -731,13 +731,12 @@ seconds, thanks to a reduction of the system time from 5.9 seconds to
 1.7 seconds. The number of page faults decreased from 2 millions to
 0.2 million, thus confirming the dramatic effect such
 series of allocation/deallocation would have at scale.
-** TODO MPI process representation (mmap vs. dlopen)
+** MPI process representation (mmap vs. dlopen)
 SimGrid folds parallel applications into a single process and hence,
 local static and global variables become an issue as it must be guaranteed that
 each rank has its own set of global variables. SMPI supports two
 mechanisms to achieve this: The usage of either =mmap= or =dlopen=.
 *** mmap
-
 When =mmap= is used, SMPI copies the =data= segment on startup for each
 rank into the heap. When control is transferred from one rank to
 another, the =data= segment is =mmap='ed to the location of this rank's
@@ -747,9 +746,9 @@ different physical addresses based on the rank. This also means
 inevitably that caches must be flushed to ensure that no data of one
 rank leaks into the other rank. This overhead makes the usage of =mmap=
 a rather expensive operation.
-\TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
 
-*** TODO dlopen
+# \TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
+*** dlopen
 
 With =dlopen=, copies of the global variables are still made but they
 are stored inside the =data= segment as opposed to the heap. When
@@ -762,14 +761,20 @@ consistency can always be guaranteed.
 \CH{This needs to be reviewed.}
 
 *** Impact of choice of mmap/dlopen
-
 The choice of mmap or dlopen influences the simulation time indirectly
-through its direct impact on system/user time and page faults.
+through its direct impact on system/user time and page faults.  As an
+example, for a matrix of size 80,000 and 32 MPI processes, the number
+of minor page faults drops from \num{4412047} (with =mmap=) to
+\num{6880} (with =dlopen=). This results in a drop in system time from 
+\SI{10.64}{\sec} (out of \SI{51.47}{\sec} in total) to
+\SI{2.12}{\sec}. Obviously, the larger the matrix and the number of
+process, the larger the number of context switch during the
+simulation, and the higher the gain.
 
-\CH{See also the note in the org-file at this place for expansion.}
-
-# See Tom's journal; there are some graphs that we might be able to use,
-# such as in https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
+# See Tom's journal (Performance evaluation of the privatization
+# mechanism: =dlopen= vs =mmap= ) ; there are some graphs that we might be
+# able to use, such as in
+# https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
 
 ** STARTED Huge pages    
     As described above, we fold the memory and realise significant
