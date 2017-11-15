@@ -634,7 +634,7 @@ LU factorization and hence accounted for by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations they all operate on
 bogus data and hence produce bogus data. We also determined that their
 impact on the performance prediction was minimal and that precisely
-modeling them was simply not worth the effort: we simply modeled them
+modeling them was simply not worth the effort: We simply modeled them
 as being instantaneous.
 
 Note that working on bogus data has a few consequences as HPL
@@ -722,10 +722,10 @@ HPL to only allocate the very first panel and reuse it from an
 iteration to another (see Figure\ref{fig:panel_reuse}).
 
 As usual, this optimization is harmless in term of simulation
-accuracy: the maximum observed error, in comparison with the previous
+accuracy: The maximum observed error, in comparison with the previous
 version, is always lower than 1%. The gain in terms of simulation
 time, albeit less impressive than for previous optimizations, is
-significant: for a matrix of size 40,000 and 64 MPI processes, the
+significant: For a matrix of size 40,000 and 64 MPI processes, the
 simulation time decreases by four seconds, from 20.5 seconds to 16.5
 seconds, thanks to a reduction of the system time from 5.9 seconds to
 1.7 seconds. The number of page faults decreased from 2 millions to
