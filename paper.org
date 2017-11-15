@@ -601,7 +601,7 @@ experiment.
     \begin{minipage}[b]{.5\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
     \end{minipage}}
-  \caption{Replacing the calls to computationnaly expensive functions by a model.}
+  \caption{Replacing the calls to computationally expensive functions by a model.}
 \end{figure*}
 #+END_EXPORT
 
