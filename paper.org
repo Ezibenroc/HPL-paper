@@ -98,6 +98,7 @@
 
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
+#+LaTeX: \newcommand\myemph[1]{\color{colorfuncall}\textbf{#1}}%
 
 
 #+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
@@ -324,6 +325,91 @@ too many messages.
 \AL{Describe stampede and the stampede fullrun}
 
 ** TODO Difficulties
+#+BEGIN_EXPORT latex
+\begin{figure}%[!htb]
+  \centering
+  \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
+  \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
+  \end{minipage}}
+  \caption{HPL output submitted in November 2013 for the ranking of stampede in the top500.}
+\end{figure}
+#+END_EXPORT
+
+*** Hidden information about the Stampede execution              :noexport:
+#+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
+================================================================================
+HPLinpack 2.1  --  High-Performance Linpack benchmark  --   October 26, 2012
+Written by A. Petitet and R. Clint Whaley,  Innovative Computing Laboratory, UTK
+Modified by Piotr Luszczek, Innovative Computing Laboratory, UTK
+Modified by Julien Langou, University of Colorado Denver
+================================================================================
+
+An explanation of the input/output parameters follows:
+T/V    : Wall time / encoded variant.
+N      : The order of the coefficient matrix A.
+NB     : The partitioning blocking factor.
+P      : The number of process rows.
+Q      : The number of process columns.
+Time   : Time in seconds to solve the linear system.
+Gflops : Rate of execution for solving the linear system.
+
+The following parameter values will be used:
+
+£\myemph{N}£        : £\myemph{3875000}£
+£\myemph{NB}£       :   £\myemph{1024}£
+PMAP     : Column-major process mapping
+£\myemph{P}£        :      £\myemph{77}£
+£\myemph{Q}£        :      £\myemph{78}£
+PFACT    :   Right 
+NBMIN    :       4 
+NDIV     :       2 
+RFACT    :   Crout 
+BCAST    :  BlongM 
+DEPTH    :       0 
+SWAP     : Binary-exchange
+L1       : no-transposed form
+U        : no-transposed form
+EQUIL    : no
+ALIGN    :    8 double precision words
+
+--------------------------------------------------------------------------------
+
+- The matrix A is randomly generated for each test.
+- The following scaled residual check will be computed:
+      ||Ax-b||_oo / ( eps * ( || x ||_oo * || A ||_oo + || b ||_oo ) * N )
+- The relative machine precision (eps) is taken to be               1.110223e-16
+- Computational tests pass if scaled residuals are less than                16.0
+
+
+
+[...]
+
+
+
+Peak Performance = 5172687.23 GFlops /   861.25 GFlops per node
+================================================================================
+T/V                N    NB     P     Q               Time                 Gflops
+--------------------------------------------------------------------------------
+WC05C2R4     3875000  1024    77    78            7505.72            £\myemph{5.16811e+06}£
+HPL_pdgesv() start time Sun Jun  2 13:04:59 2013
+
+HPL_pdgesv() end time   Sun Jun  2 15:10:04 2013
+
+--------------------------------------------------------------------------------
+||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0007822 ...... PASSED
+================================================================================
+
+Finished      1 tests with the following results:
+              1 tests completed and passed residual checks,
+              0 tests completed and failed residual checks,
+              0 tests skipped because of illegal input values.
+--------------------------------------------------------------------------------
+
+End of Tests.
+================================================================================
+
+#+END_SRC
+
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
 :END:
