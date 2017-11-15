@@ -379,7 +379,16 @@ emulation.
 \AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
 * Improving Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
-** Kernel modeling: Affine, easy replacement, almost no code modification.
+
+In this section, we described the adjustments we made in SimGrid and
+the few modifications we had to do in HPL to allow a scalable and
+faithful simulation of HPL. A quick performance evaluation of each
+modification is provided when space allows but we refer the interested
+reader to\cite{cornebize:hal-01544827} and to a laboratory 
+#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/m2_internship_journal/}},
+where each modification has been carefully investigated.
+
+** Kernel modeling
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
   \centering
@@ -404,7 +413,7 @@ emulation.
        an equation of the form $Ax=b$). A quick analysis of an HPL
        simulation with a relatively small matrix with dimensions
        30,000 and 64 processes shows that around \SI{96}{\percent} of
-       the time is spent in these two functions. The values computed
+       the time is spent in these two very regular functions. The values computed
        by these functions are barely used in the control flow of HPL
        and are thus of no interest when simulating.
 
@@ -470,37 +479,36 @@ emulation.
 #+BEGIN_EXPORT latex
 \CH{Found this in Tom's logbook. Check if this is the final version. Also, we can apparently just call \texttt{make SMPI\_OPTS=-DSMPI\_OPTIMIZATION} (what about \texttt{arch=SMPI}?). See his logbook}
 #+END_EXPORT
-** TODO Other HPL adaptations:
+** Adjusting the behavior of HPL
 #+LaTeX: \label{sec:hplchanges}
-
 HPL uses huge pseudo-randomly generated matrices that need to be setup
-every time HPL is executed. In order to minimize the impact of this
-setup procedure on potential results, HPL does not account for the
-time spent setting up the matrices. Likewise, the validation of the
-computed results are also not accounted for by default. As they do not
-impact the performance of the platform, we can safely skip both steps:
-\CH{How do we initialize the matrix? See Tom's report on page 20, it doesn't explain that}
-The verification, on the other hand, is meaningless as our
-computations are wrong due to our reduction of the matrix to one
-single panel.
-\CH{This is explained in the following section so we need to move this}
+every time HPL is executed. HPL does not account for the time spent
+setting up the matrices nor for the validation of the computed result
+in the reported \si{\giga\flops} performance. Furthermore, the
+verification would now be meaningless as we skipped all the
+computations and replaced them by a model evaluation. Since such
+phases do not impact the performance of the platform, we can safely
+skip both steps.
 
 Although the lion's share of computation time was consumed by calls to
 =dgemm= and =dtrsm=, several other functions were identified through
-profiling as computationally expensive enough to justify handling them
-differently: In total seven BLAS functions such as =dgemv= or =dswap= and
-five HPL functions. All of these functions are called during the LU
-factorization and hence accounted for by HPL; however, they all
-operate on bogus data and hence produce bogus data. We also determined
-that the they are not slow enough to be modeled seperately and they were hence just removed.
+profiling as computationally expensive enough to justify a specific
+handling: In total seven additional BLAS functions (=dgemv=, =dswap=, =daxpy=,
+=dscal=, =dtrsv=, =dger=, and =idamax=). All of these functions are called during the
+LU factorization and hence accounted for by HPL; however, because of
+the removal of the =dgemm= and =dtrsm= computations they all operate on
+bogus data and hence produce bogus data. We also determined that their
+impact on the performance prediction was minimal and that precisely
+modeling them was simply not worth the effort: we simply modeled them
+as being instantaneous.
 
-#+BEGIN_EXPORT latex
-\CH{See Tom's labbook; he added an option
-  \texttt{-DSMPI\_DO\_INITIALIZATION\_VERIFICATION} because there were
-  some performance issues without the initialization} 
-#+END_EXPORT
-- Handling "sensitive" parts (the max pivot computation)
-
+Note that working on bogus data has a few consequences as HPL
+implements an LU factorization with partial pivoting and a special
+treatment of the =idamax= function that returns the index of the first
+element having maximum absolute value. The cost of this function was
+ignored as well but its return value was arbitrarily set to make the
+simulation fully deterministic. In all our evaluations, this
+modification was harmless in term of performance prediction.
 ** TODO Memory folding
    
    We've already explained how the execution of several kernels was
@@ -654,7 +662,6 @@ results of our
 evaluation.\footnote{For more information, see the labbook in file \texttt{journal.org}, available at \url{https://github.com/Ezibenroc/m2_internship_journal/}}
 #+END_EXPORT
 
-\TOM{We need a reference to your Msc thesis; we need to add that each modification has been investigated}
 
 Although our goal is to model and simulate HPL on the Stampede
 platform eventually, we decided to produce some first results on a
@@ -740,8 +747,8 @@ On this platform, a simulation run took us around 30\nbsp{}hours.
 The Stampede cluster contains *XYZ* compute nodes, each with two 8-core Intel Xeon
 E5-2680 8C \SI{2.7}{\GHz} CPU and one, for very few nodes even two 61-core Intel Xeon Phi SE10P (KNC) with
 \SI{1.1}{\GHz} accelerator. The accelerators are essential to the performance
-of the cluster, delivering 7 PFlop/s of sustainable performance
-whereas the CPUs are only capable of delivering 2 PFlop/s. On
+of the cluster, delivering \SI{7}{\peta\flops} of sustainable performance
+whereas the CPUs are only capable of delivering  \SI{2}{\peta\flops}. On
 matrices of the size used for this work, however, CPUs are barely used.
 
 # See CH's journal from [2017-10-03 Tue] to see how the version was determined
@@ -960,6 +967,32 @@ library.
 
 Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
 
+** References                                                       :ignore:
+
+# See next section to understand how refs.bib file is created.
+
+#+LATEX: \bibliographystyle{IEEEtran}
+#+LATEX: \bibliography{refs}
+
+
+* Bib file is here                                                 :noexport:
+
+Tangle this file with C-c C-v t
+
+#+begin_src bib :tangle refs.bib
+@mastersthesis{cornebize:hal-01544827,
+  TITLE = {{Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
+  AUTHOR = {Cornebize, Tom},
+  URL = {https://hal.inria.fr/hal-01544827},
+  SCHOOL = {{Grenoble INP ; Universit{\'e} Grenoble - Alpes}},
+  YEAR = {2017},
+  MONTH = Jun,
+  KEYWORDS = {Simulation ;  MPI runtime and applications ;  Performance prediction and extrapolation ;  High Performance LINPACK},
+  PDF = {https://hal.inria.fr/hal-01544827/file/report.pdf},
+  HAL_ID = {hal-01544827},
+  HAL_VERSION = {v1},
+}
+#+end_src
 
 * Emacs Setup 							   :noexport:
 # Local Variables:
