@@ -101,6 +101,7 @@
 
 
 #+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
+#+LaTeX: \renewcommand\O{\ensuremath{\mathcal{O}}\xspace}%
 
 * LaTeX Preamble                                                     :ignore:
 #+BEGIN_EXPORT latex
@@ -113,7 +114,7 @@
 \def\eg{e.g.,\xspace}
 \def\etal{~\textit{et al.\xspace}}
 \newcommand{\AL}[2][inline]{\todo[caption={},color=green!50,#1]{\small\sf\textbf{AL:} #2}}
-\newcommand{\TOM}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
+\newcommand{\TC}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
 \newcommand{\CH}[2][inline]{\todo[color=red!30,#1]{\small\sf \textbf{CH:} #2}}
 
 %% Omit the copyright space.
@@ -323,8 +324,8 @@ too many messages.
    Several difficulties were well-known and had to be resolved in
    order to simulate HPL:
 
-   1. The time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
-      $\mathcal{O}(N^2)$ communications are performed, with $N$ being
+   1. The time-complexity of the algorithm is $\O(N^3)$ and
+      $O(N^2)$ communications are performed, with $N$ being
       very large. This causes executions of large problem sizes to
       become rather slow. For instance, the run on the Stampede cluster took almost
       two hours with $N=3,875,000$.
@@ -343,6 +344,13 @@ too many messages.
       no longer sufficient as these strategies are vital for HPL's
       performance. Hence, emulation is required.
 
+Real execution:
+- Matrix of size 3,875,000
+- Using 6,006 MPI processes
+- About 2 hours
+Requirement for the emulation of Stampede's execution:
+- $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
+- $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
 
 * Related Work
 #+LaTeX: \label{sec:relwork}
@@ -474,6 +482,12 @@ modification is provided when space allows but we refer the interested
 reader to\cite{cornebize:hal-01544827} and to a laboratory 
 #+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/m2_internship_journal/}},
 where each modification has been carefully investigated.
+The experiments of this section have been performed on nodes of the
+Nova cluster from the Grid'5000 testbed\cite{grid5000}. These nodes have
+\SI{32}{\giga\byte} RAM of memory and two 8-core Intel Xeon E5-2620 v4
+CPUs processors running at \SI{2.1}{\GHz}. They are deployed with a
+Debian Stretch image (kernel 4.9) and a single core was used for each
+experiment.
 
 ** Kernel modeling
 #+BEGIN_EXPORT latex
@@ -487,7 +501,7 @@ where each modification has been carefully investigated.
     \begin{minipage}[b]{.5\linewidth}
       \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_gflops.pdf}\\
       \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_time.pdf}
-      \AL{Figures need to be regenerated (adjust font-size, remove gray box) and merged (simulation time and gflops  side by side) as only the dependency on matrix size is interesting (remove number of process). The term "kernel sampling" should also be replaced by "kernel modeling".}
+      \TC{Figures need to be regenerated (adjust font-size, remove gray box) and merged (simulation time and gflops  side by side) as only the dependency on matrix size is interesting (remove number of process). The term "kernel sampling" should also be replaced by "kernel modeling".}
     \end{minipage}}
   \caption{Replacing the calls to computationnaly expensive functions by a model.}
 \end{figure*}
@@ -576,7 +590,7 @@ where each modification has been carefully investigated.
     \tikzstyle{bigswitch}=[base, draw]
     \begin{figure*}%[htbp]
       \centering
-      \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{
+      \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
         \begin{minipage}[b]{.5\linewidth}
           \begin{tikzpicture}
             \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
@@ -591,7 +605,7 @@ where each modification has been carefully investigated.
             \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
           \end{tikzpicture}
         \end{minipage}}%
-      \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{
+      \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
         \begin{minipage}[b]{.5\linewidth}
           \begin{center}
           \begin{tikzpicture}
@@ -749,16 +763,14 @@ a rather expensive operation.
 
 # \TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
 *** dlopen
-
 With =dlopen=, copies of the global variables are still made but they
 are stored inside the =data= segment as opposed to the heap. When
 switching from one rank to another, the starting virtual address for
 the storage is readjusted rather than the addresses point
 to. This means that each rank has its own unique pool of addresses for
-global variables. The advantage of this is that caches do not need to
-be flushed as is the case for the =mmap= approach, because data
+global variables. The main advantage of this approach is that caches do not need to
+be flushed as in the case for the =mmap= approach, because data
 consistency can always be guaranteed.
-\CH{This needs to be reviewed.}
 
 *** Impact of choice of mmap/dlopen
 The choice of mmap or dlopen influences the simulation time indirectly
@@ -776,63 +788,50 @@ simulation, and the higher the gain.
 # able to use, such as in
 # https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
 
-** STARTED Huge pages    
-    As described above, we fold the memory and realise significant
-    physical memory savings. However, the allocations are still performed for
-    and the /virtual/ memory is still allocated for every process. This
-    implies that there is no reduction in the overall amount of
-    virtual addresses, causing the page table to become too large to
-    be efficiently maintained.
+** Huge pages    
+For larger matrix sizes (e.g., when $N$ is above a few hundreds of
+thousands), the performance of the simulation quickly
+deteriorates. The memory consumption gets surprisingly high and the CPU
+utilization drops. Running the simulation while monitoring the system
+shows that the program is regularly stalled while the kernel loads the
+CPU at 100%, which explains the low CPU utilization for the program
+itself.
 
-    In general, the size of the page table with page size of 4,096 bytes can be computed as:
+As described above, we fold the memory and realise significant
+physical memory savings. However, the allocations are still performed
+for and the /virtual/ memory is still allocated for every process. This
+implies that there is no reduction in the overall amount of virtual
+addresses, causing the page table to become too large to be
+efficiently maintained. In general, the size of the page table with
+page size of 4,096 bytes can be computed as:
 
-    #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot 8}{4,096} \cdot 8 \]
-    
-    \CH{Explain better what the two 8's mean: Size of doubles and entry size for a virtual address}
+    #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot \texttt{sizeof(double)}}{4,096} \cdot \texttt{sizeof(pointer)} \]
 
-    This means that for a matrix of size $N=4,000,000$, the page table
-    grows to 
-    #+LATEX: $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
-    to \SI{250}{\gibi\byte}. Resolving this problem requires
-    administrator (root) privileges as the Linux kernel support for
-    /hugepages/ needs to be activated. With hugepages enabled, page size is
-    increased by the system from \SI{4}{\kibi\byte} to 
-    \SIrange{2}{256}{\mebi\byte}, depending on the
-    configuration.\footnote{The current page size for hugetables is reported in /proc/meminfo} 
-    
-    In our case, setting the page size to \SI{2}{\mebi\byte} resulted in the page
-    table to shrink from \SI{250}{\gibi\byte} to \SI{0.488}{\gibi\byte}.
-    
-    It is also noteworthy that using hugetables decreases the amount
-    of page faults.
-    #+LaTeX: \CH{Do we have performance data here; how much faster are we? See \url{https://github.com/Ezibenroc/m2_internship_journal/tree/master/page_faults}}
+This means that for a matrix of size $N=4,000,000$, the page table
+grows to $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie to
+\SI{250}{\gibi\byte}. The x86-64 architecture supports several page
+sizes. On Linux, these larger pages are known as huge page. A typical
+size for these pages is 2 MiB, although there exists other sizes
+(\SIrange{2}{256}{\mebi\byte}).
 
+Resolving this problem requires administrator (root) privileges as the
+Linux kernel support for /hugepages/ needs to be activated. One should
+then simply mount a =hugetlbfs= file system, allocate at least one huge
+page and then pass the path of the allocated file system to
+Simgrid. The implementation consists in passing the flag MAP_HUGETLB
+to =mmap= in =SMPI_SHARED_MALLOC= and replacing the file given to mmap by
+a file opened in the hugetlbfs file system.
+
+In our case, setting the page size to \SI{2}{\mebi\byte} resulted in
+the page table to shrink from \SI{250}{\gibi\byte} to
+\SI{0.488}{\gibi\byte}.  It is also noteworthy that using hugetables
+decreases the amount of page faults thereby improving even further
+simulation time. For instance, with a size of 300,000 and 64 MPI
+process, the CPU utilization rises from 66% to 99%, hence reducing
+simulation time from about \SI{580}{\sec} to about \SI{175}{\sec}.
+# Values from Figure 4.9 in Tom's report
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
-
-In Section\ref{sec:em} we described the work we did in order to run a
-large-scale simulation on a single node. We will now present the
-results of our 
-#+BEGIN_EXPORT latex
-evaluation.\footnote{For more information, see the labbook in file \texttt{journal.org}, available at \url{https://github.com/Ezibenroc/m2_internship_journal/}}
-#+END_EXPORT
-
-
-Although our goal is to model and simulate HPL on the Stampede
-platform eventually, we decided to produce some first results on a
-similar, albeit non-existing platform with the following, particular features:
-
-#+LATEX: \begin{enumerate}
-#+LATEX: \item
-  In total, *XYZ nodes* make up the platform. Each node consists only of
-  a single CPU with *XYZ cores*; there are no accelerators / GPU's.
-#+LATEX: \item
-  A fat-tree network topology with an interconnect of *XYZ bandwidth/latency*
-#+LATEX: \item
-
-#+LATEX: \end{enumerate}
-
-\CH{I need to figure out what the configuration is in order to work on this: "Just showing that when using the default SMPI, it works but it's obviously slow."}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -840,59 +839,66 @@ similar, albeit non-existing platform with the following, particular features:
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}                                                                                                                               
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
   \caption{Time complexity and memory consumption are linear in the number of processes with a fixed matrix size but remain slightly quadratic when matrix size is varied. }
+  \TC{It would be nice to regenerate these figures with larger fonts and possibly a different aspect ratio (height may be increased a bit).}
   \label{fig:hpl_scalability}
   \labspace
 \end{figure}
 #+END_EXPORT
-\TOM{In this Figure, we do not have data for 3e6. We should remove the tick here.}
 
-Figure\ref{fig:hpl_scalability} compares the impact of changes to
-process number or matrix size on total makespan and memory. A total of
-four different process numbers were used, namely 512, 1024, 2048
-and\nbsp{}4096 processes. The matrix size was selected out of four available
-sizes as well, in this case $0.5\cdot10^{6}, 10^{6}, 2\cdot10^{6}$ and $4\cdot10^{6}$.
+In Section\ref{sec:em} we described the work we did in order to run a
+large-scale simulation on a single node. Most of this work mostly
+consists in identifying and eliminating bottlenecks one after the
+other while making sure the consequences on performance prediction are
+harmless. Doing so, the goal is to reduce as much as possible the
+complexity of simulating HPL from $\O(N^3) + O(N^2.P.Q)$ to a more
+reasonable complexity. The removal of most of the computations allow
+to get rid of the $\O(N^3)$. Since there are $N/NB$ steps, the ideal
+complexity reduction would be to decrease the cost of an iteration to
+something independent of $N$. Thanks SimGrid fluid models, the time to
+simulate a communication does not depend on does not $N$. The time to
+simulate a step of HPL should therefore mostly depend on $P$ and
+$Q$. Yet, some of memory operations on the panel related to pivoting
+are intertwined in HPL with collective communications, which does not
+allow to completely get rid of the $\O(N)$ complexity without
+modifying a bit more deeply HPL.
 
+Although our goal is to model and simulate HPL on the Stampede
+platform eventually, we decided to produce some first evaluation on a
+similar, albeit non-existing, platform comprising 4,096 8-core nodes
+interconnected through a $\langle2;16,32;1,16;1,1;8\rangle$ fat-tree topology
+built on ideal network links with a bandwidth of
+\SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}.  We run
+simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
+with matrices of size \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}. To
+illustrates the scalability of HPL simulation with all the previously
+described optimizations enabled, the largest simulation took
+approximately 47 hours and \SI{16}{\giga\byte} of memory. The smallest
+one took 20 minutes and \SI{282}{\mega\byte} of memory.
+
+Figure\ref{fig:hpl_scalability} compares in detail the impact of changes to
+process number or matrix size on total makespan and memory. 
 In the first and second row, the matrix size and number of processes, respectively,
 are varied. When the matrix size ($N$) is changed, as depicted in the
 two panels of the first row, memory consumption and
-simulation time grow slightly quadratic as the amount of matrix
-elements grows quadratically ($N^{2}$) and more iterations of the
-algorithm are required to solve the equation system. 
-\CH{This needs to be verified, it just seems logical to me. Why is the memory consumption not growing quadratically and why does it consume around 6 GB?}
+simulation time both grow slightly quadratic as the amount of matrix
+elements grows quadratically ($N^{2}$) and the number of steps of the
+algorithm also grows linearly.
 
 As becomes apparent when studying the results shown in the lower two
-panels, a linear connection of simulation time and number of processes
-exists when the matrix size is fixed. However, the slope of the linear
-functions are clearly different; the larger the matrix, the steeper
-the slope. An explanation for this is that the algorithm requires more
-iterations for larger matrices and hence requires more panels to be
-sent over the network, causing the simulator to re-compute the somewhat
-(computation-wise) expensive network congestion information.
-\CH{Were the nodes sharing some links?}
+panels, simulation time is perfectly linear in the number of processes
+when the matrix size is fixed. It is noteworthy that the memory
+consumption only mildly depends on the number of processes: the matrix
+size determines the "lower bound" for the memory consumption and a
+constant amount of memory is then added for the private memory of
+panels and global variables that every process requires.
 
-It is furthermore noteworthy that the memory consumption in this case
-is very uniform; the matrix size determines the "lower barrier" for
-the memory consumption and a constant amount of memory is then added
-for the private memory that every process requires. This also explains why
-the distance between any pair of linear functions is constant.
-\CH{My god, I interpreted this just from the plots. It makes sense and looks like it, but this really needs to be verified.}
-\CH{What is the size of the largest (= first) panel in each case?}
-
-\AL{The information about the time it takes to run stampede at scale should appear here}
-*** Running at scale
-
-Our simulations have been executed on a single node of the Nova
-cluster, provided by the Grid'5000 platform and featuring 
-two 8-core Xeon E5-2620\nbsp{}v4\nbsp{}CPUs with \SI{2.1}{\GHz} and
-\SI{32}{\giga\byte} RAM. Although these CPUs are
-different from the ones used by Stampede, we did not account for
-these differences since, as discussed in \ref{sec:em}, the majority of
-computations was either removed or replaced with performance models.
-\AL{Do we need to cite G5K?}
-
-On this platform, a simulation run took us around 30\nbsp{}hours.
-\CH{Not done here.}
-
+For all these simulations, the CPU utilization is above 98%. This
+means that the kernel is still able to manage the page table without
+stalling too much the simulation process. Moreover, all the
+simulations spend less than 10% of their execution time in kernel
+mode, which means the number of system calls is reasonably low.
+Therefore, the simulation of the largest supercomputers is now within
+reach.
 * Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
 
@@ -1034,11 +1040,11 @@ via the /detached/ mode (depicted in green).
 # seems more reasonable as well.
 
 Stampede leverages Mellanox FDR InfiniBand technology with
-\SI{56}{\giga\bit}/s, setup in a
+\SI{56}{\giga\bit\per\second}, setup in a
 fat-tree topology on two levels (called cores and
 leafs) with 8\nbsp{}SX6536 core-switches, each with 648\nbsp{}ports and
-\SI{73}{\tera\bit}/s capacity, and 320\nbsp{}36-port
-leaf-switches with a capacity of \SI{4}{\tera\bit}/s. 
+\SI{73}{\tera\bit\per\second} capacity, and 320\nbsp{}36-port
+leaf-switches with a capacity of \SI{4}{\tera\bit\per\second}. 
 20\nbsp{}ports of each leaf-switch are connected to compute nodes, whereas the remaining 16\nbsp{}ports are connected to
 the core-switches. In this topology, any message reaches the
 destination within no more than 5\nbsp{}hops.
@@ -1146,6 +1152,20 @@ Tangle this file with C-c C-v t
   PDF = {https://hal.inria.fr/hal-01544827/file/report.pdf},
   HAL_ID = {hal-01544827},
   HAL_VERSION = {v1},
+}
+
+@incollection{grid5000,
+   title = {Adding Virtualization Capabilities to the {Grid'5000} Testbed},
+   author = {Balouek, Daniel and Carpen-Amarie, Alexandra and Charrier, Ghislain and Desprez, Fr{\'e}d{\'e}ric and Jeannot, Emmanuel and Jeanvoine, Emmanuel and L{\`e}bre, Adrien and Margery, David and Niclausse, Nicolas and Nussbaum, Lucas and Richard, Olivier and P{\'e}rez, Christian and Quesnel, Flavien and Rohr, Cyril and Sarzyniec, Luc},
+   booktitle = {Cloud Computing and Services Science},
+   publisher = {Springer International Publishing},
+   OPTpages = {3-20},
+   volume = {367},
+   editor = {Ivanov, IvanI. and Sinderen, Marten and Leymann, Frank and Shan, Tony },
+   series = {Communications in Computer and Information Science },
+   isbn = {978-3-319-04518-4 },
+   doi = {10.1007/978-3-319-04519-1\_1 },
+   year = {2013},
 }
 #+end_src
 
