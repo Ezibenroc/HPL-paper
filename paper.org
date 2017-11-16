@@ -607,10 +607,7 @@ framework.
 # - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
 # - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
   
-* TODO SimGrid/SMPI in a nutshell
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:25]
-:END:
+* SimGrid/SMPI in a nutshell
 \label{sec:smpi}
 
 SimGrid\cite{simgrid} is a 17 years-old flexible and open-source
