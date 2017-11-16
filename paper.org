@@ -442,13 +442,13 @@ End of Tests.
 #+LaTeX: \label{sec:con:diff}
 
 \AL{Too detailed on simulation. Difficulties = difficulties in term of performance prediction, i.e., application, runtime and platform and no formula may account for such complexity. These difficulties are rather conclusions of the related work section.}
-   Several difficulties were well-known and had to be resolved in
+   Several difficulties were well-known in advance and had to be resolved in
    order to simulate HPL:
 
    1. The time-complexity of the algorithm is $\O(N^3)$ and
       $O(N^2)$ communications are performed, with $N$ being
       very large. This causes executions of large problem sizes to
-      become rather slow. For instance, the run on the Stampede cluster took almost
+      become rather slow. For instance, the real-life run on the Stampede cluster took almost
       two hours with $N=3,875,000$.
       
    2. Each node of a large cluster only allocates memory for a part of
