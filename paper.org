@@ -348,7 +348,7 @@ too many messages.
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
 :END:
-\AL{Describe stampede and the stampede fullrun}
+\AL{Describe stampede (already done in Chapter VII (=modeling Stampede= and =Network Topology=)) and the stampede fullrun.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
