@@ -410,10 +410,13 @@ while the peak performance of the KNC coprocessors if about
 The Stampede supercomputer reached a performance of 5,168 Tflops when
 it got ranked in the top500. According to the log (see
 Figure\ref{fig:hpl_output}) that was submitted and which our
-colleagues from TACC provided us, this execution was done using $77\times78
-= 6,006$ processes and a matrix of size $N = 3,875,000$, which
-represents a matrix of approximately \SI{120}{\tera\byte} of
-memory. This execution took approximately two hours.
+colleagues from TACC provided us, this execution took approximately
+two hours. It was done using $77\times78 = 6,006$ processes and a matrix of
+size $N = 3,875,000$, which represents a matrix of approximately
+\SI{120}{\tera\byte} of memory, i.e., \SI{20}{\giga\byte} per node.
+One MPI process per node was used and the exploitation of each node
+(both the 16 cores and the Xeon Phi) may have through openMP and/or
+the MKL.
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -501,7 +504,7 @@ End of Tests.
 
 #+END_SRC
 
-** TODO Difficulties
+** Performance Evaluation Challenges
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
 :END:
