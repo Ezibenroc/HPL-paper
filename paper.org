@@ -807,8 +807,7 @@ reduce both memory footprint and simulation duration.
       \caption{\label{fig:global_shared_malloc}Global shared malloc}
     \end{figure}
     #+END_EXPORT
-
-* Improving Emulation Mechanisms and Preparing HPL
+* Improving SMPI Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
 
 In this section, we described the adjustments we made in SimGrid and
