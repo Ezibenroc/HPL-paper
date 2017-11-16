@@ -277,6 +277,7 @@ paper by summarizing our work and results.
 # (hence, Strassen's matrix multiplication is prohibited).
 
 ** High-Performance Linpack
+\label{sec:hpl}
 #+BEGIN_EXPORT latex
 \begin{figure}
   \newcommand{\mykwfn}[1]{{\bf\textsf{#1}}}%
@@ -393,7 +394,7 @@ all the BLAS kernels, the MPI runtime, and all the previous parameters
 of HPL.
 ** A typical run on a supercomputer
 In June 2013, the stampede supercomputer at TACC was ranked 6th in top
-top500 by achieving \SI{5168.1}{\giga\flops} and was ranked 20 th in
+top500 by achieving \SI{5168.1}{\tera\flops} and was ranked 20 th in
 June 2016 and just got upgraded into stampede2. Stampede was made of
 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes are interconnected
@@ -510,73 +511,102 @@ End of Tests.
 :END:
 #+LaTeX: \label{sec:con:diff}
 
-\AL{Too detailed on simulation. Difficulties = difficulties in term of performance prediction, i.e., application, runtime and platform and no formula may account for such complexity. These difficulties are rather conclusions of the related work section.}
-   Several difficulties were well-known in advance and had to be resolved in
-   order to simulate HPL:
+The performance achieved by stampede, \SI{5168}{\tera\flops}, should
+be compared to the peak performance of the 6,006 nodes, i.e.,
+\SI{8084}{\tera\flops}. This discrepancy may be imputed to the node
+usage (\eg, the MKL), to the MPI library, to the network topology that
+may not be able to deal with very intensive communication workload, to
+load imbalance among nodes if some node happen to be slower for some
+reason (defect, system noise, ...), to the algorithmic structure of
+HPL, etc. In any case, it is quite hard to know what to expect
+precisely without running the application on such a machine.
 
-   1. The time-complexity of the algorithm is $\O(N^3)$ and
-      $O(N^2)$ communications are performed, with $N$ being
-      very large. This causes executions of large problem sizes to
-      become rather slow. For instance, the real-life run on the Stampede cluster took almost
-      two hours with $N=3,875,000$.
-      
-   2. Each node of a large cluster only allocates memory for a part of
-      the whole matrix. With 4422\nbsp{}nodes, the Stampede run required
-      \SI{120}{\tera\byte} of memory. A simulation running and executing HPL on only one
-      single node will hence require this amount of data to be available on that particular
-      node. It is hence vital to reduce the amount of memory for a
-      simulation to become feasible.
-      \CH{Tom's slides say the Stampede run was 6,006 MPI processes. I thought it was 1 process per node - where are the other processes coming from?}
+It is quite clear that given the level of complexity of both HPL and
+of the underlying hardware, simple models (analytic expressions based
+on $N, P, Q$ and estimations of platform characteristics as done in
+Section\ref{sec:hpl}) may provide trends but by no way precisely
+indicate the performance achieved for a given configuration (e.g., the
+exact effect of the 6 variants of the broadcast algorithms in term of
+network contention). Likewise, such expressions do not really allow to
+identify how to improve the performance of the system at hand.
 
-      \CH{Should I already mention the pagetable size here - "not only the amount of memory itself but also the size of the pagetable becomes problematic"}
-      
-   3. Since HPL implements its own broadcast strategies, simulation is
-      no longer sufficient as these strategies are vital for HPL's
-      performance. Hence, emulation is required.
-
-Real execution:
-- Matrix of size 3,875,000
-- Using 6,006 MPI processes
-- About 2 hours
-Requirement for the emulation of Stampede's execution:
-- $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
-- $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
-
-* TODO Related Work
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:25]
-:END:
+The particularly complex optimizations (partially non blocking
+collective communication algorithms intertwined with computations)
+done in HPL requires a very faithful modeling of both the application
+and the platform. However, given the scale of such executions (3,785
+steps involving 6,006 nodes during two hours), precisely simulating
+such application can quickly become intractable.
+* Related Work
 #+LaTeX: \label{sec:relwork}
-\AL{This needs to be expanded}
-  
-Two approaches are commonly used in order to study a parallel
-application with the help of a simulator: Offline and online simulation.
 
-Offline simulation denotes a rather static approach: First, the
-application is executed on a real machine and a tracefile with all the
-important events (calls to MPI functions, computations) is
-generated, with the events being time-independent (i.e., only the
-order of their appearance is relevant). Offline simulation is static
-as the traces contain only information about a single run and give no
-hints about how, for instance, changes to the topology may impact the
-communication patterns. To study these effects with offline simulation
-is tedious as it requires the researcher to obtain new traces. 
+Performance prediction of MPI application through simulation has been
+widely studied in the last decades and one can distinguish mainly
+between two approaches: Offline and online simulation.
 
+The first and most common approach, offline simulation, consists in
+tracing the behavior of the application as a sequence of MPI
+operations and CPU bursts, and then to replay such trace on top of a
+simulator implementing performance model of the network and of the MPI
+layer. The parameters of the platform can then easily be varied to
+evaluate their impact or to hint at some application bottlenecks.
 Most simulators available today, among them BigSim\cite{bigsim_04},
-Dimemas\cite{dimemas} and CODES\cite{CODES}, allow users to replay a
-trace, \ie they support offline simulation. 
-Alas, this approach is unusable in the case of HPL due to the size of the obtained traces and the complexity of
-the application, as HPL implements for instance several broadcast
+Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
+
+The main limitation of this approach are related to the trace
+acquisition. First acquiring a trace at such scale typically requires
+a full-scale execution, which is precisely what we want to
+avoid. Second, the traces contain only information about a single run
+and give no hint about the consequences (e.g., in term of
+communication patterns) of simple modifications of application
+parameters. For simple applications (e.g., stencil), it may be
+possible to extrapolate behavior from small-scale
+traces\cite{scalaextrap,pmac_lspp13} but whenever the application relies on
+non-blocking communication patterns, the execution becomes non
+deterministic. This approach is therefore unusable in the case of HPL
+due to the size of the obtained traces and the complexity of the
+application, as HPL implements for instance several broadcast
 strategies that influence the performance significantly.
 
-It is for these reasons necessary to not simulate, but emulate HPL.
+Online simulation is a form of emulation where the application is
+executed in a very controlled way on top of the simulator. The
+simulator is responsible for determining, using platform performance
+models, when each process should be run. Running the whole application
+allows to faithfully capture its behavior at the level of MPI. A few
+recent simulators rely on the online approach, among which the
+extreme-scale simulator xSim\cite{xsim}, SST Macro\cite{sstmacro} and
+SimGrid/SMPI\cite{simgrid}.
 
-A broad selection of tools enabling researchers to study MPI
-applications on complex platforms exists. The extreme-scale simulator
-xSim\cite{xsim}, although it is not publicly available, 
-SST\cite{sstmacro} just as SimGrid/SMPI\cite{simgrid} all support online
-emulation.
-    
+Since HPL implements its own broadcast strategies, trace-based
+simulation is no longer sufficient as these strategies are vital for
+HPL's performance. Hence, emulation is required but it raises at least
+two challenges:
+- First, the time-complexity of the algorithm is $\O(N^3)$ and
+  $O(N^2)$ communications are performed, with $N$ being very
+  large. The execution on the Stampede cluster took almost two hours
+  with 6,006 computing nodes. Although the emulation could be done in
+  parallel, we obviously want to limit the computing resources used
+  when performing and emulation. Using only a single node, a naive
+  emulation of HPL at the scale of the stampede run would take about
+  500 days at best.
+- Second, the memory consumption of such application is tremendous and
+  the emulation needs to be able to deal with an application
+  manipulating hundreds of tera bytes of RAM.
+The source code of xSim is not available, which prevents its use in
+our context. Hence, to the best of our knowledge, only SST Macro and
+SimGrid/SMPI are suited and mature enough to the faithful emulation of
+HPL. In the following, we decide to rely on SimGrid as we are already
+have a very good knowledge of its internals but the developments we
+propose would a priori also be possible within the SST Macro
+framework.
+
+# Real execution:
+# - Matrix of size 3,875,000
+# - Using 6,006 MPI processes
+# - About 2 hours
+# Requirement for the emulation of Stampede's execution:
+# - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
+# - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
+  
 * TODO SimGrid/SMPI in a nutshell
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:25]
@@ -1599,6 +1629,24 @@ pages = {366-376},
   pdf =          "https://hal.inria.fr/hal-01523608/file/predicting-energy-consumption-at-scale.pdf",
   hal_id =       "hal-01523608",
   category =     "core",
+}
+
+% Trace extrapolation
+@InProceedings{scalaextrap,
+  author = 	 {Xing Wu and Frank Mueller},
+  title = 	 {{S}cala{E}xtrap: Trace-Based Communication Extrapolation
+                  for {SPMD} Programs},
+  booktitle = {Proc. of the 16th ACM Symp. on Principles and
+               Practice of Parallel Programming},
+  year = 	 {2011},
+  pages = {113--122},
+}
+
+@InProceedings{pmac_lspp13,
+  author = 	 {Laura Carrington and Michael Laurenzano and Ananta Tiwari},
+  title = 	 {Inferring Large-scale Computation Behavior via Trace Extrapolation},
+  booktitle = {Proc. of the Workshop on Large-Scale Parallel Processing},
+  year = 	 {2013},
 }
 
 #+end_src
