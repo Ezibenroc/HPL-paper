@@ -512,10 +512,8 @@ experiment.
       \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_simple.c}
     \end{minipage}}%
   \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
-    \begin{minipage}[b]{.5\linewidth}
-      \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_gflops.pdf}\\
-      \includegraphics[width=\linewidth,page=2]{figures/validation/L1/report_plot_time.pdf}
-      \TC{Figures need to be regenerated (adjust font-size, remove gray box) and merged (simulation time and gflops  side by side) as only the dependency on matrix size is interesting (remove number of process). The term "kernel sampling" should also be replaced by "kernel modeling".}
+    \begin{minipage}[b]{.5\linewidth} 
+      \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
     \end{minipage}}
   \caption{Replacing the calls to computationnaly expensive functions by a model.}
 \end{figure*}
