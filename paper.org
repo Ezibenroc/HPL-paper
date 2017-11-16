@@ -851,7 +851,6 @@ simulation time from about \SI{580}{\sec} to about \SI{175}{\sec}.
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}                                                                                                                               
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
   \caption{Time complexity and memory consumption are linear in the number of processes with a fixed matrix size but remain slightly quadratic when matrix size is varied. }
-  \TC{It would be nice to regenerate these figures with larger fonts and possibly a different aspect ratio (height may be increased a bit).}
   \label{fig:hpl_scalability}
   \labspace
 \end{figure}
