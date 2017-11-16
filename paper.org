@@ -384,14 +384,36 @@ size of the matrix to factorize. The time complexity is expected to
 be: $$T(N) = \frac{2}{3}\frac{N^3 + 3N^2}{PQ}w + \Omega((P+Q).N^2),$$ where
 the second term corresponds to the communication overhead and which is
 influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
-...). When preparing a large-scale execution of HPL for a
-top500 qualification, it is thus essential to carefully tune not only
-all the BLAS kernels but also all these parameters of HPL.
-** TODO A typical run on a supercomputer
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:26]
-:END:
-\AL{Describe stampede (already done in Chapter VII (=modeling Stampede= and =Network Topology=)) and the stampede fullrun.}
+...).  The measure of interest reported by HPL is the overall flop
+rate $\mathrm{flop}(N)/T(N)$ and is expressed in \si{\giga\flops}.
+
+Preparing a large-scale execution of HPL for a top500 qualification
+can therefore be quite time consuming as it requires to carefully tune
+all the BLAS kernels, the MPI runtime, and all the previous parameters
+of HPL.
+** A typical run on a supercomputer
+In June 2013, the stampede supercomputer at TACC was ranked 6th in top
+top500 by achieving \SI{5168.1}{\giga\flops} and was ranked 20 th in
+June 2016 and just got upgraded into stampede2. Stampede was made of
+6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
+Intel Xeon Phi KNC MIC coprocessor. The nodes are interconnected
+through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
+fat-tree topology built on Mellanox switches. The 6400 Nodes are
+grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
+capacity), which are themselves connected through 8 648-port core
+switches ( \SI{73{\tera\bit\per\second}). The peak performance of the
+Xeon Sandy Bridge E5 processors is about \SI{346}{\giga\flops}/node,
+while the peak performance of the KNC coprocessors if about
+\SI{1}{\tera\flops} each, hence a total peak performance of
+\SI{8520}{\tera\flops}.
+
+The Stampede supercomputer reached a performance of 5,168 Tflops when
+it got ranked in the top500. According to the log (see
+Figure\ref{fig:hpl_output}) that was submitted and which our
+colleagues from TACC provided us, this execution was done using $77\times78
+= 6,006$ processes and a matrix of size $N = 3,875,000$, which
+represents a matrix of approximately \SI{120}{\tera\byte} of
+memory. This execution took approximately two hours.
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -399,7 +421,8 @@ all the BLAS kernels but also all these parameters of HPL.
   \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
   \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
   \end{minipage}}
-  \caption{HPL output submitted in November 2013 for the ranking of stampede in the top500.}
+  \caption{HPL output submitted in June 2013 for the ranking of stampede in the top500.}
+  \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
 
