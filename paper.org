@@ -402,7 +402,7 @@ through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
 fat-tree topology built on Mellanox switches. The 6400 Nodes are
 grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
 capacity), which are themselves connected through 8 648-port core
-switches ( \SI{73{\tera\bit\per\second}). The peak performance of the
+switches (\SI{73}{\tera\bit\per\second}). The peak performance of the
 Xeon Sandy Bridge E5 processors is about \SI{346}{\giga\flops}/node,
 while the peak performance of the KNC coprocessors if about
 \SI{1}{\tera\flops} each, hence a total peak performance of
