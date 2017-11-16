@@ -612,40 +612,154 @@ framework.
 - State "TODO"       from              [2017-11-15 mer. 16:25]
 :END:
 \label{sec:smpi}
-\AL{We need such a section to separate our contribution from what was already there}
 
-\AL{Emulation. And fast emulation if sampling. Requires shared malloc to scale.}
-- explain the =SMPI_SHARED_MALLOC= mechanism with figure 4.7 from Tom's report
+SimGrid\cite{simgrid} is a 17 years-old flexible and open-source
+simulation framework that was originally designed to study scheduling
+heuristics tailored for heterogeneous computing grid
+environments. Since then it has also been used to study cloud and
+peer-to-peer systems. SMPI\cite{smpi} is a recently developed flavor
+of SimGrid which allows to faithfully simulation unmodified C/C++ or
+Fortan MPI applications.  
 
+Many simulators of distributed computing systems focus foremost on
+scalability. Although SimGrid has been successfully to simulate e.g.,
+peer-to-peer systems comprising two millions of nodes using only a
+single standard machine, the main focus of the SimGrid development
+team has always been to provide validated performance models, and in
+particular of network operations. This is done by comparing simulation
+predictions with real experiments as to validate the approach and to
+improve the quality of network and application
+models. In\cite{heinrich:hal-01523608}, we have for example shown how
+SMPI can be used to accurately and consistently predict (within a few
+percents) both the performance and the energy consumption of some of
+the NAS Parallel benchmarks and of HPL for small-scale clusters (up to
+144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
+in\cite{smpi}). In this article, we try to push our comparison to a
+much larger scale although in a less controlled scenario since the
+stampede run of HPL was done several years ago and we only have
+limited information about it.
 
-    Saving the memory of the matrix allocation is as simple as replacing the call to =malloc= (resp. =free=) by
-    =SMPI_SHARED_MALLOC= (resp. =SMPI_SHARED_FREE=).
+** MPI Communication Modeling
+The first challenge arising when modeling communication of MPI
+applications is related to the complex network optimizations done in
+real MPI implementations. Different transmission protocols (short,
+eager, rendez-vous) may be used depending on the message size, which
+incurs different synchronization semantics. These optimizations also
+lead to very different effective latency and bandwidth values
+depending on message size. To capture all such effects, SMPI relies on
+a generalization of the LogGPS model\cite{smpi_tpds} where several
+synchronization and performance modes can be specified. Such model can
+be instantiated through a carefully controlled series of messages
+(=MPI_Send= and =MPI_Recv=) between two nodes and through a set of
+piece-wise linear regressions.
 
-    Two different mechanisms exist in Simgrid, called /local/ and /global/. The local algorithm allocates one block per call
-    location, shared by all MPI processes. The real memory footprint of this block is exactly the size of the allocation,
-    hence the memory consumption of all the MPI processes is divided by the number of processes. This mechanism is based
-    on POSIX shared memory objects, using =shm_*= functions.
+The second key challenge is raised by the modeling of network topology
+and contention. SMPI relies on the flow-level models of SimGrid: each
+communication is represented by a /flow/, as single entity rather than
+as sets of individual packets. Assuming steady-state, the contention
+between active communications is modeled as a bandwidth sharing
+problem that accounts for non-trivial phenomena (\eg RTT-unfairness of
+TCP, cross-traffic interference or simply network
+heterogeneity\cite{velho:13}). Every time a communication starts or
+ends, the bandwidth sharing has to be recomputed, which can be too
+slow and complex to scale to large platforms. Although transient
+phenomenon and network protocol instability are not modeled, it allows
+to efficiently account for network topology and heterogeneity. The
+main advantage of this approach is that the simulation time of a
+communication is independent on message size, which is an asset for
+simulating large scale tightly coupled applications such as HPL.
 
-    The global algorithm is much more efficient in terms of memory consumption. First, it allocates a single block for
-    the whole execution, shared by all MPI processes. Moreover, the real memory footprint of this block is constant,
-    regardless of the size of the allocation, hence providing a very small memory consumption. This mechanism is
-    detailed below as we had to extend it for the panels.
+The third challenge in term of performance modeling is incurred by MPI
+collective operations which are generally of utmost importance to
+application performance. Performance optimization of MPI collective
+operations has received significant attention. MPI implementations
+thus have commonly several alternatives for each collective operation
+and select one at runtime depending on message size and communicator
+geometry.  SimGrid's SMPI layer implements all the specific collective
+communication algorithms from several real MPI implementations (\eg
+Open MPI, MPICH, ...) and their selection logic to ensure that any
+simulated run of an application is as faithful as possible to real
+executions. Since HPL ships with its own implementation of collective
+operation, this is however not likely to be the source of discrepancy
+between simulation and real executions.
 
-    The main idea is to reserve a range of virtual addresses of the desired size and map it cyclically on a small range of
-    physical addresses, as illustrated by Figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the size of this
-    range of physical addresses (\SI{1}{\mega\byte} by default).
+** Application Behavior Modeling
+Regarding, the capture of the behavior of the application, as we
+briefly discussed in the previous section, SMPI relies on the /online/
+simulation approach where the application code is executed and part of
+the instruction stream is intercepted and passed on to a simulator. In
+SMPI, every MPI process of the application is mapped onto a
+lightweight simulation thread and every simulation thread is run in
+mutual exclusion from the others. Every time such a thread enters an
+MPI call, it yields to the simulation kernel and the time it spent
+computing (in isolation from every other thread) since the previous
+MPI call can thus be injected into the simulator as a virtual
+delay. 
 
-    At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
-    accessible by all the MPI processes, since they are implemented by POSIX threads.
+Since all simulated MPI ranks are folded into the same address space,
+as threads in a single process, global variables in the MPI
+application will clash unless they are /privatized/ to ensure that the
+simulated MPI ranks are still isolated from each others. Several
+technical approaches are possible to handle such issue\cite{smpi} but
+the one proposed by default in SMPI consists in remapping the data
+segment containing global variables of the code to a rank specific
+copy each time we context switch from a process to another. This
+remapping is done using the ~mmap~ system call, which leverages the
+virtual memory mechanism of the operating system.
 
-    At every call to =SMPI_SHARED_MALLOC=, a first call to =mmap= is done with the required size and the flag =MAP_ANONYMOUS=
-    (thus without any file descriptor). The effect of this call is to reserve the whole interval of virtual
-    addresses. Then, for each sub-interval, a new call to =mmap= is done with the temporary file. The address of the
-    sub-interval itself is passed with the flag =MAP_FIXED=, which forces the mapping to keep the same virtual address.
-    As a result, each of these sub-intervals of virtual addresses are mapped onto a same interval of physical
-    addresses. We therefore have a block of virtual addresses of arbitrary size backed by a constant amount of physical
-    memory. Since there are almost no computations left, this is harmless with respect to the simulation. Note that such
-    allocations cannot be fully removed as many parts of the code still access it from time to time.
+The main drawback of this approach is that it is usually quite
+expensive in terms of both simulation time and memory requirements
+since the whole parallel application is actually executed on a single
+host machine. SMPI provides two simple annotation mechanisms allowing
+to exploit the regularity of HPC applications and to drastically
+reduce both memory footprint and simulation duration.
+- Kernel sampling :: for many applications, the execution structure is
+     independent on the computation results. Most
+     computation-intensive kernels (e.g., BLAS kernels in the case of
+     HPL) could then actually be skipped for the purpose of the
+     simulation. To this end, SMPI provides several macros (\eg
+     =SMPI_SAMPLE_LOCAL= and =SMPI_SAMPLE_GLOBAL=) to annotate regular
+     computation kernels. In simulation, such regions of code are
+     executed a few times to obtain estimations of their cost and are
+     skipped when enough samples have been obtained.
+- Memory  folding ::  since computation results are irrelevant, SMPI
+     provides the =SMPI_SHARED_MALLOC= (resp. =SMPI_SHARED_FREE)= macro to
+     replace the call to =malloc= (resp. =free=), which allows to
+     indicate that in simulation some data structures can safely be
+     shared between processes (\eg an input matrix).
+
+     Two different mechanisms exist in Simgrid, called /local/ and
+     /global/. The local algorithm allocates one block per call
+     location, shared by all MPI processes. The real memory footprint
+     of this block is exactly the size of the allocation, hence the
+     memory consumption of all the MPI processes is divided by the
+     number of processes. This mechanism is based on POSIX shared
+     memory objects, using =shm_*= functions.
+
+     The global algorithm is much more efficient in terms of memory
+     consumption. First, it allocates a single block for the whole
+     execution, shared by all MPI processes. Whenever calling
+     =SMPI_SHARED_MALLOC=, a range of virtual addresses of the desired
+     size is reserved and cyclically mapped on a small range of
+     physical addresses, as illustrated by
+     figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the
+     size of this range of physical addresses (1MB by default).
+     This mechanism allows to obtain a nearly constant memory
+     footprint, regardless of the size of the allocations.
+
+    # At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
+    # accessible by all the MPI processes, since they are implemented by POSIX threads.
+
+    # At every call to =SMPI_SHARED_MALLOC=, a first call to =mmap= is done with the required size and the flag =MAP_ANONYMOUS=
+    # (thus without any file descriptor). The effect of this call is to reserve the whole interval of virtual
+    # addresses. Then, for each sub-interval, a new call to =mmap= is done with the temporary file. The address of the
+    # sub-interval itself is passed with the flag =MAP_FIXED=, which forces the mapping to keep the same virtual address.
+    # As a result, each of these sub-intervals of virtual addresses are mapped onto a same interval of physical
+    # addresses. We therefore have a block of virtual addresses of arbitrary size backed by a constant amount of physical
+    # memory. Since there are almost no computations left, this is harmless with respect to the simulation. Note that such
+    # allocations cannot be fully removed as many parts of the code
+    # still access it from time to time.
+
     #+BEGIN_EXPORT latex
     \tikzset{draw half paths/.style 2 args={%
       % From https://tex.stackexchange.com/a/292108/71579
