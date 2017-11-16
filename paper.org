@@ -1162,7 +1162,7 @@ such as fully asynchronous, detached or eager. For each message, the
 mode used is determined solely on the message size. It is hence
 possible to model the resulting performance through a piece-wise,
 linear model, as depicted in Figure\ref{fig:stampede_calibration}.
-For a thorough discussion of the calibration techniques, see\cite{degomme:hal-01415484}.
+For a thorough discussion of the calibration techniques, see\cite{smpi}.
 
 SMPI uses this model by default, however, it is not leveraged in the
 particular case of HPL as its communication patterns use primarily large, bulk messages,
@@ -1596,7 +1596,7 @@ pages = {366-376},
   MONTH = Oct
 }
 
-@article{degomme:hal-01415484,
+@article{smpi,
   TITLE = {Simulating MPI applications: the SMPI approach},
   AUTHOR = {Degomme, Augustin and Legrand, Arnaud and Markomanolis, Georges and Quinson, Martin and Stillwell, Mark S and Suter, Frédéric},
   JOURNAL = {{IEEE Transactions on Parallel and Distributed Systems}},
