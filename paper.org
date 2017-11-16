@@ -98,8 +98,10 @@
 
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
-#+LaTeX: \newcommand\myemph[1]{\color{colorfuncall}\textbf{#1}}%
+#+LATEX_HEADER: \usepackage[ruled,vlined,english]{algorithm2e}
+#+LATEX_HEADER: \DontPrintSemicolon
 
+#+LaTeX: \newcommand\myemph[1]{\color{colorfuncall}\textbf{#1}}%
 
 #+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
 #+LaTeX: \renewcommand\O{\ensuremath{\mathcal{O}}\xspace}%
@@ -274,76 +276,117 @@ paper by summarizing our work and results.
 # arbitrary dimension =n= and that O(n³) + O(n²) operations be used
 # (hence, Strassen's matrix multiplication is prohibited).
 
-** TODO HPL
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:26]
-:END:
-For this work, we use the reference-implementation of the HPLinpack
-benchmark, HPL, that is freely available \CH{cite} and widely used to benchmark systems.
-HPL solves a linear system of equations, more precisely the problem
-$Ax = b$ with $A$ being a square, real matrix with dimensions of size
-$n$ and consisting of double precision floats. 
-
-To solve this system, HPL uses a lower-upper (LU) matrix decomposition
-with row partial pivoting, i.e., HPL computes a factorization of
-matrix $A$ into two triangle matrices $L$ ("lower") and $U$ ("upper")
-such that $A=L\times U$ holds true. The sequential complexity of such
-operation is given by $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 +
-O(N)$.
-
+** High-Performance Linpack
 #+BEGIN_EXPORT latex
-\begin{minipage}{0.4\textwidth}
-\vspace{0.3cm} % ugly, could not align the drawing with the algorithm with minipages or tabular...
-\begin{tikzpicture}[scale=0.32]
-    \draw (0, 0) -- (0, 12) -- (12, 12) -- (12, 0) -- cycle;
-    \draw[dashed] (0, 12) -- (12, 0);
-    \foreach \i in {3}{
-            \draw (\i,12-\i) -- (12,12-\i);
-            \draw (\i,12-\i) -- (\i,0);
-            \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
-    }
-    \node(L) at (2, 2) {\ensuremath{\mathbf{L}}};
-    \node(U) at (10, 10) {\ensuremath{\mathbf{U}}};
-    \node(A) at (8, 4) {\ensuremath{\mathbf{A}}};
-    \draw[<->] (0, -0.5) -- (12, -0.5) node [pos=0.5, yshift=-0.3cm] {$N$};
-\end{tikzpicture}
-\end{minipage}%
-% \begin{minipage}{0.6\textwidth}
-%     \writealgorithm{0}
-% \end{minipage}
+\begin{figure}
+  \newcommand{\mykwfn}[1]{{\bf\textsf{#1}}}%
+  \SetAlFnt{\sf}%
+  \SetKwSty{mykwfn}%
+  \SetKw{KwStep}{step}%
+  \centering
+  \begin{minipage}[m]{0.4\linewidth}
+    % \vspace{0.3cm} % ugly, could not align the drawing with the algorithm with minipages or tabular...
+    \begin{tikzpicture}[scale=0.23]
+      \draw (0, 0) -- (0, 12) -- (12, 12) -- (12, 0) -- cycle;
+      \foreach \i in {2}{
+        \draw [fill=lightgray] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
+        \draw [fill=gray] (\i, 12-\i) -- (\i, 12-\i-1) -- (\i+1, 12-\i-1) -- (\i+1, 12-\i) -- cycle;
+        \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
+        \draw[<->] (\i, 12-\i+0.5) -- (\i+1, 12-\i+0.5) node [pos=0.5, yshift=+0.15cm] {\scalebox{.6}{$NB$}};
+      }
+      \foreach \i in {3}{
+        \draw [fill=white] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
+        \draw (\i,12-\i) -- (\i,0);
+        \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
+      }
+      \draw[dashed] (0, 12) -- (12, 0);
+      \node(L) at (2, 2) {\ensuremath{\boldsymbol{L}}};
+      \node(U) at (10, 10) {\ensuremath{\boldsymbol{U}}};
+      \node(A) at (8, 4) {\ensuremath{\boldsymbol{A}}};
+      \draw[<->] (0, -0.5) -- (12, -0.5) node [pos=0.5, yshift=-0.3cm] {$N$};
+
+    \end{tikzpicture}
+  \end{minipage}%
+  \begin{minipage}[m]{0.6\linewidth}
+    \begin{algorithm}[H]
+      allocate and initialize $A$\;
+      \For{$k=N$ \KwTo $0$ \KwStep $NB$}{
+        allocate the panel\;
+        factor the panel\;
+        broadcast the panel\;
+        update the matrix;
+      }
+    \end{algorithm}
+    \vspace{1em}
+  \end{minipage}
+  
+  \caption{Overview of HPL}
+  \label{fig:hpl_overview}
+\end{figure}
 #+END_EXPORT
 
+For this work, we use the freely-available reference-implementation of
+the High-Performance Linpack benchmark\cite{HPL}, HPL, which is widely
+used to benchmark systems from the top500\cite{top500}. HPL implements
+a LU decomposition, \ie a factorization of a square matrix $A$ as the
+product of a lower triangular matrix $L$ and an upper triangular
+matrix $U$. HPL checks the correctness of this factorization by
+solving a linear system $A.x=b$ but only the factorization step is
+benchmarked.  The factorization is based on a right-looking variant of
+the LU factorization with row partial pivoting and allows multiple
+look-ahead depths. HPL relies on MPI, on a two-dimensional
+block-cyclic data distribution of $A$, and implements several custom
+collective communication algorithms to efficiently combine computation
+and information diffusion (e.g., when pivoting).
 
+The principle of the factorization is depicted on
+Figure\ref{fig:hpl_overview} and consists in a series of panel
+factorization followed by an update. The main parameters of HPL are
+the following:
+- $N$ is the order of the matrix $A$.
+- =NB= is the partitioning blocking factor, i.e., the granularity at
+  which HPL operates when working on panels.
+- $P$ and $Q are respectively the number of process rows and the
+  number of process columns;
+- =RFACT= is the panel factorization algorithm for which three variants
+  are available: Crout, left- or right-looking.
+- =SWAP= is the variant of the swapping algorithm to be used when
+  pivoting. There are two variants available: one based on /binary
+  exchange/ (along a tree virtual topology) and the other one based on
+  a /spread-roll/ (with a higher number of parallel communications). HPL
+  also allows to specify a threshold on the panel size to switch from
+  one variant to the other.
+- =BCAST= is the variant of the algorithm to be used to broadcast the
+  panel of columns to the other process columns. Older versions of MPI
+  only supported non-blocking point-to-point communications but did
+  not support non-blocking collective communications, which is why HPL
+  ships with in total 6 self-implemented variants to efficiently
+  overlap the time spent waiting for an incoming panel with updates to
+  the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
+  =long=, and =long-modified=. The =modified= versions consists in ensuring
+  the process right after the root (, and which will become the root
+  in the next iteration) receives data first and does not participate
+  further in the broadcast, which allows him to start working on the
+  panel as soon as possible. The =ring= and =2-ring= versions correspond
+  to the two corresponding virtual topologies while the =long= version
+  is a /spread and roll/ algorithm where messages are chopped into $Q$
+  pieces and that generally better exploit bandwidth. The =ring= and
+  =2-ring= variants rely on =MPI_Iprobe=, which allows the function to
+  return if there is no ready message, hence to partially overlap
+  communication with computations. In HPL 2.2 and 2.1, this capability
+  is deactivated for =long= as it seems to get some machines stuck when
+  there are too many ongoing messages.
+- =DEPTH= controls how much iterations can overlap with each others.
 
-The nodes used to run HPL are organized in a virtual $P \times Q$ grid and
-the data of the $n \times n+1$ extended coefficient matrix is distributed
-onto this grid by cutting the matrix first into $n/N_{B}$ square blocks of size $N_{B}$
-and then cyclically assigning a block to a process in the process grid.
-
-\CH{See my journal entry on 2017-10-04. Describe the broadcast here; introduce the 6 algorithms; explain that panels are being broadcast to other nodes}
-
-Older versions of MPI only supported non-blocking point-to-point
-communications but did not support non-blocking collective
-communications. However, HPL ships with in total 6 self-implemented,
-point-to-point based broadcast algorithms to efficiently overlap the
-time spent waiting for an incoming panel with updates to e.g. the trailing matrix. 
-
-Every host that is waiting for a panel to arrive enters a loop and
-tests in each iteration whether or not the panel has been received by
-calling =MPI_Iprobe=. If the panel has not been received yet, updates to
-parts of the trailing matrix are made and row-interchanges are applied.
-#+LaTeX: \CH{Check exactly what is being done here, and using which panel; see  \texttt{HPL\_pdupdateNT.c} and the comment of the function ("Purpose"). There are several panels involved.}
-As soon as =MPI_Iprobe= returns that the panel has been fully received,
-no more updates are performed and the received panel is forwarded to
-the next host and only after this has been done are the remaining updates finished.
-
-Unfortunately, in version 2.2 of HPL, this overlapping is only enabled
-in four out of six algorithms as the =bandwidth= and the =bandwidth
-modified= algorithms seem to have had issues on some machines with getting stuck due to
-too many messages.
-#+LaTeX: \CH{See \texttt{HPL\_blonM.c}, ll. 264 ff.}
-
-\AL{See www/algorithm.html and describe the main params: 0) geometry, size and granularity, 1) Panel Broadcast, 2) Look-Ahead, 3) Update.}
+The sequential complexity of such operation is given by
+$\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + O(N)$ where $N$ is the
+size of the matrix to factorize. The time complexity is expected to
+be: $$T(N) = \frac{2}{3}\frac{N^3 + 3N^2}{PQ}w + \Omega((P+Q).N^2),$$ where
+the second term corresponds to the communication overhead and which is
+influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
+...). When preparing a large-scale execution of HPL for a
+top500 qualification, it is thus essential to carefully tune not only
+all the BLAS kernels but also all these parameters of HPL.
 ** TODO A typical run on a supercomputer
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
