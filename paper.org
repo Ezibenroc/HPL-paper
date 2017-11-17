@@ -647,7 +647,7 @@ eager, rendez-vous) may be used depending on the message size, which
 incurs different synchronization semantics. These optimizations also
 lead to very different effective latency and bandwidth values
 depending on message size. To capture all such effects, SMPI relies on
-a generalization of the LogGPS model\cite{smpi_tpds} where several
+a generalization of the LogGPS model\cite{smpi} where several
 synchronization and performance modes can be specified. Such model can
 be instantiated through a carefully controlled series of messages
 (=MPI_Send= and =MPI_Recv=) between two nodes and through a set of
@@ -660,7 +660,7 @@ as sets of individual packets. Assuming steady-state, the contention
 between active communications is modeled as a bandwidth sharing
 problem that accounts for non-trivial phenomena (\eg RTT-unfairness of
 TCP, cross-traffic interference or simply network
-heterogeneity\cite{velho:13}). Every time a communication starts or
+heterogeneity\cite{Velho_TOMACS13}). Every time a communication starts or
 ends, the bandwidth sharing has to be recomputed, which can be too
 slow and complex to scale to large platforms. Although transient
 phenomenon and network protocol instability are not modeled, it allows
@@ -1684,7 +1684,7 @@ pages = {366-376},
   category = {core}
 } 
 
-@InProceedings{SMPI,
+@InProceedings{SMPI_IPDPS,
   author	= {Clauss, Pierre-Nicolas and Stillwell, Mark and Genaud,
 		  St\'ephane and Suter, Fr\'ed\'eric and Casanova, Henri and
 		  Quinson, Martin},
@@ -1761,6 +1761,24 @@ pages = {366-376},
   booktitle = {Proc. of the Workshop on Large-Scale Parallel Processing},
   year = 	 {2013},
 }
+
+@Misc{hpl,
+  author = 	 {Antoine Petitet and Clint Whaley and Jack Dongarra and Andy Cleary and Piotr Luszczek},
+  title = 	 {HPL - A Portable Implementation of the High-Performance Linpack Benchmark for Distributed-Memory Computers},
+  howpublished = {\url{http://www.netlib.org/benchmark/hpl}},
+  month = 	 {February},
+  year = 	 {2016},
+  note = 	 {Version 2.2}
+}
+
+@book{top500,
+ author = {Meuer, Hans Werner and Strohmaier, Erich and Dongarra, Jack and Simon, Horst D.},
+ title = {The TOP500: History, Trends, and Future Directions in High Performance Computing},
+ year = {2014},
+ isbn = {143981595X, 9781439815953},
+ edition = {1st},
+ publisher = {Chapman \& Hall/CRC},
+} 
 
 #+end_src
 
