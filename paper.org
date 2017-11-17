@@ -429,7 +429,10 @@ the MKL.
   \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
-
+*** TODO Add a fat-tree figure
+:LOGBOOK:
+- State "TODO"       from              [2017-11-17 ven. 14:36]
+:END:
 *** Hidden information about the Stampede execution              :noexport:
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
