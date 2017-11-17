@@ -356,8 +356,8 @@ the following:
 - $N$ is the order of the matrix $A$.
 - =NB= is the partitioning blocking factor, i.e., the granularity at
   which HPL operates when working on panels.
-- $P$ and $Q$ are respectively the number of process rows and the
-  number of process columns;
+- $P$ and $Q$ are the number of process rows and the
+  number of process columns, respectively;
 - =RFACT= is the panel factorization algorithm for which three variants
   are available: Crout, left- or right-looking.
 - =SWAP= is the variant of the swapping algorithm to be used when
