@@ -887,21 +887,24 @@ experiment.
        the model.
 *** Hidden section with macro code                               :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
-#define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({                        \
-    double expected_time;                                                                                  \
-    double coefficient, intercept;                                                                         \
-    if((M) > 512 && (N) > 512) {                                                                           \
-        coefficient = (double)SMPI_DTRSM_PHI_COEFFICIENT; intercept = (double)SMPI_DTRSM_PHI_INTERCEPT;    \
-    } else {                                                                                               \
-        coefficient = (double)SMPI_DTRSM_COEFFICIENT;     intercept = (double)SMPI_DTRSM_INTERCEPT;        \
-    }                                                                                                      \
-    if((Side) == HplLeft) {                                                                                \
-        expected_time = coefficient*((double)(M))*((double)(M))*((double)(N)) + intercept;                 \
-    } else {                                                                                               \
-        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N)) + intercept;                 \
-    }                                                                                                      \
-    if(expected_time > 0)                                                                                  \
-        |\color{colorfuncall}smpi\_execute\_benched|(expected_time);                                                               \
+#define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({ \
+    double expected_time;                                                           \
+    double coefficient, intercept;                                                  \
+    if((M) > 512 && (N) > 512) {                                                    \
+        coefficient = (double)SMPI_DTRSM_PHI_COEFFICIENT;                           \
+        intercept = (double)SMPI_DTRSM_PHI_INTERCEPT;                               \
+    } else {                                                                        \
+        coefficient = (double)SMPI_DTRSM_COEFFICIENT;                               \
+        intercept = (double)SMPI_DTRSM_INTERCEPT;                                   \
+    }                                                                               \
+    if((Side) == HplLeft) {                                                         \
+        expected_time = coefficient*((double)(M))*((double)(M))*((double)(N));      \
+    } else {                                                                        \
+        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N));;     \
+    }                                                                               \
+    expected_time += intercept                                                      \
+    if(expected_time > 0)                                                           \
+        |\color{colorfuncall}smpi\_execute\_benched|(expected_time);                                        \
 })
 #+END_SRC
 
@@ -1253,29 +1256,182 @@ reach.
 ** Modeling Stampede
 *** Computations
 
-The Stampede cluster contains *XYZ* compute nodes, each with two 8-core Intel Xeon
-E5-2680 8C \SI{2.7}{\GHz} CPU and one, for very few nodes even two 61-core Intel Xeon Phi SE10P (KNC) with
-\SI{1.1}{\GHz} accelerator. The accelerators are essential to the performance
-of the cluster, delivering \SI{7}{\peta\flops} of sustainable performance
-whereas the CPUs are only capable of delivering  \SI{2}{\peta\flops}. On
-matrices of the size used for this work, however, CPUs are barely used.
+Each node of the Stampede cluster comprises two 8-core Intel Xeon
+E5-2680 8C \SI{2.7}{\GHz} CPU and one 61-core Intel Xeon Phi SE10P
+(KNC) \SI{1.1}{\GHz} accelerator, which is roughly three times more
+powerful than the two CPUs. The Xeon Phis can be used in two ways:
+either, as a classical accelerator, i.e., to offload expensive
+computations from the CPU onto the accelerator or by compiling
+binaries for the Xeon Phi and running MPI directly between Xeon
+Phi. While the accelerator's memory of \SI{8}{\gibi\byte} is rather
+small, the main advantage of the second approach is that data does not
+need to be transferred back and forth between the node's CPU and the
+accelerator via the x16 PCIe bus.
+
+The HPL output submitted to the top500 (Figure\ref{fig:hpl_output})
+does not allow to know precisely how the KNC were configured but we
+know for sure that a single MPI process per node was run and that the
+KNC must rather have been used as an accelerator. The easier for such
+a setup is to rely on the Intel's Math Kernel Library that comes with
+support for automatic offloading for several BLAS functions. Although
+we cannot know for sure which version was used in 2013, we decided to
+use the default in use on Stampede in the beginning of 2017, i.e.,
+version 11.1.1. The description of the MKL documentation indicates
+that depending on the matrix geometry, the computation will be done
+either on all the cores of the CPU or on the KNC.  In the case of
+DGEMM the computation of $A=\alpha.A+\beta.B\times C$ with $A, B, C$ of respective
+dimension $M\times K$, $K\times N$, $M\times N$, is transferred to the KNC whenever
+$M$ and $N$ are both larger than $1280$ and $K$ is larger than
+$256$. For the =DTRSM= operation, offloading is performed only if both
+$M$ and $N$ are larger than $512$. Although the number of flops is
+still of the order of $MNK$ (resp. $MN^2$ for =DTRSM=), the modeling of
+the time it takes to run =DGEMM= (resp. =DTRSM=) is thus very different
+for small and large matrices. As an illustration,
+Figure\ref{fig:hpl_mkl} depicts the time needed by the MKL for
+matrices whose dimension are randomly taken in $[1,8000]$: offloading
+to the KNC results in a better throughput (lower slope) at the cost of
+a higher latency (higher intercept).
+
+#+BEGIN_EXPORT latex
+\begin{figure*}%[!htb]
+  \centering
+  \begin{minipage}[b]{.27\textwidth}
+    \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
+    \vspace{-2em}
+    \caption{Automatic offloading on the KNC depending on matrix dimensions.}
+    \vspace{-1em}
+    \label{fig:hpl_mkl}
+  \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}
+    \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
+    \caption{Replacing the calls to computationally expensive functions by a model.}
+    \vspace{-1em}
+    \label{fig:macro_real}
+  \end{minipage}
+\end{figure*}
+#+END_EXPORT
+
+
+# SMPI_DGEMM_COEFFICIENT=1.029e-11 SMPI_DGEMM_INTERCEPT=2.737e-02 SMPI_DGEMM_PHI_COEFFICIENT=1.981e-12 SMPI_DGEMM_PHI_INTERCEPT=6.316e-01 \
+# SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
+
+
+The accelerators are essential to
+the performance of the cluster, delivering \SI{7}{\peta\flops} of
+sustainable performance whereas the CPUs are only capable of
+delivering \SI{2}{\peta\flops}. On matrices of the size used for this
+work, however, CPUs are barely used.
 
 # See CH's journal from [2017-10-03 Tue] to see how the version was determined
-The Xeon Phis can be used in two ways: First, as a classical
-accelerator, i.e., to offload expensive computations from the CPU onto
-the accelerator. We used Intel's Math Kernel Library (MKL) version
-11.1.1 that comes with support for automatic offloading for several BLAS
-functions. In the case of DGEMM, the matrix dimensions determine
-whether or not the computation is transferred to the KNC: If both
-dimensions of the matrix are larger than $1280$, the computation is
-offloaded.
-\CH{And K > 256? See also here: https://software.intel.com/en-us/articles/intel-mkl-automatic-offload-enabled-functions-for-intel-xeon-phi-coprocessors}
+**** R figures                                                  :noexport:
+#+begin_src R :results output :session *R* :exports both
+  library(gridExtra)
+  library(ggplot2)
+  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
+  dgemm$m = as.double(dgemm$m)
+  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
+  dtrsm$m = as.double(dtrsm$m)
 
-The second way the Xeon Phi's can be used is by compiling binaries for
-and executing them on the Xeon Phi. While the accelerator's memory of \SI{8}{\gibi\byte} is rather
-small, its main advantage is that data does not need to be
-transferred from the node's CPU to the accelerator via the x16 PCIe bus.
-\CH{Not done here}
+  dgemm_new = dgemm[dgemm$automatic_offload == 'True',]
+  dtrsm_new = dtrsm[dtrsm$automatic_offload == 'True',]
+  dgemm_new$offload = (dgemm_new$m > 1280 & dgemm_new$n > 1280 & dgemm_new$k > 256)
+  dtrsm_new$offload = (dtrsm_new$m > 512 & dtrsm_new$n > 512)
+
+  dgemm_new$flops = dgemm_new$m * dgemm_new$n * dgemm_new$k;
+  dtrsm_new$flops = dtrsm_new$m * dtrsm_new$n^2;
+
+  dgemm_new$type = "dgemm";
+  dtrsm_new$type = "dtrsm";
+
+  df = dtrsm_new
+  df$k = NA;
+  df$lead_C = NA;
+  df = rbind(df,dgemm_new)
+  head(df)
+  tail(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+       time    m    n lead_A lead_B automatic_offloading offload        flops
+1  0.029975 7251  261   7251   7251                 True   FALSE    493945371
+4  2.227428  578 4619   4619   4619                 True    TRUE  12331723058
+5  0.042097 4424  420   4424   4424                 True   FALSE    780393600
+8  0.018786 3115  305   3115   3115                 True   FALSE    289772875
+10 2.931274  650 5466   5466   5466                 True    TRUE  19420151400
+12 3.240624 5606 6490   6490   6490                 True    TRUE 236125280600
+    type  k lead_C
+1  dtrsm NA     NA
+4  dtrsm NA     NA
+5  dtrsm NA     NA
+8  dtrsm NA     NA
+10 dtrsm NA     NA
+12 dtrsm NA     NA
+         time    m    n lead_A lead_B automatic_offloading offload        flops
+89   0.083594  244 5757   5757   5757                 True   FALSE    847038924
+91   4.932572 5527 6493   6493   6493                 True    TRUE 189518248891
+931  2.943795 1425 6127   6127   6127                 True    TRUE  33954761775
+96   0.262358   62 6621   6621   6621                 True   FALSE   2151851484
+981  2.749753 4991 2256   4991   4991                 True    TRUE  17002140960
+1001 2.383139 1421 1348   1646   1646                 True    TRUE   3152926168
+      type    k lead_C
+89   dgemm  603   5757
+91   dgemm 5281   6493
+931  dgemm 3889   6127
+96   dgemm 5242   6621
+981  dgemm 1510   4991
+1001 dgemm 1646   1646
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file figures/stampede_knc_model.pdf :exports both :width 3.5 :height 4.3 :session *R* 
+  labels = rbind(
+      data.frame(x = 2E11, y=3.5, label="Offloading on the KNC", offload = T),
+      data.frame(x = 1.1E11, y=1, label="Computation on the CPU", offload = F));
+  
+  p1 = ggplot(dgemm_new, aes_string(x='m*n*k', y='time', color='offload')) +
+      geom_point() + geom_smooth(method="lm",fullrange=T) + theme(legend.position="top") + 
+      geom_text(data = labels, aes(x=x, y=y, color=offload, label=label)) + ylim(0,1.1*max(dgemm_new$time)) +
+      ggtitle('Duration of DGEMM') + theme_bw()
+  p1_legend = get_legend(p1);
+  p1 = p1 + theme(legend.position="none")
+  labels = rbind(
+      data.frame(x = 3E11, y=2.8, label="Offloading on the KNC", offload = T),
+      data.frame(x = 1.6E11, y=.6, label="Computation on the CPU", offload = F));
+  p2 = ggplot(dtrsm_new, aes_string(x='m*n*n', y='time', color='offload')) +
+      geom_point()+ geom_smooth(method="lm",fullrange=T) +  ylim(0,1.1*max(dtrsm_new$time)) +
+      geom_text(data = labels, aes(x=x, y=y, color=offload, label=label)) +
+      ggtitle('Duration of DTRSM') + theme_bw()
+  p2 = p2 + theme(legend.position="none")
+
+   lay <- rbind(c(1), c(2));
+   grid.arrange(p1,p2, layout_matrix = lay,widths=c(1), heights=c(2,2));
+#+end_src
+
+#+RESULTS:
+[[file:figures/stampede_knc_model.pdf]]
+
+#+begin_src sh :results output :exports both
+pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
+#+end_src
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+  ggplot(df, aes(x=flops, y=time, color=offload)) +
+      geom_point() + geom_smooth(method="lm") + 
+      facet_wrap(~type)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-1674kfe/figure1674sWN.png]]
 
 *** Communications
 
