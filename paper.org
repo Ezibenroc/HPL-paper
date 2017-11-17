@@ -533,8 +533,8 @@ emulation.
     detailed below as we had to extend it for the panels.
 
     The main idea is to reserve a range of virtual addresses of the desired size and map it cyclically on a small range of
-    physical addresses, as illustrated by figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the size of this
-    range of physical addresses (1MB by default).
+    physical addresses, as illustrated by Figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the size of this
+    range of physical addresses (\SI{1}{\mega\byte} by default).
 
     At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
     accessible by all the MPI processes, since they are implemented by POSIX threads.
