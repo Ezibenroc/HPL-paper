@@ -395,11 +395,12 @@ of HPL.
 ** A typical run on a supercomputer
 In June 2013, the stampede supercomputer at TACC was ranked 6th in top
 top500 by achieving \SI{5168.1}{\tera\flops} and was ranked 20 th in
-June 2016 and just got upgraded into stampede2. Stampede was made of
-6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
-Intel Xeon Phi KNC MIC coprocessor. The nodes are interconnected
+June 2016 and just got upgraded into stampede2. The Stampede platform
+consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
+Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
-fat-tree topology built on Mellanox switches. The 6400 Nodes are
+fat-tree topology built on Mellanox switches. As can be seen in Figure
+\ref{fig:fat_tree_topology}, the 6400 nodes are
 grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
 capacity), which are themselves connected through 8 648-port core
 switches (\SI{73}{\tera\bit\per\second}). The peak performance of the
@@ -433,6 +434,15 @@ the MKL.
 :LOGBOOK:
 - State "TODO"       from              [2017-11-17 ven. 14:36]
 :END:
+#+BEGIN_EXPORT latex
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
+  \caption{A fat-tree}
+  \label{fig:fat_tree_topology}
+  \labspace
+\end{figure}
+#+END_EXPORT
 *** Hidden information about the Stampede execution              :noexport:
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
@@ -1295,84 +1305,6 @@ via the /detached/ mode (depicted in green).
 
 *** Network topology
 
-#+BEGIN_EXPORT latex
-%% 
-%% This draws a fat tree. If you want to change its appearance, see the \size macro.
-%%
-\tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
-\tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
-\tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
-\tikzstyle{bigswitch}=[base, draw]
-\begin{figure}[t]
-  \centering
-	\begin{tikzpicture}[scale=0.4,transform shape]
-	    \pgfmathtruncatemacro{\size}{3}    % Number of ports in a switch, THE PARAMETER TO CHANGE
-	    \pgfmathtruncatemacro{\sizesquare}{\size*\size}
-	    \pgfmathtruncatemacro{\boundSwitch}{\size-1}
-	    \pgfmathtruncatemacro{\boundCompute}{\size*\size-1}
-	    % Compute nodes
-	    \foreach \i in {0,...,\boundSwitch}{
-		\pgfmathtruncatemacro{\incr}{\sizesquare*\i}
-		\foreach \x in {0,...,\boundCompute} {
-              -- CH: I added the +\boundSwitch here to move the nodes to the right
-		    \pgfmathtruncatemacro{\z}{\x+\incr+\boundSwitch}
-		    \pgfmathsetmacro{\pos}{\z/2}
-		    \node[compute] (c_\z) at (\pos, 0) {} ;
-		}
-	    }
-	    % Switches L1 and L2
-	    \foreach \i in {0,...,\boundSwitch}{
-		\pgfmathtruncatemacro{\incr}{\size*\i}
-		\foreach \x in {0,...,\boundSwitch} {
-		    \pgfmathtruncatemacro{\z}{\x+\incr}
-              -- CH: I added the +\boundSwitch/1 here (was: /4) to move the nodes to the right
-              -- (this moves them below the L3 layer)
-		    \pgfmathsetmacro{\pos}{\incr*\size/2+\x*\size/2+(\boundSwitch/1)}
-		    \node[switch] (l1_\z) at (\pos, 4) {} ;
-		    \node[switch] (l2_\z) at (\pos, 8) {} ;
-		}
-	    }
-	    % Edges of the islets
-	    \foreach \i in {0,...,\boundSwitch}{
-		\pgfmathtruncatemacro{\incr}{\size*\i}
-		\foreach \switch in {0,...,\boundSwitch} {
-		    \pgfmathtruncatemacro{\sw}{\switch+\incr}
-		    \foreach \y in {0,...,\boundSwitch} {
-                  -- CH: I added the +\boundSwitch here. This corrects the edges for the leafs. 
-			\pgfmathtruncatemacro{\comp}{\switch*\size+\y+\incr*\size+\boundSwitch}
-			\draw (l1_\sw.south) -- (c_\comp.north);
-		    }
-		    \foreach \root in {0,...,\boundSwitch} {
-			\pgfmathtruncatemacro{\ro}{\root+\incr}
-			\draw (l1_\sw.north) -- (l2_\ro.south);
-		    }
-		}
-	    }
-	    \node (l1) at (-1, 4) {\Huge $L_1$} ;
-	    \node (l2) at (-1, 8) {\Huge $L_2$} ;
-	    \node (l3) at (-1, 12) {\Huge $L_3$} ;
-
-	    \pgfmathtruncatemacro{\boundDoubleSwitch}{\size*2-1}
-	    % Switches L3
-	    \foreach \x in {0,...,\boundDoubleSwitch} {
-		\pgfmathsetmacro{\pos}{\x*\size+(\boundSwitch/2)}
-		\node[switch] (l3_\x) at (\pos, 12) {} ;
-	    }
-	    % Upper edges
-	    \foreach \root in {0,...,\boundDoubleSwitch} {
-		\foreach \switch in {0,...,\boundCompute} {
-		    \pgfmathtruncatemacro{\switchmod}{mod(\switch,\size)}
-		    \pgfmathtruncatemacro{\rootmod}{mod(\root,\size)}
-		    \ifthenelse{\equal{\switchmod}{\rootmod}}{
-			\draw (l2_\switch.north) -- (l3_\root.south);
-		    }{}
-		}
-	    }
-	\end{tikzpicture}
-      \caption{\label{fig:fat_tree}A fat tree}
-    \end{figure}
-#+END_EXPORT
-
 # Interestingly, the Stampede website says it's "56 GB/s" but I
 # checked and can only find 56 Gbit/s. I hence go with that, as it
 # seems more reasonable as well.
@@ -1386,8 +1318,6 @@ leaf-switches with a capacity of \SI{4}{\tera\bit\per\second}.
 20\nbsp{}ports of each leaf-switch are connected to compute nodes, whereas the remaining 16\nbsp{}ports are connected to
 the core-switches. In this topology, any message reaches the
 destination within no more than 5\nbsp{}hops.
-
-Figure\ref{fig:fat_tree} depicts a fat-tree with *4 (?) levels* (*I'm tired now.*)
 
 *** Summarizing modeling uncertainties
 - MKL version ???
