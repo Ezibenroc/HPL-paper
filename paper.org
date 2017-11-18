@@ -408,8 +408,8 @@ June 2016 and just got upgraded into stampede2. The Stampede platform
 consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
-fat-tree topology built on Mellanox switches. As can be seen in Figure
-\ref{fig:fat_tree_topology}, the 6400 nodes are
+fat-tree topology built on Mellanox switches. As can be seen in 
+Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
 grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
 capacity), which are themselves connected through 8 648-port core
 switches (\SI{73}{\tera\bit\per\second}). The peak performance of the
@@ -762,7 +762,7 @@ reduce both memory footprint and simulation duration.
      =SMPI_SHARED_MALLOC=, a range of virtual addresses of the desired
      size is reserved and cyclically mapped on a small range of
      physical addresses, as illustrated by
-     figure\nbsp{}\ref{fig:global_shared_malloc}. The granularity is the
+     Figure\ref{fig:global_shared_malloc}. The granularity is the
      size of this range of physical addresses (1MB by default).
      This mechanism allows to obtain a nearly constant memory
      footprint, regardless of the size of the allocations.
