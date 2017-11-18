@@ -1,0 +1,7 @@
+*.c
+paper.pdf
+paper.tex
+refs.bib
+fullrun_hpl.txt
+*~
+paper.bbl

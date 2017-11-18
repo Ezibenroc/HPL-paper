@@ -182,7 +182,9 @@ closed-source version specifically designed by the Intel
 engineers. Our simulation allows us to hint where the main algorithmic
 improvements must have been done in HPL. We conclude with a brief
 illustration of typical capacity planning studies enabled by our
-proposal. 
+proposal.
+
+\CH{"120 TB" and "16 GB" are not in bold, because of the SI package.}
 
 # With supercomputers growing both in size and popularity, it has become
 # important to reduce their usage for the optimization of application
@@ -255,7 +257,7 @@ to reduce a memory consumption of hundreds of terrabyte to several
 Gigabytes, allowing us to simulate HPL on a commonly available laptop.
 We furthermore demonstrate the effectiveness of our solution by
 simulating a large-scale scenario run on the STAMPEDE cluster at TACC
-and submitted to the TOP500 in *YEAR*.
+and submitted to the TOP500 in 2013.
 
 The remainder of this article is structured as follows: Section\ref{sec:con}
 discusses ...
@@ -267,7 +269,7 @@ Section\ref{sec:scalabilityevol}. The modeling of the platform, the
 network and the communication is detailed in
 Section\ref{sec:science}. Lastly, Section\ref{sec:cl} concludes this
 paper by summarizing our work and results.
-  
+
 * Context
 #+LaTeX: \label{sec:con}
 
@@ -347,7 +349,7 @@ the following:
 - $N$ is the order of the matrix $A$.
 - =NB= is the partitioning blocking factor, i.e., the granularity at
   which HPL operates when working on panels.
-- $P$ and $Q are respectively the number of process rows and the
+- $P$ and $Q$ are respectively the number of process rows and the
   number of process columns;
 - =RFACT= is the panel factorization algorithm for which three variants
   are available: Crout, left- or right-looking.
@@ -365,9 +367,9 @@ the following:
   overlap the time spent waiting for an incoming panel with updates to
   the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
   =long=, and =long-modified=. The =modified= versions consists in ensuring
-  the process right after the root (, and which will become the root
+  the process right after the root (and which will become the root
   in the next iteration) receives data first and does not participate
-  further in the broadcast, which allows him to start working on the
+  further in the broadcast, which allows it to start working on the
   panel as soon as possible. The =ring= and =2-ring= versions correspond
   to the two corresponding virtual topologies while the =long= version
   is a /spread and roll/ algorithm where messages are chopped into $Q$
@@ -405,19 +407,19 @@ grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
 capacity), which are themselves connected through 8 648-port core
 switches (\SI{73}{\tera\bit\per\second}). The peak performance of the
 Xeon Sandy Bridge E5 processors is about \SI{346}{\giga\flops}/node,
-while the peak performance of the KNC coprocessors if about
+while the peak performance of the KNC coprocessors is about
 \SI{1}{\tera\flops} each, hence a total peak performance of
 \SI{8520}{\tera\flops}.
 
-The Stampede supercomputer reached a performance of 5,168 Tflops when
+The Stampede supercomputer reached a performance of \SI{5168}{\tera\flops} when
 it got ranked in the top500. According to the log (see
 Figure\ref{fig:hpl_output}) that was submitted and which our
 colleagues from TACC provided us, this execution took approximately
 two hours. It was done using $77\times78 = 6,006$ processes and a matrix of
-size $N = 3,875,000$, which represents a matrix of approximately
+size $N = 3,875,000$, which represents approximately
 \SI{120}{\tera\byte} of memory, i.e., \SI{20}{\giga\byte} per node.
 One MPI process per node was used and the exploitation of each node
-(both the 16 cores and the Xeon Phi) may have through openMP and/or
+(both the 16 cores and the Xeon Phi) may have been done through openMP and/or
 the MKL.
 
 #+BEGIN_EXPORT latex
@@ -443,6 +445,7 @@ the MKL.
   \labspace
 \end{figure}
 #+END_EXPORT
+\AL{All the C source codes are wrapped in int main() for no reason.}
 *** Hidden information about the Stampede execution              :noexport:
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
@@ -554,12 +557,12 @@ such application can quickly become intractable.
 
 Performance prediction of MPI application through simulation has been
 widely studied in the last decades and one can distinguish mainly
-between two approaches: Offline and online simulation.
+between two approaches: offline and online simulation.
 
 The first and most common approach, offline simulation, consists in
 tracing the behavior of the application as a sequence of MPI
 operations and CPU bursts, and then to replay such trace on top of a
-simulator implementing performance model of the network and of the MPI
+simulator implementing performance models of the network and of the MPI
 layer. The parameters of the platform can then easily be varied to
 evaluate their impact or to hint at some application bottlenecks.
 Most simulators available today, among them BigSim\cite{bigsim_04},
@@ -593,7 +596,7 @@ Since HPL implements its own broadcast strategies, trace-based
 simulation is no longer sufficient as these strategies are vital for
 HPL's performance. Hence, emulation is required but it raises at least
 two challenges:
-- First, the time-complexity of the algorithm is $\O(N^3)$ and
+- First, the time-complexity of the algorithm is $O(N^3)$ and
   $O(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took almost two hours
   with 6,006 computing nodes. Although the emulation could be done in
@@ -628,11 +631,11 @@ simulation framework that was originally designed to study scheduling
 heuristics tailored for heterogeneous computing grid
 environments. Since then it has also been used to study cloud and
 peer-to-peer systems. SMPI\cite{smpi} is a recently developed flavor
-of SimGrid which allows to faithfully simulation unmodified C/C++ or
+of SimGrid which allows to faithfully simulate unmodified C/C++ or
 Fortan MPI applications.  
 
 Many simulators of distributed computing systems focus foremost on
-scalability. Although SimGrid has been successfully to simulate e.g.,
+scalability. Although SimGrid has been successful to simulate e.g.,
 peer-to-peer systems comprising two millions of nodes using only a
 single standard machine, the main focus of the SimGrid development
 team has always been to provide validated performance models, and in
@@ -828,7 +831,7 @@ the few modifications we had to do in HPL to allow a scalable and
 faithful simulation of HPL. A quick performance evaluation of each
 modification is provided when space allows but we refer the interested
 reader to\cite{cornebize:hal-01544827} and to a laboratory 
-#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/m2_internship_journal/}},
+#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}},
 where each modification has been carefully investigated.
 The experiments of this section have been performed on nodes of the
 Nova cluster from the Grid'5000 testbed\cite{grid5000}. These nodes have
@@ -885,6 +888,7 @@ experiment.
        the absence of performance variability when kernel models are
        used. Such variability could however easily be accounted for in
        the model.
+       \AL{I do not think we should be so confident on the reason of the overestimation}
 *** Hidden section with macro code                               :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({ \
@@ -997,7 +1001,7 @@ LU factorization and hence accounted for by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations they all operate on
 bogus data and hence produce bogus data. We also determined that their
 impact on the performance prediction was minimal and that precisely
-modeling them was simply not worth the effort: We simply modeled them
+modeling them was simply not worth the effort: we simply modeled them
 as being instantaneous.
 
 Note that working on bogus data has a few consequences as HPL
@@ -1040,7 +1044,7 @@ allocation of \texttt{double}s (see Figure\ref{fig:panel_structure}). Using a fu
 for the =panel= therefore leads to indices corruption that result in
 both classical invalid memory accesses and even communication
 deadlocks, as processes may not send/receive to/from the right
-process. Since {int}s and \texttt{double}s are stored in
+process. Since \texttt{int}s and \texttt{double}s are stored in
 non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism allowing to preserve the content of
 specific parts for each process. We have thus introduced a new
@@ -1085,7 +1089,7 @@ HPL to only allocate the very first panel and reuse it from an
 iteration to another (see Figure\ref{fig:panel_reuse}).
 
 As usual, this optimization is harmless in term of simulation
-accuracy: The maximum observed error, in comparison with the previous
+accuracy: the maximum observed error, in comparison with the previous
 version, is always lower than 1%. The gain in terms of simulation
 time, albeit less impressive than for previous optimizations, is
 significant: For a matrix of size 40,000 and 64 MPI processes, the
@@ -1198,16 +1202,16 @@ large-scale simulation on a single node. Most of this work mostly
 consists in identifying and eliminating bottlenecks one after the
 other while making sure the consequences on performance prediction are
 harmless. Doing so, the goal is to reduce as much as possible the
-complexity of simulating HPL from $\O(N^3) + O(N^2.P.Q)$ to a more
+complexity of simulating HPL from $O(N^3) + O(N^2.P.Q)$ to a more
 reasonable complexity. The removal of most of the computations allow
-to get rid of the $\O(N^3)$. Since there are $N/NB$ steps, the ideal
+to get rid of the $O(N^3)$. Since there are $N/NB$ steps, the ideal
 complexity reduction would be to decrease the cost of an iteration to
-something independent of $N$. Thanks SimGrid fluid models, the time to
-simulate a communication does not depend on does not $N$. The time to
+something independent of $N$. Thanks to SimGrid fluid models, the time to
+simulate a communication does not depend on $N$. The time to
 simulate a step of HPL should therefore mostly depend on $P$ and
 $Q$. Yet, some of memory operations on the panel related to pivoting
 are intertwined in HPL with collective communications, which does not
-allow to completely get rid of the $\O(N)$ complexity without
+allow to completely get rid of the $O(N)$ complexity without
 modifying a bit more deeply HPL.
 
 Although our goal is to model and simulate HPL on the Stampede
@@ -1228,7 +1232,7 @@ process number or matrix size on total makespan and memory.
 In the first and second row, the matrix size and number of processes, respectively,
 are varied. When the matrix size ($N$) is changed, as depicted in the
 two panels of the first row, memory consumption and
-simulation time both grow slightly quadratic as the amount of matrix
+simulation time both grow slightly quadratically as the amount of matrix
 elements grows quadratically ($N^{2}$) and the number of steps of the
 algorithm also grows linearly.
 
