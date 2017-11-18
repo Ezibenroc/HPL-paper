@@ -853,7 +853,7 @@ experiment.
   \centering
   \subfigure[Non-intrusive macro replacement.\label{fig:macro_simple}]{
     \begin{minipage}[b]{.5\linewidth}
-      \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_simple.c}
+      \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_simple.c}
     \end{minipage}}%
   \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
     \begin{minipage}[b]{.5\linewidth} 
@@ -905,8 +905,8 @@ experiment.
         coefficient = (double)SMPI_DTRSM_PHI_COEFFICIENT;                           \
         intercept = (double)SMPI_DTRSM_PHI_INTERCEPT;                               \
     } else {                                                                        \
-        coefficient = (double)SMPI_DTRSM_COEFFICIENT;                               \
-        intercept = (double)SMPI_DTRSM_INTERCEPT;                                   \
+        coefficient = (double)SMPI_DTRSM_CPU_COEFFICIENT;                               \
+        intercept = (double)SMPI_DTRSM_CPU_INTERCEPT;                                   \
     }                                                                               \
     if((Side) == HplLeft) {                                                         \
         expected_time = coefficient*((double)(M))*((double)(M))*((double)(N));      \
@@ -1309,18 +1309,27 @@ a higher latency (higher intercept).
   \begin{minipage}[b]{.27\textwidth}
     \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
     \vspace{-2em}
-    \caption{Automatic offloading on the KNC depending on matrix dimensions.}
+    \caption{Automatic offloading on the KNC depends on matrix dimensions.}
     \vspace{-1em}
     \label{fig:hpl_mkl}
-  \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}
-    \lstset{frame=bt,language=C,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
-    \caption{Replacing the calls to computationally expensive functions by a model.}
+  \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}\centering
+    \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
+    \scalebox{.88}{\begin{tabular}{l|r|r|r|r}
+    & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
+    & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] \\
+    \hline
+    \texttt{DGEMM} & \num{1.029e-11} & \num{2.737e-02} & \num{1.981e-12} & \num{6.316e-01} \\
+    \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01} \\
+    \end{tabular}}
+    \caption{Modeling automatic offloading on KNC in MKL BLAS kernels.}
     \vspace{-1em}
     \label{fig:macro_real}
   \end{minipage}
 \end{figure*}
 #+END_EXPORT
 
+#+BEGIN_EXPORT latex
+#+END_EXPORT
 
 # SMPI_DGEMM_COEFFICIENT=1.029e-11 SMPI_DGEMM_INTERCEPT=2.737e-02 SMPI_DGEMM_PHI_COEFFICIENT=1.981e-12 SMPI_DGEMM_PHI_INTERCEPT=6.316e-01 \
 # SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
@@ -1404,7 +1413,7 @@ get_legend<-function(myggplot){
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file figures/stampede_knc_model.pdf :exports both :width 3.5 :height 4.3 :session *R* 
+#+begin_src R :results output graphics :file figures/stampede_knc_model.pdf :exports both :width 3.5 :height 5.3 :session *R* 
   labels = rbind(
       data.frame(x = 2E11, y=3.5, label="Offloading on the KNC", offload = T),
       data.frame(x = 1.1E11, y=1, label="Computation on the CPU", offload = F));
