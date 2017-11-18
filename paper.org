@@ -794,7 +794,7 @@ reduce both memory footprint and simulation duration.
     }}
     \begin{figure}[htbp]
       \centering
-      \begin{tikzpicture}
+      \begin{tikzpicture}[scale=0.7]
         \pgfmathtruncatemacro{\size}{4}
         \pgfmathtruncatemacro{\width}{2}
         \pgfmathtruncatemacro{\sizem}{\size-1}
