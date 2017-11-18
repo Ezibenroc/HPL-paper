@@ -986,7 +986,7 @@ experiment.
           \end{center}
         \end{minipage}
       }
-      \caption{Panel structure and allocation strategy when simulating.\label{fig:panel_reuse}}
+      \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}
     \end{figure*}
 #+END_EXPORT
 
