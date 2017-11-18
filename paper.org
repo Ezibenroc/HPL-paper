@@ -106,6 +106,12 @@
 #+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
 #+LaTeX: \renewcommand\O{\ensuremath{\mathcal{O}}\xspace}%
 
+#+BEGIN_EXPORT latex
+\makeatletter
+\newcommand{\removelatexerror}{\let\@latex@error\@gobble}
+\makeatother
+#+END_EXPORT
+
 * LaTeX Preamble                                                     :ignore:
 #+BEGIN_EXPORT latex
 \let\oldcite=\cite
@@ -311,6 +317,7 @@ paper by summarizing our work and results.
     \end{tikzpicture}
   \end{minipage}%
   \begin{minipage}[m]{0.6\linewidth}
+    \removelatexerror
     \begin{algorithm}[H]
       allocate and initialize $A$\;
       \For{$k=N$ \KwTo $0$ \KwStep $NB$}{
