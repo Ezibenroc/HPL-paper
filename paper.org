@@ -344,64 +344,66 @@ paper by summarizing our work and results.
 #+END_EXPORT
 
 For this work, we use the freely-available reference-implementation of
-the High-Performance Linpack benchmark\cite{HPL}, HPL, which is widely
-used to benchmark systems from the TOP500\cite{top500}. HPL implements
+the High-Performance Linpack benchmark\cite{HPL}, HPL, which is 
+used to benchmark systems for the TOP500\cite{top500} list. HPL implements
 a LU decomposition, \ie a factorization of a square matrix $A$ as the
 product of a lower triangular matrix $L$ and an upper triangular
 matrix $U$. HPL checks the correctness of this factorization by
-solving a linear system $A.x=b$ but only the factorization step is
+solving a linear system $A\cdot{}x=b$ but only the factorization step is
 benchmarked.  The factorization is based on a right-looking variant of
 the LU factorization with row partial pivoting and allows multiple
-look-ahead depths. HPL relies on MPI, on a two-dimensional
-block-cyclic data distribution of $A$, and implements several custom
-collective communication algorithms to efficiently combine computation
-and information diffusion (e.g., when pivoting).
+look-ahead depths. HPL requires MPI and uses a two-dimensional
+block-cyclic data distribution of $A$. HPL implements several custom
+collective communication algorithms to efficiently overlap computation
+with communication (e.g., when pivoting).
 
-The principle of the factorization is depicted on
-Figure\ref{fig:hpl_overview} and consists in a series of panel
-factorization followed by an update. The main parameters of HPL are
-the following:
-- $N$ is the order of the matrix $A$.
-- =NB= is the partitioning blocking factor, i.e., the granularity at
-  which HPL operates when working on panels.
+The principle of the factorization is depicted in
+Figure\ref{fig:hpl_overview} and consists of a series of panel
+factorizations followed by an update. The main parameters of HPL are
+listed subsequently:
+#+LATEX: \AL{Why format $A$ (etc.) and =NB= differently ?}
+- $N$ is the order of the square matrix $A$.
+- =NB= is the ''blocking factor``, i.e., the granularity at
+  which HPL operates when panels are distributed or worked on.
 - $P$ and $Q$ are the number of process rows and the
   number of process columns, respectively;
-- =RFACT= is the panel factorization algorithm for which three variants
-  are available: Crout, left- or right-looking.
-- =SWAP= is the variant of the swapping algorithm to be used when
-  pivoting. There are two variants available: one based on /binary
-  exchange/ (along a tree virtual topology) and the other one based on
-  a /spread-roll/ (with a higher number of parallel communications). HPL
-  also allows to specify a threshold on the panel size to switch from
+- =RFACT= determines the panel factorization algorithm. Possible values: Crout, left- or right-looking.
+#+LATEX:  \CH{Crout? What's that}
+- =SWAP= specifies the swapping algorithm to be used for pivoting. Two
+  algorithms are available: one based on /binary exchange/ (*along* a virtual tree topology) and the other one based on
+  a /spread-roll/ (*TOPOLOGY here?* with a higher number of parallel communications). HPL
+  also allows users to specify a panel-size threshold that triggers a switch from
   one variant to the other.
-- =BCAST= is the variant of the algorithm to be used to broadcast the
-  panel of columns to the other process columns. Older versions of MPI
-  only supported non-blocking point-to-point communications but did
+- =BCAST= sets the algorithm used to broadcast the
+  panel *of columns* to the other *process columns*. Legacy versions of
+  the MPI standard only supported non-blocking point-to-point communications but did
   not support non-blocking collective communications, which is why HPL
   ships with in total 6 self-implemented variants to efficiently
   overlap the time spent waiting for an incoming panel with updates to
   the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
-  =long=, and =long-modified=. The =modified= versions consists in ensuring
-  the process right after the root (and which will become the root
+  =long=, and =long-modified=. The =modified= versions consist of ensuring
+  the process right after the root (\ie the process that will become the root
   in the next iteration) receives data first and does not participate
-  further in the broadcast, which allows it to start working on the
+  further in the broadcast. This allows this process to start working on the
   panel as soon as possible. The =ring= and =2-ring= versions correspond
-  to the two corresponding virtual topologies while the =long= version
+  to the *two corresponding virtual topologies* while the =long= version
   is a /spread and roll/ algorithm where messages are chopped into $Q$
-  pieces and that generally better exploit bandwidth. The =ring= and
+  pieces. This generally exploits bandwidth better. The =ring= and
   =2-ring= variants rely on =MPI_Iprobe=, which allows the function to
-  return if there is no ready message, hence to partially overlap
+  return if no message has been fully received yet and hence to partially overlap
   communication with computations. In HPL 2.2 and 2.1, this capability
-  is deactivated for =long= as it seems to get some machines stuck when
+  has been deactivated for =long= as it seems to get some machines stuck when
   there are too many ongoing messages.
-- =DEPTH= controls how much iterations can overlap with each others.
+- =DEPTH= controls how many iterations can overlap with each others.
+  \CH{See TUNING file. Elaborate.}
 
-The sequential complexity of such operation is given by
+The sequential complexity of *such operation* is given by
+#+LATEX: \CH{Which one?}
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + O(N)$ where $N$ is the
 size of the matrix to factorize. The time complexity is expected to
-be: $$T(N) = \frac{2}{3}\frac{N^3 + 3N^2}{PQ}w + \Omega((P+Q).N^2),$$ where
-the second term corresponds to the communication overhead and which is
-influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
+be: $$T(N) = \frac{2}{3}\frac{N^3 + 3N^2}{PQ}w + \Omega((P+Q)\cdot{}N^2),$$ where
+the second term corresponds to the communication overhead which is
+furthermore influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
 ...).  The measure of interest reported by HPL is the overall flop
 rate $\mathrm{flop}(N)/T(N)$ and is expressed in \si{\giga\flops}.
 
