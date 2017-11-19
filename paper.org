@@ -221,50 +221,58 @@ proposal.
 #+END_EXPORT
 * Introduction
 
-The world's largest and fastest machines are often evaluated using
-benchmarks and ranked twice a year in the so-called
-TOP500 list. Today, the Linpack benchmark, in particular the High-Performance Linpack (HPL)
+The world's largest and fastest machines are ranked twice a year in the so-called
+TOP500 list. Among the benchmarks that are often used to evaluate
+those machines, the Linpack benchmark, in particular the High-Performance Linpack (HPL)
 implementation, has emerged as the de-facto standard benchmark, although
-other benchmarks such as HPCG and HPGMG have been proposed. With
-core-counts beyond the 100,000 cores threshold being common and sometimes
-even ranging into the millions, diligent optimization of application
-parameters, such as problem size or process organization, 
-become a necessity. To yield the best benchmark results,
+other benchmarks such as HPCG and HPGMG have been proposed. The high
+density of computation units in today's machines, with 100,000 cores 
+and more being common and with several machines beyond the 1,000,000 core mark
+being already in production, requires diligent optimization of application
+parameters, such as problem size, process organization or choice of algorithm, as these
+will have an impact on load distribution and network utilization.
+Furthermore, to yield best benchmark results,
 runtimes (such as OpenMPI) and supporting libraries such as LAPACK
-(for HPL in particular the DGEMM routine) need to be fine-tuned and adapted to the
-underlying platform (network) as well. Lastly, the platform itself and
-its network need to be setup in a way that HPL can efficiently use the
-resources it runs on. Only with these optimizations in place can peak
-performance be attained. 
+(particularly the DGEMM routine in the case of HPL) need to be fine-tuned and adapted to the
+underlying platform. 
+
+# Lastly, the platform itself and
+# its network need to be setup in a way that HPL can efficiently use the
+# resources it runs on. Only with these optimizations in place can peak
+# performance be attained. 
 
 Alas, the time it takes to run HPL on the number one system has
 sharply increased and took around 17 hours on the 33rd TOP500 list in
 2012 
-\CH{TODO update this!; see http://www.icl.utk.edu/~luszczek/pubs/post165s1.pdf}. With a power
-consumption of several MW per hour on a TOP500 machine, test-running HPL on the whole
-machine for hours becomes financially infeasible. On the other hand,
-the performance of a current-generation machine typically also
-plays a role in funding for future machines and is hence critical for
-HPC centers. It is hence beneficial to be able to estimate
-HPL performance outcomes without actually running the benchmark. This
-can be done either via (mathematical) performance models (e.g., by
+\CH{TODO update this!; see
+http://www.icl.utk.edu/~luszczek/pubs/post165s1.pdf}. This duration
+and the power consumption of several MW per hour on a TOP500 machine makes test-running HPL on the whole
+machine in order to tweak parameters financially infeasible. 
+Yet, performance results of an already deployed, current-generation machine typically also
+plays a role in the funding process for future machines and is hence considered critical for
+HPC centers and vendors, who would benefit largely from being able to
+accurately estimate HPL performance outcomes without actually running
+the benchmark.
+This estimation can be done either via (mathematical) performance models (e.g., by
 estimating performance of specific functions) or by a simulation based approach.
-While estimating runtime through performance models neglects the
-impact of the network (congestion, bandwidth, ...), simulation is
-potentially able to consider these important factors. Furthermore,
-simulations can be used to validate/check that the execution went well
-(operated near the peak performance) but can also help to find the
-right parameters for the application, runtime and network.
+While performance models neglect the
+oftentimes serious impact of the network (\eg due to congestion, shared bandwidth,
+...), this is not in general true for the simulation approach.
 
-In this article, we explain how to perform such simulations using
+\CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
+
+In this article, we explain how to perform simulations using
 SimGrid's SMPI simulator. We particularly detail how we obtained
-faithful models for several functions (DGEMM, ...) and how we managed
-to reduce a memory consumption of hundreds of terrabyte to several
-Gigabytes, allowing us to simulate HPL on a commonly available laptop.
+faithful models for several functions (such as DGEMM, ...) and how we managed
+to reduce a memory consumption of hundreds of terabyte to several
+gigabytes, allowing us to simulate HPL on a commonly available server node.
 We furthermore demonstrate the effectiveness of our solution by
-simulating a large-scale scenario run on the STAMPEDE cluster at TACC
-and submitted to the TOP500 in 2013.
+simulating a large-scale scenario run on the Stampede1 cluster at TACC
+that was submitted to the TOP500 in 2013. Our approach is
+applicable to other machines, including latest generation machines
+such as Stampede2, that was not yet fully deployed at the time of our investigation.
 
+\CH{This needs to be fixed}
 The remainder of this article is structured as follows: Section\ref{sec:con}
 discusses ...
 Section\ref{sec:relwork} gives references to already existing
@@ -1573,6 +1581,8 @@ BLAS function results could effortlessly become more precise as the
 application could just be linked against a BLAS-replacement
 library. 
 #+LaTeX: \CH{Problem here: HPL uses \texttt{HPL\_dtrsm()} wrappers.}
+
+#+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
 
 * Acknowledgements
 
