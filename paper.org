@@ -180,7 +180,7 @@ performed on the Stampede cluster at TACC in 2013, when it got ranked
 dedication of 6006 computing nodes of the supercomputer and more than
 \SI{120}{\tera\byte} of RAM for more than 2 hours, we manage to simulate a similar
 configuration on a commodity computer with \SI{16}{\giga\byte} of RAM in about 37
-hours. Allied to a careful modeling of stampede, this simulation
+hours. Allied to a careful modeling of Stampede, this simulation
 allows us to evaluate the performance that would have been obtained
 using the freely available version of HPL. Such performance reveals much
 lower than what was reported and which was obtained using a
@@ -412,9 +412,9 @@ can therefore be quite time consuming as it requires to carefully tune
 all the BLAS kernels, the MPI runtime, and all the previous parameters
 of HPL.
 ** A typical run on a supercomputer
-In June 2013, the stampede supercomputer at TACC was ranked 6th in top
+In June 2013, the Stampede supercomputer at TACC was ranked 6th in top
 top500 by achieving \SI{5168.1}{\tera\flops} and was ranked 20 th in
-June 2016 and just got upgraded into stampede2. The Stampede platform
+June 2016 and just got upgraded into Stampede2. The Stampede platform
 consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
@@ -445,7 +445,7 @@ the MKL.
   \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
   \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
   \end{minipage}}
-  \caption{HPL output submitted in June 2013 for the ranking of stampede in the TOP500.}
+  \caption{HPL output submitted in June 2013 for the ranking of Stampede in the TOP500.}
   \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
@@ -456,7 +456,7 @@ the MKL.
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
+  \includegraphics[width=\linewidth,page=1]{./figures/Stampede.pdf}                                                                                                                               
   \caption{A fat-tree}
   \label{fig:fat_tree_topology}
   \labspace
@@ -544,7 +544,7 @@ End of Tests.
 :END:
 #+LaTeX: \label{sec:con:diff}
 
-The performance achieved by stampede, \SI{5168}{\tera\flops}, should
+The performance achieved by Stampede, \SI{5168}{\tera\flops}, should
 be compared to the peak performance of the 6,006 nodes, i.e.,
 \SI{8084}{\tera\flops}. This discrepancy may be imputed to the node
 usage (\eg, the MKL), to the MPI library, to the network topology that
@@ -619,7 +619,7 @@ two challenges:
   with 6,006 computing nodes. Although the emulation could be done in
   parallel, we obviously want to limit the computing resources used
   when performing and emulation. Using only a single node, a naive
-  emulation of HPL at the scale of the stampede run would take about
+  emulation of HPL at the scale of the Stampede run would take about
   500 days at best.
 - Second, the memory consumption of such application is tremendous and
   the emulation needs to be able to deal with an application
@@ -666,7 +666,7 @@ the NAS Parallel benchmarks and of HPL for small-scale clusters (up to
 144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
 in\cite{smpi}). In this article, we try to push our comparison to a
 much larger scale although in a less controlled scenario since the
-stampede run of HPL was done several years ago and we only have
+Stampede run of HPL was done several years ago and we only have
 limited information about it.
 
 ** MPI Communication Modeling
@@ -1317,7 +1317,7 @@ a higher latency (higher intercept).
 \begin{figure*}%[!htb]
   \centering
   \begin{minipage}[b]{.27\textwidth}
-    \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
+    \includegraphics[width=\linewidth,page=2]{./figures/Stampede_knc_model.pdf}
     \vspace{-2em}
     \caption{Automatic offloading on the KNC depends on matrix dimensions.}
     \vspace{-1em}
@@ -1356,9 +1356,9 @@ work, however, CPUs are barely used.
 #+begin_src R :results output :session *R* :exports both
   library(gridExtra)
   library(ggplot2)
-  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
+  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/Stampede/offloading_dgemm.csv')
   dgemm$m = as.double(dgemm$m)
-  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
+  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/Stampede/offloading_dtrsm.csv')
   dtrsm$m = as.double(dtrsm$m)
 
   dgemm_new = dgemm[dgemm$automatic_offload == 'True',]
@@ -1423,7 +1423,7 @@ get_legend<-function(myggplot){
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file figures/stampede_knc_model.pdf :exports both :width 3.5 :height 5.3 :session *R* 
+#+begin_src R :results output graphics :file figures/Stampede_knc_model.pdf :exports both :width 3.5 :height 5.3 :session *R* 
   labels = rbind(
       data.frame(x = 2E11, y=3.5, label="Offloading on the KNC", offload = T),
       data.frame(x = 1.1E11, y=1, label="Computation on the CPU", offload = F));
@@ -1448,10 +1448,10 @@ get_legend<-function(myggplot){
 #+end_src
 
 #+RESULTS:
-[[file:figures/stampede_knc_model.pdf]]
+[[file:figures/Stampede_knc_model.pdf]]
 
 #+begin_src sh :results output :exports both
-pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
+pdfcrop figures/Stampede_knc_model.pdf figures/Stampede_knc_model.pdf
 #+end_src
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
@@ -1470,7 +1470,7 @@ and a fluid model, supporting different modes for the send operation
 such as fully asynchronous, detached or eager. For each message, the
 mode used is determined solely on the message size. It is hence
 possible to model the resulting performance through a piece-wise,
-linear model, as depicted in Figure\ref{fig:stampede_calibration}.
+linear model, as depicted in Figure\ref{fig:Stampede_calibration}.
 For a thorough discussion of the calibration techniques, see\cite{smpi}.
 
 SMPI uses this model by default, however, it is not leveraged in the
@@ -1482,9 +1482,9 @@ via the /detached/ mode (depicted in green).
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
+  \includegraphics[width=\linewidth,page=1]{./figures/Stampede_calibration_send.png}
   \caption{Visualization of the analysis results as obtained on the Stampede system.}
-  \label{fig:stampede_calibration}
+  \label{fig:Stampede_calibration}
   \labspace
 \end{figure}
 #+END_EXPORT
