@@ -412,32 +412,31 @@ can therefore be quite time consuming as it requires to carefully tune
 all the BLAS kernels, the MPI runtime, and all the previous parameters
 of HPL.
 ** A typical run on a supercomputer
-In June 2013, the Stampede supercomputer at TACC was ranked 6th in top
-top500 by achieving \SI{5168.1}{\tera\flops} and was ranked 20 th in
-June 2016 and just got upgraded into Stampede2. The Stampede platform
+In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
+TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
+June 2016. In 2017, this machine got upgraded into Stampede2. The Stampede1 platform
 consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
 fat-tree topology built on Mellanox switches. As can be seen in 
 Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
-grouped by 20 on 320 36-port switches (\SI{4}{\tera\bit\per\second}
-capacity), which are themselves connected through 8 648-port core
-switches (\SI{73}{\tera\bit\per\second}). The peak performance of the
-Xeon Sandy Bridge E5 processors is about \SI{346}{\giga\flops}/node,
-while the peak performance of the KNC coprocessors is about
-\SI{1}{\tera\flops} each, hence a total peak performance of
+divided into groups of 20, with each group being connected to one of the 320 36-port switches (\SI{4}{\tera\bit\per\second}
+capacity), which are themselves connected to 8 648-port
+''core\nbsp{}switches`` (each with a capacity of \SI{73}{\tera\bit\per\second}). 
+The peak performance of the 2\nbsp{}Xeon CPUs available to each node is approximately \SI{346}{\giga\flops},
+while the peak performance of the KNC co-processor is about
+\SI{1}{\tera\flops}. Hence, Stampede1 could attain a theoretical total peak performance of
 \SI{8520}{\tera\flops}.
 
-The Stampede supercomputer reached a performance of \SI{5168}{\tera\flops} when
+The Stampede1 supercomputer reached \SI{5168}{\tera\flops} when
 it got ranked in the TOP500. According to the log (see
-Figure\ref{fig:hpl_output}) that was submitted and which our
-colleagues from TACC provided us, this execution took approximately
-two hours. It was done using $77\times78 = 6,006$ processes and a matrix of
-size $N = 3,875,000$, which represents approximately
+Figure\ref{fig:hpl_output}) that was submitted and provided to us,
+this execution took roughly two hours. This run used $77\times78 = 6,006$ processes and a matrix of
+size $N = 3,875,000$, occupying roughly
 \SI{120}{\tera\byte} of memory, i.e., \SI{20}{\giga\byte} per node.
-One MPI process per node was used and the exploitation of each node
-(both the 16 cores and the Xeon Phi) may have been done through openMP and/or
-the MKL.
+One MPI process per node was used and the exploitation of each node's
+computational resources (the 16 CPU-cores and the Xeon Phi) may have been done through openMP and/or
+Intel's MKL.
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -456,7 +455,7 @@ the MKL.
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/Stampede.pdf}                                                                                                                               
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
   \caption{A fat-tree}
   \label{fig:fat_tree_topology}
   \labspace
