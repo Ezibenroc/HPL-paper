@@ -162,7 +162,7 @@
 #+LaTeX: \begin{abstract}
 The Linpack benchmark, in particular the High-Performance Linpack
 (HPL) implementation, has emerged as the de-facto standard benchmark
-to rank supercomputers in the top500. With a power consumption of
+to rank supercomputers in the TOP500. With a power consumption of
 several MW per hour on a TOP500 machine, test-running HPL on the whole
 machine for hours is extremely expensive. With core-counts beyond the
 100,000 cores threshold being common and sometimes even ranging into
@@ -176,7 +176,7 @@ simulator and slightly modified HPL to allow a fast emulation of HPL
 on a single commodity computer at the scale of a supercomputer. More
 precisely, we take as a motivating use case the large-scale run
 performed on the Stampede cluster at TACC in 2013, when it got ranked
-6th in the top500. While this qualification run required the
+6th in the TOP500. While this qualification run required the
 dedication of 6006 computing nodes of the supercomputer and more than
 \SI{120}{\tera\byte} of RAM for more than 2 hours, we manage to simulate a similar
 configuration on a commodity computer with \SI{16}{\giga\byte} of RAM in about 37
@@ -211,7 +211,7 @@ proposal.
 # approach through the simulation of HPL at scale on a commonly
 # available single server node by accurately predicting its
 # runtime on a \SI{120}{\tera\byte} large problem instance that was used
-# to evaluate the Stampede1 system for the Top500 list.
+# to evaluate the Stampede1 system for the TOP500 list.
 #+LaTeX: \end{abstract}
 
 
@@ -345,7 +345,7 @@ paper by summarizing our work and results.
 
 For this work, we use the freely-available reference-implementation of
 the High-Performance Linpack benchmark\cite{HPL}, HPL, which is widely
-used to benchmark systems from the top500\cite{top500}. HPL implements
+used to benchmark systems from the TOP500\cite{top500}. HPL implements
 a LU decomposition, \ie a factorization of a square matrix $A$ as the
 product of a lower triangular matrix $L$ and an upper triangular
 matrix $U$. HPL checks the correctness of this factorization by
@@ -405,7 +405,7 @@ influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
 ...).  The measure of interest reported by HPL is the overall flop
 rate $\mathrm{flop}(N)/T(N)$ and is expressed in \si{\giga\flops}.
 
-Preparing a large-scale execution of HPL for a top500 qualification
+Preparing a large-scale execution of HPL for a TOP500 qualification
 can therefore be quite time consuming as it requires to carefully tune
 all the BLAS kernels, the MPI runtime, and all the previous parameters
 of HPL.
@@ -427,7 +427,7 @@ while the peak performance of the KNC coprocessors is about
 \SI{8520}{\tera\flops}.
 
 The Stampede supercomputer reached a performance of \SI{5168}{\tera\flops} when
-it got ranked in the top500. According to the log (see
+it got ranked in the TOP500. According to the log (see
 Figure\ref{fig:hpl_output}) that was submitted and which our
 colleagues from TACC provided us, this execution took approximately
 two hours. It was done using $77\times78 = 6,006$ processes and a matrix of
@@ -443,7 +443,7 @@ the MKL.
   \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
   \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
   \end{minipage}}
-  \caption{HPL output submitted in June 2013 for the ranking of stampede in the top500.}
+  \caption{HPL output submitted in June 2013 for the ranking of stampede in the TOP500.}
   \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
@@ -1287,7 +1287,7 @@ small, the main advantage of the second approach is that data does not
 need to be transferred back and forth between the node's CPU and the
 accelerator via the x16 PCIe bus.
 
-The HPL output submitted to the top500 (Figure\ref{fig:hpl_output})
+The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
 does not allow to know precisely how the KNC were configured but we
 know for sure that a single MPI process per node was run and that the
 KNC must rather have been used as an accelerator. The easier for such
