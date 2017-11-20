@@ -401,9 +401,10 @@ The sequential complexity of *such operation* is given by
 #+LATEX: \CH{Which one?}
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + O(N)$ where $N$ is the
 size of the matrix to factorize. The time complexity is expected to
-be: $$T(N) = \frac{2}{3}\frac{N^3 + 3N^2}{PQ}w + \Omega((P+Q)\cdot{}N^2),$$ where
+be: $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{PQ\cdot w} + \Theta((P+Q)\cdot{}N^2),$$ where
+$w$ is the flop rate of each node and 
 the second term corresponds to the communication overhead which is
-furthermore influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
+influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
 ...).  The measure of interest reported by HPL is the overall flop
 rate $\mathrm{flop}(N)/T(N)$ and is expressed in \si{\giga\flops}.
 
