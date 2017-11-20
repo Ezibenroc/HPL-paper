@@ -1056,7 +1056,7 @@ grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
       \centering
       \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
         \begin{minipage}[b]{.5\linewidth}
-          \begin{tikzpicture}
+          \begin{tikzpicture}[scale=0.8]
             \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
             \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
             \draw[dashed] (3, 2) -- (3, 3);
