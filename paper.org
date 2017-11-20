@@ -1303,17 +1303,31 @@ version 11.1.1. The description of the MKL documentation indicates
 that depending on the matrix geometry, the computation will be done
 either on all the cores of the CPU or on the KNC.  In the case of
 DGEMM the computation of $A=\alpha.A+\beta.B\times C$ with $A, B, C$ of respective
-dimension $M\times K$, $K\times N$, $M\times N$, is transferred to the KNC whenever
-$M$ and $N$ are both larger than $1280$ and $K$ is larger than
-$256$. For the =DTRSM= operation, offloading is performed only if both
-$M$ and $N$ are larger than $512$. Although the number of flops is
-still of the order of $MNK$ (resp. $MN^2$ for =DTRSM=), the modeling of
-the time it takes to run =DGEMM= (resp. =DTRSM=) is thus very different
-for small and large matrices. As an illustration,
-Figure\ref{fig:hpl_mkl} depicts the time needed by the MKL for
-matrices whose dimension are randomly taken in $[1,8\,000]$: offloading
-to the KNC results in a better throughput (lower slope) at the cost of
-a higher latency (higher intercept).
+dimension $M\times K$, $K\times N$, $M\times N$, is offloaded to the KNC whenever $M$
+and $N$ are both larger than $1280$ and $K$ is larger than $256$. For
+the =DTRSM= operation, offloading is performed only if both $M$ and $N$
+are larger than $512$. As an illustration, Figure\ref{fig:hpl_mkl}
+depicts the time needed by the MKL for matrices whose dimension are
+randomly taken in $[1,8\,000]$: offloading to the KNC results in a
+better throughput (lower slope) at the cost of a higher latency
+(higher intercept). Although the number of flops is still of the order
+of $MNK$ (resp. $MN^2$ for =DTRSM=), the modeling of the time it takes
+to run =DGEMM= (resp. =DTRSM=) is thus very different for small and large
+matrices. The table in Figure\ref{fig:macro_real} indicates the
+parameters of the linear regression for the four settings (=DGEMM=
+vs. =DTRSM= and =CPU= vs. =PHI=). The effective performance is close to the
+peak performance: e.g., for =DGEMM= on the =PHI=, the flop rate is
+$2/\num{1.981e-12} = \SI{1.009}{\tera\flops}$. Since the granularity
+used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (but
+maybe for the very last iteration) should run on the KNC. 
+# The accelerators are essential to the performance of the cluster,
+# delivering \SI{7}{\peta\flops} of sustainable performance whereas
+# the CPUs are only capable of delivering \SI{2}{\peta\flops}. On
+# matrices of the size used for this work, however, CPUs are barely
+# used.
+In any cases, such behavior is easily accounted for by replacing the
+macro in Figure\ref{fig:macro_simple} by the one in
+Figure{fig:macro_real}.
 
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
@@ -1346,12 +1360,6 @@ a higher latency (higher intercept).
 # SMPI_DGEMM_COEFFICIENT=1.029e-11 SMPI_DGEMM_INTERCEPT=2.737e-02 SMPI_DGEMM_PHI_COEFFICIENT=1.981e-12 SMPI_DGEMM_PHI_INTERCEPT=6.316e-01 \
 # SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
 
-
-The accelerators are essential to
-the performance of the cluster, delivering \SI{7}{\peta\flops} of
-sustainable performance whereas the CPUs are only capable of
-delivering \SI{2}{\peta\flops}. On matrices of the size used for this
-work, however, CPUs are barely used.
 
 # See CH's journal from [2017-10-03 Tue] to see how the version was determined
 **** R figures                                                  :noexport:
