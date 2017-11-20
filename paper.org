@@ -642,31 +642,33 @@ SimGrid comes with at least two challenges:
 * SimGrid/SMPI in a nutshell
 \label{sec:smpi}
 
-SimGrid\cite{simgrid} is a 17 years-old flexible and open-source
-simulation framework that was originally designed to study scheduling
+SimGrid\cite{simgrid} is flexible and open-source
+simulation framework that was originally designed in 2000 to study scheduling
 heuristics tailored for heterogeneous computing grid
-environments. Since then it has also been used to study cloud and
-peer-to-peer systems. SMPI\cite{smpi} is a recently developed flavor
-of SimGrid which allows to faithfully simulate unmodified C/C++ or
-Fortan MPI applications.  
+environments. Since then, SimGrid has also been employed to study cloud and
+peer-to-peer systems. SMPI\cite{smpi} is a recently developed
+simulator based on the SimGrid API that supports faithful simulation
+of unmodified MPI applications written in C/C++ or Fortan.  
 
 Many simulators of distributed computing systems focus foremost on
-scalability. Although SimGrid has been successful to simulate e.g.,
-peer-to-peer systems comprising two millions of nodes using only a
+scalability. Although SimGrid has been successfully used to simulate \eg
+peer-to-peer systems comprising two million nodes using only a
 single standard machine, the main focus of the SimGrid development
-team has always been to provide validated performance models, and in
-particular of network operations. This is done by comparing simulation
-predictions with real experiments as to validate the approach and to
-improve the quality of network and application
-models. In\cite{heinrich:hal-01523608}, we have for example shown how
+#+LATEX: \AL{Add a citation for the paper with two million nodes}
+team has been to provide validated performance models, particularly
+for *network-enabled* operations. This is generally done by comparing simulation
+predictions with results obtained through real experiments in order to
+confirm network and application models and improve the
+quality. In\cite{heinrich:hal-01523608}, we have for example shown how
 SMPI can be used to accurately and consistently predict (within a few
-percents) both the performance and the energy consumption of some of
-the NAS Parallel benchmarks and of HPL for small-scale clusters (up to
+percent) both the performance and the energy consumption of some of
+the NAS parallel benchmarks as well as of HPL for small-scale clusters (up to
 144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
-in\cite{smpi}). In this article, we try to push our comparison to a
-much larger scale although in a less controlled scenario since the
-Stampede run of HPL was done several years ago and we only have
-limited information about it.
+in\cite{smpi}). In this article, we try to make the comparison on a
+much larger scale. This scale, however, comes with the downside of a less well-controlled scenario since the
+Stampede1 run of HPL was done several years ago and we only have
+very limited information about the setup (\eg software versions, background
+processes, ...).
 
 ** MPI Communication Modeling
 The first challenge arising when modeling communication of MPI
