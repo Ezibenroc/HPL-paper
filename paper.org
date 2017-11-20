@@ -2169,10 +2169,11 @@ surprising behavior to our TACC colleagues, they taught us that run a
 binary version of HPL provided by Intel and that this code had
 probably been specifically modified for Stampede. In particular, we
 believe, some values have been hardcoded to enforce an overlap of
-iterations with each others. Indeed, the part in the =[...]= of
-Figure\ref{hpl_output} provides information about the progression of
+iterations with each others. Indeed, the part in the "=[...]=" of
+Figure\ref{fig:hpl_output} provides information about the progression of
 HPL throughout iterations and statistics about the time spent in the
-most important parts for the process owning the panel. The total time
+most important parts for the process owning the panel. According to
+these statistics, the total time
 spent in the =Update= section is \SI{9390}{\sec} whereas the total
 execution time is \SI{7505}{\sec}, which clearly indicates iterations
 have overlapped.
