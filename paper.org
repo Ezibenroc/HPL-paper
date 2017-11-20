@@ -862,6 +862,7 @@ experiment.
 ** Kernel modeling
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
+  \null\vspace{-1cm}
   \centering
   \subfigure[Non-intrusive macro replacement.\label{fig:macro_simple}]{
     \begin{minipage}[b]{.5\linewidth}
@@ -908,6 +909,94 @@ experiment.
        used. Such variability could however easily be accounted for in
        the model.
        \AL{I do not think we should be so confident on the reason of the overestimation}
+*** Hidden section with estimation of the quality/speed of the simulation :noexport:
+Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
+Regenerating the validation plot for smpi_execute".
+
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+library(gridExtra)
+library(grid)
+old <- read.csv("~/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L0.csv")
+new <- read.csv("~/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L1.csv")
+old$kernel_sampling = FALSE
+new$kernel_sampling =  TRUE
+results = rbind(old, new)
+generic_do_plot <- function(plot, fixed_shape=TRUE) {
+#   For xrange, see https://stackoverflow.com/questions/7705345/how-can-i-extract-plot-axes-ranges-for-a-ggplot2-object
+#   old version for xrange (broken)
+#   xrange = ggplot_build(plot)$panel$ranges[[1]]$x.range
+#   new version for xrange (may break in the next ggplot update...)
+    xrange = ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+    xwidth = xrange[2] - xrange[1]
+    if(fixed_shape) {
+        point = stat_summary(fun.y = mean, geom="point", shape=21)
+    }
+    else {
+        point = stat_summary(fun.y = mean, geom="point")
+    }
+    return(plot +
+        stat_summary(fun.data = mean_se, geom = "errorbar", width=xwidth/20)+
+        stat_summary(fun.y = mean, geom="line")+
+        point+
+        theme_bw()+ scale_color_brewer(palette="Set1") + 
+        expand_limits(x=0, y=0))
+}
+
+# From https://stackoverflow.com/a/38420690/4110059
+grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), position = c("bottom", "top", "right")) {
+
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position = "none"))
+  gl <- c(gl, nrow = nrow, ncol = ncol)
+
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "top" = arrangeGrob(legend, do.call(arrangeGrob,gl),
+                                            ncol = 1,
+                                            heights = unit.c(lheight, unit(1, "npc") - lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+  grid.newpage()
+  grid.draw(combined)
+
+}
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6 :height 2.5
+plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampling, linetype=kernel_sampling))) +
+    labs(colour="Kernel modeling") +
+    labs(linetype="Kernel modeling") +
+    xlab('Matrix rank') +
+    ylab('Performance [Gflop/s]') +
+    ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI processes)")
+plot2 = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=kernel_sampling, linetype=kernel_sampling))) +
+    labs(colour="Kernel modeling") +
+    labs(linetype="Kernel modeling") +
+    xlab('Matrix rank') +
+    ylab('Time [seconds]') +
+    ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI processes)")
+
+grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
+#+end_src
+
+#+RESULTS:
+[[file:figures/validation_kernel_modeling.pdf]]
+
+
+
 *** Hidden section with macro code                               :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({ \
