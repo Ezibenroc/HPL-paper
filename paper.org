@@ -1430,7 +1430,7 @@ Figure{fig:macro_real}.
   \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}\centering
     \scalebox{.88}{\begin{tabular}{l|r|r|r|r}
     & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
-    & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] \\
+    & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ \\
     \hline
     \texttt{DGEMM} & \num{1.029e-11} & \num{2.737e-02} & \num{1.981e-12} & \num{6.316e-01} \\
     \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01}
