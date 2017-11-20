@@ -1319,7 +1319,7 @@ a higher latency (higher intercept).
 \begin{figure*}%[!htb]
   \centering
   \begin{minipage}[b]{.27\textwidth}
-    \includegraphics[width=\linewidth,page=2]{./figures/Stampede_knc_model.pdf}
+    \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
     \vspace{-2em}
     \caption{Automatic offloading on the KNC depends on matrix dimensions.}
     \vspace{-1em}
@@ -1330,8 +1330,9 @@ a higher latency (higher intercept).
     & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] \\
     \hline
     \texttt{DGEMM} & \num{1.029e-11} & \num{2.737e-02} & \num{1.981e-12} & \num{6.316e-01} \\
-    \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01} \\
-    \end{tabular}}
+    \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01}
+    \end{tabular}}\medskip\\
+    \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
     \caption{Modeling automatic offloading on KNC in MKL BLAS kernels.}
     \vspace{-1em}
     \label{fig:macro_real}
@@ -1424,7 +1425,7 @@ get_legend<-function(myggplot){
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file figures/Stampede_knc_model.pdf :exports both :width 3.5 :height 5.3 :session *R* 
+#+begin_src R :results output graphics :file figures/stampede_knc_model.pdf :exports both :width 3.5 :height 5.3 :session *R* 
   labels = rbind(
       data.frame(x = 2E11, y=3.5, label="Offloading on the KNC", offload = T),
       data.frame(x = 1.1E11, y=1, label="Computation on the CPU", offload = F));
@@ -1449,10 +1450,10 @@ get_legend<-function(myggplot){
 #+end_src
 
 #+RESULTS:
-[[file:figures/Stampede_knc_model.pdf]]
+[[file:figures/stampede_knc_model.pdf]]
 
 #+begin_src sh :results output :exports both
-pdfcrop figures/Stampede_knc_model.pdf figures/Stampede_knc_model.pdf
+pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 #+end_src
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
@@ -1471,7 +1472,7 @@ and a fluid model, supporting different modes for the send operation
 such as fully asynchronous, detached or eager. For each message, the
 mode used is determined solely on the message size. It is hence
 possible to model the resulting performance through a piece-wise,
-linear model, as depicted in Figure\ref{fig:Stampede_calibration}.
+linear model, as depicted in Figure\ref{fig:stampede_calibration}.
 For a thorough discussion of the calibration techniques, see\cite{smpi}.
 
 SMPI uses this model by default, however, it is not leveraged in the
@@ -1483,9 +1484,9 @@ via the /detached/ mode (depicted in green).
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/Stampede_calibration_send.png}
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
   \caption{Visualization of the analysis results as obtained on the Stampede system.}
-  \label{fig:Stampede_calibration}
+  \label{fig:stampede_calibration}
   \labspace
 \end{figure}
 #+END_EXPORT
