@@ -1878,11 +1878,6 @@ cp ~/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_un
 
 #+RESULTS:
 
-* TODO Capacity Planning
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:26]
-:END:
-\AL{Taken from CCgrid or alike ?}
 * TODO Conclusions
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
