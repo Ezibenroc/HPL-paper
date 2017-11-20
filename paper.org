@@ -219,7 +219,10 @@ proposal.
 % this is need to trim the number of authors and et al. for more than 3 authors
 \bstctlcite{IEEEexample:BSTcontrol}
 #+END_EXPORT
-* Introduction
+* TODO Introduction
+:LOGBOOK:
+- State "TODO"       from              [2017-11-20 lun. 15:15]
+:END:
 
 The world's largest and fastest machines are ranked twice a year in the so-called
 TOP500 list. Among the benchmarks that are often used to evaluate
@@ -1359,10 +1362,7 @@ simulations spend less than 10% of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
 Therefore, the simulation of the largest supercomputers is now within
 reach.
-* TODO Modeling Stampede and Simulating HPL
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:25]
-:END:
+* Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
 
 ** Modeling Stampede
