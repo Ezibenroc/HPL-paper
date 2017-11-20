@@ -1587,7 +1587,8 @@ of code are executed but not accounted for in our simulations: this
 allows to obtain fully deterministic simulations without harming the
 outcome of the simulation as they only represent a tiny fraction of
 the total execution time of HPL. A few HPL compilation flags (\eg
-whether =MPI_DATATYPE= should be used or not) could no be deduced from
+=HPL_NO_MPI_DATATYPE= and =HPL_COPY_L= that control whether MPI datatypes
+should be used or not and how) could no be deduced from
 the 2013 Stamped HPL output but we believe their impact should be
 minimal. Finally, the HPL output reports the use of HPL v2.1 but the
 main difference between v2.1 and v2.2 concerns the option to
