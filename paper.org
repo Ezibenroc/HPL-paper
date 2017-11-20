@@ -1362,6 +1362,331 @@ simulations spend less than 10% of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
 Therefore, the simulation of the largest supercomputers is now within
 reach.
+** Hidden section                                                 :noexport:
+Got data and code from the "2017-06-05 Monday: Plots for scalability
+test" section of Tom's journal:
+
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+library(ggrepel)
+library(reshape2)
+library(gridExtra)
+results = rbind(
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_512.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_1024.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_2048.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_4096.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_512.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_1024.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_2048.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_4096.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_512.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_1024.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_2048.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_4096.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_512.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_1024.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_2048.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_4096.csv')
+)
+results$simulation_time = results$simulation_time/3600
+results$memory_size = results$memory_size * 1e-9
+number_verb <- function(n) {
+    return(format(n,big.mark=",",scientific=FALSE))
+}
+results$size_verb = factor(unlist(lapply(results$size, number_verb)), levels = c('500,000','1,000,000','2,000,000','4,000,000'))
+results$nb_proc_verb = factor(unlist(lapply(results$nb_proc, number_verb)), levels = c('512', '1,024', '2,048', '4,096'))
+results
+#+end_src
+
+#+RESULTS:
+#+begin_example
+             topology nb_roots nb_proc    size  full_time        time Gflops
+1  2;16,32;1,16;1,1;8       16     512  500000    91246.1    91246.02  913.3
+2  2;16,32;1,16;1,1;8       16    1024  500000    46990.1    46990.02 1773.0
+3  2;16,32;1,16;1,1;8       16    2048  500000    24795.5    24795.50 3361.0
+4  2;16,32;1,16;1,1;8       16    4096  500000    13561.0    13561.01 6145.0
+5    2;16,32;1,16;1,1       16     512 1000000   716521.0   716521.00  930.4
+6    2;16,32;1,16;1,1       16    1024 1000000   363201.0   363201.04 1836.0
+7    2;16,32;1,16;1,1       16    2048 1000000   186496.0   186495.70 3575.0
+8  2;16,32;1,16;1,1;8       16    4096 1000000    97836.6    97836.54 6814.0
+9    2;16,32;1,16;1,1       16     512 2000000  5685080.0  5685077.72  938.1
+10   2;16,32;1,16;1,1       16    1024 2000000  2861010.0  2861012.55 1864.0
+11   2;16,32;1,16;1,1       16    2048 2000000  1448900.0  1448899.09 3681.0
+12 2;16,32;1,16;1,1;8       16    4096 2000000   742691.0   742690.59 7181.0
+13 2;16,32;1,16;1,1;8       16     512 4000000 45305100.0 45305083.56  941.8
+14 2;16,32;1,16;1,1;8       16    1024 4000000 22723800.0 22723820.45 1878.0
+15 2;16,32;1,16;1,1;8       16    2048 4000000 11432900.0 11432938.62 3732.0
+16 2;16,32;1,16;1,1;8       16    4096 4000000  5787160.0  5787164.09 7373.0
+   simulation_time application_time user_time system_time major_page_fault
+1        0.3311083          204.992   1098.25       93.12                0
+2        0.6895222          441.897   2296.51      184.70                0
+3        1.4144361          872.425   4741.26      349.79                0
+4        3.1448889         1947.320  10640.63      679.53                0
+5        0.7319722          500.970   2367.19      259.91                0
+6        1.6771917         1036.960   5515.36      515.05                0
+7        3.4421944         2092.950  11389.36      995.39                0
+8        7.2368056         4362.660  24082.38     1966.10                0
+9        1.9263500         1169.660   6193.80      683.73                0
+10       4.2217500         2551.100  13714.01     1430.93                0
+11       8.9621111         5236.560  29357.92     2844.89                0
+12      18.0156389        10643.600  59444.40     5402.24                0
+13       4.8156944         3030.400  15090.31     1945.23                0
+14      10.6613611         6435.870  34249.71     3827.36                0
+15      23.2042222        13080.500  75523.95     7684.52                0
+16      47.1275000        26745.400 154314.76    15085.08                0
+   minor_page_fault cpu_utilization        uss         rss page_table_size
+1            960072            0.99  155148288  2055086080        10604000
+2           1054062            0.99  369696768  4383203328        21240000
+3           1282294            0.99 1012477952  9367576576        42912000
+4           1852119            0.99 3103875072 15318568960        87740000
+5           1916208            0.99  153665536  2317279232        10600000
+6           2002989            0.99  369676288  4837175296        21252000
+7           2154982            0.99 1010696192  7774138368        42908000
+8           2768705            0.99 3103895552 16934834176        87748000
+9           3801905            0.99  150765568  2758770688        10604000
+10          3872820            0.99  365555712  5273034752        21220000
+11          4038099            0.99 1009606656  7415914496        42884000
+12          4704339            0.99 3102445568 19464646656        87748000
+13          7663911            0.98  151576576  2056916992        10604000
+14          7725625            0.99  369872896  4120702976        21212000
+15          7917525            0.99 1012191232  9221050368        42880000
+16          8550745            0.99 3113381888 20408209408        87808000
+   memory_size size_verb nb_proc_verb
+1    0.2825585   500,000          512
+2    0.4299489   500,000        1,024
+3    0.9628262   500,000        2,048
+4    2.8140421   500,000        4,096
+5    0.8944435 1,000,000          512
+6    1.0553098 1,000,000        1,024
+7    1.5811707 1,000,000        2,048
+8    3.4254070 1,000,000        4,096
+9    3.3384202 2,000,000          512
+10   3.4971116 2,000,000        1,024
+11   4.0274084 2,000,000        2,048
+12   5.9101348 2,000,000        4,096
+13  13.0790605 4,000,000          512
+14  13.2755579 4,000,000        1,024
+15  13.8251837 4,000,000        2,048
+16  15.7636690 4,000,000        4,096
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+  library(ggplot2)
+  library(gridExtra)
+  library(grid)
+
+  generic_do_plot <- function(plot, fixed_shape=TRUE) {
+  #   For xrange, see https://stackoverflow.com/questions/7705345/how-can-i-extract-plot-axes-ranges-for-a-ggplot2-object
+  #   old version for xrange (broken)
+  #   xrange = ggplot_build(plot)$panel$ranges[[1]]$x.range
+  #   new version for xrange (may break in the next ggplot update...)
+      xrange = ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+      xwidth = xrange[2] - xrange[1]
+      if(fixed_shape) {
+          point = stat_summary(fun.y = mean, geom="point", shape=21)
+      }
+      else {
+          point = stat_summary(fun.y = mean, geom="point")
+      }
+      return(plot +
+          stat_summary(fun.data = mean_se, geom = "errorbar", width=xwidth/20)+
+          stat_summary(fun.y = mean, geom="line")+
+          point+
+          theme_bw()+
+          expand_limits(x=0, y=0))
+  }
+  do_plot <- function(df, x, y, color, color_title, fixed_val, other_fixed_val=-1) {
+      if(y == "simulation_time") {
+          y_title = "Simulation time (seconds)"
+          title = "Simulation time"
+      }
+      else if(y == "memory_size") {
+          y_title = "Memory consumption (bytes)"
+          title = "Memory consumption"
+      }
+      else {
+          stopifnot(y == "Gflops")
+          y_title = "Performance estimation (Gflops)"
+          title = "Performance estimation"
+      }
+      if(x == "size") {
+          fixed_arg = "nb_proc"
+          x_title = "Matrix size"
+          title = paste(title, "for different matrix sizes\nUsing", fixed_val, "MPI processes")
+      }
+      else {
+          stopifnot(x == "nb_proc")
+          fixed_arg = "size"
+          x_title = "Number of processes"
+          title = paste(title, "for different number of processes\nUsing a matrix size of", format(fixed_val,big.mark=",",scientific=FALSE))
+      }
+      sub_df = df[df[fixed_arg] == fixed_val,]
+      p = generic_do_plot(ggplot(sub_df, aes_string(x=x, y=y, linetype=color, color=color, group=color))) +
+          ggtitle(title)+
+          xlab(x_title)+
+          ylab(y_title)+
+          labs(colour=color_title)+
+          labs(linetype=color_title)
+      if(other_fixed_val != -1) {
+          rect <- data.frame(xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)
+          my_xmin = other_fixed_val * 0.9
+          my_xmax = other_fixed_val * 1.1
+          my_ymax = max(sub_df[sub_df[x] == other_fixed_val,][y])
+          y_delta = my_ymax * 0.1
+          my_ymax = my_ymax + y_delta
+          my_ymin = min(sub_df[sub_df[x] == other_fixed_val,][y]) - y_delta
+          p = p + geom_rect(data=rect, aes(xmin=my_xmin, xmax=my_xmax, ymin=my_ymin, ymax=my_ymax),color="grey20", alpha=0.1, inherit.aes=FALSE)
+      }
+      return(p)
+  }
+
+  # From https://stackoverflow.com/a/38420690/4110059
+  grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), position = c("bottom", "right")) {
+
+    plots <- list(...)
+    position <- match.arg(position)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+    lheight <- sum(legend$height)
+    lwidth <- sum(legend$width)
+    gl <- lapply(plots, function(x) x + theme(legend.position = "none"))
+    gl <- c(gl, nrow = nrow, ncol = ncol)
+
+    combined <- switch(position,
+                       "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                              legend,
+                                              ncol = 1,
+                                              heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                       "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                             legend,
+                                             ncol = 2,
+                                             widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+    grid.newpage()
+    grid.draw(combined)
+
+  }
+
+  do_multiple_plot <- function(df, x1, x2, y, color, color_title, fixed_x1, fixed_x2) {
+      my_ymax = max(df[y])
+      return(
+          grid_arrange_shared_legend(
+              do_plot(df, x1, y, color, color_title, fixed_x1, fixed_x2) + expand_limits(x=0, y=my_ymax),
+              do_plot(df, x2, y, color, color_title, fixed_x2, fixed_x1) + expand_limits(x=0, y=my_ymax),
+              nrow=1, ncol=2
+          ))
+  }
+
+  do_four_plot <- function(df, x1, x2, y1, y2, color, color_title, fixed_x1, fixed_x2) {
+      my_y1max = max(df[y1])
+      my_y2max = max(df[y2])
+      return(
+          grid_arrange_shared_legend(
+              do_plot(df, x1, y1, color, color_title, fixed_x1, fixed_x2) + expand_limits(x=0, y=my_y1max),
+              do_plot(df, x2, y1, color, color_title, fixed_x2, fixed_x1) + expand_limits(x=0, y=my_y1max),
+              do_plot(df, x1, y2, color, color_title, fixed_x1, fixed_x2) + expand_limits(x=0, y=my_y2max),
+              do_plot(df, x2, y2, color, color_title, fixed_x2, fixed_x1) + expand_limits(x=0, y=my_y2max),
+              nrow=2, ncol=2
+          ))
+  }
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :file figures/scalability_1.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+size_time = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=nb_proc_verb))) +
+    xlab("Matrix size") +
+    ylab("Simulation time (hours)") +
+    labs(colour="Number of processes")+
+    ggtitle("Simulation time for different matrix sizes")+
+    theme(legend.position = "none")+
+    geom_text_repel(
+        data = subset(results, size == max(size)),
+        aes(label = nb_proc_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+      )
+size_time
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_1.pdf]]
+
+#+begin_src R :file figures/scalability_2.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+nbproc_time = generic_do_plot(ggplot(results, aes(x=nb_proc, y=simulation_time, color=size_verb))) +
+    xlab("Number of processes") +
+    ylab("Simulation time (hours)") +
+    labs(colour="Matrix size")+
+    ggtitle("Simulation time for different number of processes")+
+    theme(legend.position = "none")+
+    geom_text_repel(
+        data = subset(results, nb_proc == max(nb_proc)),
+        aes(label = size_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+      )
+nbproc_time
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_2.pdf]]
+
+#+begin_src R :file figures/scalability_3.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+size_mem = generic_do_plot(ggplot(results, aes(x=size, y=memory_size, color=nb_proc_verb))) +
+    xlab("Matrix size") +
+    ylab("Memory consumption (gigabytes)") +
+    labs(colour="Number of processes")+
+    ggtitle("Memory consumption for different matrix sizes")+
+    theme(legend.position = "none")+
+    geom_text_repel(
+        data = subset(results, size == max(size)),
+        aes(label = nb_proc_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+      )
+size_mem
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_3.pdf]]
+
+#+begin_src R :file figures/scalability_4.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+nbproc_mem = generic_do_plot(ggplot(results, aes(x=nb_proc, y=memory_size, color=size_verb))) +
+    xlab("Number of processes") +
+    ylab("Memory consumption (gigabytes)") +
+    labs(colour="Matrix size")+
+    ggtitle("Memory consumption for different number of processes")+
+    theme(legend.position = "none")+
+    geom_text_repel(
+        data = subset(results, nb_proc == max(nb_proc)),
+        aes(label = size_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+    )
+nbproc_mem
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_4.pdf]]
+
+#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 9 :height 2.8
+grid_arrange_shared_legend(size_time, size_mem, nrow=1, ncol=2)
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_plot_size.pdf]]
+
+#+begin_src R :file figures/scalability_plot_nbproc.pdf :results value graphics :results output :session *R* :exports both :width 9 :height 2.8
+grid_arrange_shared_legend(nbproc_time, nbproc_mem, nrow=1, ncol=2)
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_plot_nbproc.pdf]]
+
 * Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
 
