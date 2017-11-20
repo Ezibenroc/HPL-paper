@@ -2317,9 +2317,9 @@ algorithm was used. Likewise the swapping algorithm
 organized in trees, which is surprising as the "spread-roll" algorithm
 is recommended for large problem sizes.
 
-We obviously do not aim at reverse engineering the Intel HPL code but
-1) it appears clearly that many optimizations have been done on the
-communication side and 2) it is very likely that the reported
+We obviously do not aim at reverse engineering the Intel HPL code
+but 1) it appears clearly that many optimizations have been done on
+the communication side and 2) it is very likely that the reported
 parameters are not the ones in fullrun, probably because several
 decisions have been hardcoded.
 *** Gantt charts                                                 :noexport:
