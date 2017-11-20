@@ -572,64 +572,67 @@ simulations of applications can quickly become intractable.
 #+LaTeX: \label{sec:relwork}
 
 Performance prediction of MPI application through simulation has been
-widely studied in the last decades and one can distinguish mainly
+widely studied over the last decades, with today's literature distinguishing mainly
 between two approaches: offline and online simulation.
 
-The first and most common approach, offline simulation, consists in
-tracing the behavior of the application as a sequence of MPI
-operations and CPU bursts, and then to replay such trace on top of a
-simulator implementing performance models of the network and of the MPI
-layer. The parameters of the platform can then easily be varied to
-evaluate their impact or to hint at some application bottlenecks.
-Most simulators available today, among them BigSim\cite{bigsim_04},
+With the most common approach, /offline simulation/, the application
+is time-independently traced during an execution. Here, only the order of MPI operations and CPU
+bursts are of interest that can then be replayed on top of a simulator
+that calculates the timings through its implemented models of the network and the MPI
+layer. Since the trace can be replayed without re-executing the
+application, parameters of the platform model supplied to the
+simulator can be changed *and the impact of that change* can be evaluated. 
+Most HPC simulators available today, among them BigSim\cite{bigsim_04},
 Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 
-The main limitation of this approach are related to the trace
-acquisition. First acquiring a trace at such scale typically requires
-a full-scale execution, which is precisely what we want to
-avoid. Second, the traces contain only information about a single run
-and give no hint about the consequences (e.g., in term of
+The main limitation of this approach comes from the trace
+acquisition requirement. Obtaining a trace up front at such scale and complexity
+generally renders it impossible to accurately calculate the trace, hence requiring
+a full-scale execution. This, however, is exactly what we aim to avoid.
+Additionally, the traces contain only information about a single run
+and cannot give clues about the consequences (\eg in terms of
 communication patterns) of simple modifications of application
-parameters. For simple applications (e.g., stencil), it may be
+parameters. For simple applications (\eg =stencil=), it may be
 possible to extrapolate behavior from small-scale
 traces\cite{scalaextrap,pmac_lspp13} but whenever the application relies on
-non-blocking communication patterns, the execution becomes non
-deterministic. This approach is therefore unusable in the case of HPL
-due to the size of the obtained traces and the complexity of the
-application, as HPL implements for instance several broadcast
-strategies that influence the performance significantly.
+non-blocking communication patterns, the execution becomes
+non-deterministic. In the case of HPL, this approach is thus unusable
+due to the size of the obtained traces (\approx 110 TB at the scale of
+Stampede1) and the complexity of the application (\eg six broadcast strategies implemented by HPL, ...)
+that influence the performance significantly.
 
-Online simulation is a form of emulation where the application is
-executed in a very controlled way on top of the simulator. The
-simulator is responsible for determining, using platform performance
-models, when each process should be run. Running the whole application
-allows to faithfully capture its behavior at the level of MPI. A few
-recent simulators rely on the online approach, among which the
+The second approach discussed in literature is /online simulation/.
+Here, the application is executed (emulated) in a tightly controlled way on top of the simulator. The
+simulator itself is responsible for determining when each process
+should be allowed to run. Executing the application allows researchers
+to observe its behavior *at the level of MPI*. Only a few
+recent simulators support the online approach, such as the
 extreme-scale simulator xSim\cite{xsim}, SST Macro\cite{sstmacro} and
 SimGrid/SMPI\cite{simgrid}.
-
-Since HPL implements its own broadcast strategies, trace-based
-simulation is no longer sufficient as these strategies are vital for
-HPL's performance. Hence, emulation is required but it raises at least
+ 
+Since HPL implements its own broadcast algorithms, trace-based
+(offline) simulation is not sufficient for investigating HPL as these strategies are vital for
+its performance. Hence, emulation is required but it comes with at least
 two challenges:
-- First, the time-complexity of the algorithm is $O(N^3)$ and
-  $O(N^2)$ communications are performed, with $N$ being very
-  large. The execution on the Stampede cluster took almost two hours
-  with 6,006 computing nodes. Although the emulation could be done in
-  parallel, we obviously want to limit the computing resources used
-  when performing and emulation. Using only a single node, a naive
-  emulation of HPL at the scale of the Stampede run would take about
-  500 days at best.
-- Second, the memory consumption of such application is tremendous and
-  the emulation needs to be able to deal with an application
-  manipulating hundreds of tera bytes of RAM.
-The source code of xSim is not available, which prevents its use in
-our context. Hence, to the best of our knowledge, only SST Macro and
-SimGrid/SMPI are suited and mature enough to the faithful emulation of
-HPL. In the following, we decide to rely on SimGrid as we are already
-have a very good knowledge of its internals but the developments we
-propose would a priori also be possible within the SST Macro
-framework.
+- Firstly, as we have seen before, the time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
+  $\mathcal{O}(N^2)$ communications are performed, with $N$ being very
+  large. The execution on the Stampede cluster took roughly two hours
+  on 6,006 compute nodes. Although the emulation could be done in
+  parallel, we want to limit the computing resources used
+  for an emulation. Using only a single node, a naive
+  emulation of HPL at the scale of the Stampede1 run would take about
+  500 days if perfect scaling is reached.
+- Secondly, the tremendous memory consumption and consequent high
+  number of RAM accesses for read/write operations need to be dealt with 
+
+To the best of our knowledge, only SST Macro and
+SimGrid/SMPI are openly available and mature enough to the faithful emulation of
+HPL as xSim is at this point not freely available. For the following
+discussion of our work, we rely on SimGrid as we 
+have an excellent knowledge of its internals although the developments we
+propose would a priori also be possible with SST Macro.
+
+#+LATEX: \CH{I don't like that we introduce the online approach and existing algorithms, then come back to HPL and its requirements and then back to the simulators.}
 
 # Real execution:
 # - Matrix of size 3,875,000
