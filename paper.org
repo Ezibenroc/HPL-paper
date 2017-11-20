@@ -440,6 +440,16 @@ computational resources (the 16 CPU-cores and the Xeon Phi) may have been done t
 Intel's MKL.
 
 #+BEGIN_EXPORT latex
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
+  \caption{The fat-tree network topology of Stampede.}
+  \label{fig:fat_tree_topology}
+  \labspace
+\end{figure}
+#+END_EXPORT
+
+#+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
   \centering
   \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
@@ -449,19 +459,7 @@ Intel's MKL.
   \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
-*** TODO Add a fat-tree figure
-:LOGBOOK:
-- State "TODO"       from              [2017-11-17 ven. 14:36]
-:END:
-#+BEGIN_EXPORT latex
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
-  \caption{A fat-tree}
-  \label{fig:fat_tree_topology}
-  \labspace
-\end{figure}
-#+END_EXPORT
+
 \AL{All the C source codes are wrapped in int main() for no reason.}
 *** Hidden information about the Stampede execution              :noexport:
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
