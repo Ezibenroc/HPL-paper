@@ -1010,8 +1010,8 @@ grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
         coefficient = (double)SMPI_DTRSM_PHI_COEFFICIENT;                           \
         intercept = (double)SMPI_DTRSM_PHI_INTERCEPT;                               \
     } else {                                                                        \
-        coefficient = (double)SMPI_DTRSM_CPU_COEFFICIENT;                               \
-        intercept = (double)SMPI_DTRSM_CPU_INTERCEPT;                                   \
+        coefficient = (double)SMPI_DTRSM_CPU_COEFFICIENT;                           \
+        intercept = (double)SMPI_DTRSM_CPU_INTERCEPT;                               \
     }                                                                               \
     if((Side) == HplLeft) {                                                         \
         expected_time = coefficient*((double)(M))*((double)(M))*((double)(N));      \
