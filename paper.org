@@ -1715,33 +1715,79 @@ ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geo
 [[file:/tmp/babel-23284Iao/figure232842Rn.png]]
 
 *** Performance Gap Investigation
+# The simulation time to get the full-scale trace was:
+# - 420 seconds for two iterations (250 seconds spent in HPL),
+# - 609 seconds for five iterations (265 seconds spent in HPL).
+In this section, we explain our investigation and possible reasons for
+the previous mismatch. First of all, it is easy to use SMPI to trace
+the first iterations of HPL to try to understand what could be
+improved (the trace for the first five iterations can be obtained in
+about 609 seconds on a laptop and weights about \SI{175}{\mega\byte}
+compressed). Figure\ref{fig:hpl_gantt} depicts the first iterations
+clearly depicts the very synchronous and iterative nature of this
+code: first a factorization of the panel, then a broadcast to all the
+nodes, and finally an update of trailing matrix.
+#+BEGIN_EXPORT latex
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth,page=1]{./figures/fullscale_unzoomed.png}
+  \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
+      red while computations are in light blue. Each communication between two process
+      is represented with a white arrow, which results in very cluttered white areas.}
+  \label{fig:hpl_gantt}
+  \labspace
+\end{figure}
+#+END_EXPORT
+On such a trace, it appears clearly that more than a fifth of each
+iteration is spent solely communicating (, whereas the first
+iterations are the ones where the communication to computation ratio
+is the lower), which prevents HPL from reaching the expected
+performance. Only an overlap of computation and communication would
+allow to significantly improve performances. The fact that there is
+almost no overlap can easily be explained by the look-ahead ~DEPTH=0~
+parameter, which we set accordingly to the configuration presented in
+Figure\ref{fig:hpl_output}. Such a choice is quite surprising as even
+the tuning section of the HPL documentation indicates that a depth of
+1 generally gives the best results, although a large problem size may
+be needed to see some performance gain. After exposing this
+surprising behavior to our TACC colleagues, they taught us that run a
+binary version of HPL provided by Intel and that this code had
+probably been specifically modified for Stampede. In particular, we
+believe, some values have been hardcoded to enforce an overlap of
+iterations with each others. Indeed, the part in the =[...]= of
+Figure\ref{hpl_output} provides information about the progression of
+HPL throughout iterations and statistics about the time spent in the
+most important parts for the process owning the panel. The total time
+spent in the =Update= section is \SI{9390}{\sec} whereas the total
+execution time is \SI{7505}{\sec}, which clearly indicates iterations
+have overlapped.
 
-We explain our investigation and possible reasons for the previous
-mismatch.
-- Gantt chart + analysis + explanation that there is something wrong with communications. Three parts in the communications:
-  - synchro
-  - bcast
-  - update
-  Such an execution + tracing is very fast! :)
-- Only an overlap of computation and communication would allow to
-  obtain such performances. This is really strange as the current
-  version has almost no overlap, which can be explained by the
-  reported DEPTH=0. But setting DEPTH to 1 is a very strange choice.
-- The bcast algorithm seems very intense and ok although it was what
-  we initially focused on the most, trying to change it as much as
-  possible with little effect on the overall performance. We decided
-  to tell our TACC colleagues there was something wrong and they
-  explained us they had run the Intel binary. It appears that
-  intel_xphpl seems to have another bcast algorithm whose name is
-  "HPL_bcast_bpush" and which does non-blocking sends, unlike all
-  other algorithms. This is a possible explanation for the improved performance although the output reports blonM was used.
-- The update communication is quite long and organized in trees involving really long communications. This is expected with such algorithm but this choice is very surprising for large setups.
+The broadcast and swapping algorithms generate very heavy
+communication patterns, which is not surprising since for a matrix of
+this size, several hundreds of megabytes need to be broadcast. Our
+attempts to use other variants did not allow to significantly improve
+overall performance. A quick investigation of the Intel binary
+indicates that it ships with another broadcast algorithm whose name is
+=HPL_bcast_bpush= and which calls non-blocking sends, unlike all other
+algorithms.  This is an additional possible explanation for the
+performance obtained in 2013 although the output reports the =BlongM=
+algorithm was used. Likewise the swapping algorithm
+(~SWAP=Binary-exchange~) involves communications that are quite long and
+organized in trees, which is surprising as the "spread-roll" algorithm
+is recommended for large problem sizes.
 
-We obviously do not aim at reverse engineering the intel_xhpl code but it appears 1) clearly that many optimizations have been done on the communication side and 2) very likely that the reported parameters are not the ones in fullrun, probably because several decisions have been hardcoded. 
+We obviously do not aim at reverse engineering the Intel HPL code but
+1) it appears clearly that many optimizations have been done on the
+communication side and 2) it is very likely that the reported
+parameters are not the ones in fullrun, probably because several
+decisions have been hardcoded.
+*** Gantt charts                                                 :noexport:
+#+begin_src sh :results output :exports both
+cp ~/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
+#+end_src
 
-We already had conducted successful small-scale validation studies. We
-conclude that our large-scale (in)validation is unfortunately not
-possible as we do not have access to the original source code used by Intel but we claim that the modifications we did were minor and should easily be applied to their version. Such a simulator would then be a valuable tuning tool.
+#+RESULTS:
+
 * TODO Capacity Planning
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
@@ -1752,6 +1798,14 @@ possible as we do not have access to the original source code used by Intel but 
 - State "TODO"       from              [2017-11-15 mer. 16:26]
 :END:
 #+LaTeX: \label{sec:cl}
+
+We already had conducted successful small-scale validation studies. We
+conclude that our large-scale (in)validation is unfortunately not
+possible as we do not have access to the original source code used by
+Intel but we claim that the modifications we did were minor and should
+easily be applied to their version. Such a simulator would then be a
+valuable tuning tool.
+
 
 Prediction of makespan of applications running on large-scale clusters
 is an intricate problem. In this article, we explained the problems
