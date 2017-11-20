@@ -1042,48 +1042,50 @@ grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
 #+LaTeX: \label{sec:hplchanges}
 
 #+BEGIN_EXPORT latex
-    \tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
-    \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
-    \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
-    \tikzstyle{bigswitch}=[base, draw]
-    \begin{figure*}%[htbp]
-      \centering
-      \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
-        \begin{minipage}[b]{.5\linewidth}\centering
-          \begin{tikzpicture}[scale=0.8]
-            \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
-            \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
-            \draw[dashed] (3, 2) -- (3, 3);
-            \draw[dashed] (6, 2) -- (6, 3);
-            \node(1) at (1.5, 2.5) {matrix parts};
-            \node(2) at (4.5, 2.5) {indices};
-            \node(3) at (7.5, 2.5) {matrix parts};
-            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
-          \end{tikzpicture}
-        \end{minipage}}%
-      \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
-        \begin{minipage}[b]{.5\linewidth}\centering
-          \begin{tikzpicture}[yscale=.6]
-            \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
-            \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
-            \draw[dashed] (2, 1) -- (2, 1.5);
-            \draw[dashed] (4, 1) -- (4, 1.5);
+\tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
+\tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
+\tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
+\tikzstyle{bigswitch}=[base, draw]
+\begin{figure}%[htbp]
+  \centering
+  {\begin{minipage}{1.0\linewidth}
+  \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[scale=0.8]
+        \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
+        \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
+        \draw[dashed] (3, 2) -- (3, 3);
+        \draw[dashed] (6, 2) -- (6, 3);
+        \node(1) at (1.5, 2.5) {matrix parts};
+        \node(2) at (4.5, 2.5) {indices};
+        \node(3) at (7.5, 2.5) {matrix parts};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
+      \end{tikzpicture}
+    \end{minipage}}
+  \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[yscale=.6]
+        \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
+        \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
+        \draw[dashed] (2, 1) -- (2, 1.5);
+        \draw[dashed] (4, 1) -- (4, 1.5);
 
-            \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
-            \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
-            \draw[dashed] (2, 0) -- (2, .5);
-            \draw[dashed] (3, 0) -- (3, .5);
+        \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
+        \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
+        \draw[dashed] (2, 0) -- (2, .5);
+        \draw[dashed] (3, 0) -- (3, .5);
 
-            \draw[-latex] (2, 1) -- (2, .5);
-            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
-            \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
-          \end{tikzpicture}
-        \end{minipage}
-      }
-      \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}
-    \end{figure*}
+        \draw[-latex] (2, 1) -- (2, .5);
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
+      \end{tikzpicture}
+    \end{minipage}
+  }    
+  \end{minipage}}
+  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}
+\end{figure}
 #+END_EXPORT
 
 HPL uses huge pseudo-randomly generated matrices that need to be setup
