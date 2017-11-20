@@ -1300,7 +1300,7 @@ simulation time from about \SI{580}{\sec} to about \SI{175}{\sec}.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}                                                                                                                               
-  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
+%  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
   \caption{Time complexity and memory consumption are linear in the number of processes with a fixed matrix size but remain slightly quadratic when matrix size is varied. }
   \label{fig:hpl_scalability}
   \labspace
@@ -1592,26 +1592,6 @@ results
 
 #+RESULTS:
 
-#+begin_src R :file figures/scalability_1.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
-size_time = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=nb_proc_verb))) +
-    xlab("Matrix size") +
-    ylab("Simulation time (hours)") +
-    labs(colour="Number of processes")+
-    ggtitle("Simulation time for different matrix sizes")+
-    theme(legend.position = "none")+
-    geom_text_repel(
-        data = subset(results, size == max(size)),
-        aes(label = nb_proc_verb),
-        nudge_x = 45,
-        segment.color = NA,
-        show.legend = FALSE
-      )
-size_time
-#+end_src
-
-#+RESULTS:
-[[file:figures/scalability_1.pdf]]
-
 #+begin_src R :file figures/scalability_2.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
 nbproc_time = generic_do_plot(ggplot(results, aes(x=nb_proc, y=simulation_time, color=size_verb))) +
     xlab("Number of processes") +
@@ -1631,26 +1611,6 @@ nbproc_time
 
 #+RESULTS:
 [[file:figures/scalability_2.pdf]]
-
-#+begin_src R :file figures/scalability_3.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
-size_mem = generic_do_plot(ggplot(results, aes(x=size, y=memory_size, color=nb_proc_verb))) +
-    xlab("Matrix size") +
-    ylab("Memory consumption (gigabytes)") +
-    labs(colour="Number of processes")+
-    ggtitle("Memory consumption for different matrix sizes")+
-    theme(legend.position = "none")+
-    geom_text_repel(
-        data = subset(results, size == max(size)),
-        aes(label = nb_proc_verb),
-        nudge_x = 45,
-        segment.color = NA,
-        show.legend = FALSE
-      )
-size_mem
-#+end_src
-
-#+RESULTS:
-[[file:figures/scalability_3.pdf]]
 
 #+begin_src R :file figures/scalability_4.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
 nbproc_mem = generic_do_plot(ggplot(results, aes(x=nb_proc, y=memory_size, color=size_verb))) +
@@ -1672,19 +1632,185 @@ nbproc_mem
 #+RESULTS:
 [[file:figures/scalability_4.pdf]]
 
-#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 9 :height 2.8
+
+#+begin_src R :file figures/scalability_1.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+size_time = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=nb_proc_verb))) +
+    xlab("Matrix rank") +
+    ylab("Simulation time (hours)") +
+    labs(colour="Number of processes")+ scale_color_brewer(palette="Set1")+
+#    ggtitle("Simulation time for different matrix sizes")+
+    theme(legend.position = "none")+
+    geom_text_repel(
+        data = subset(results, size == max(size)),
+        aes(label = nb_proc_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+      )
+size_time
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_1.pdf]]
+
+#+begin_src R :file figures/scalability_3.pdf :results value graphics :results output :session *R* :exports both :width 4 :height 2.5
+size_mem = generic_do_plot(ggplot(results, aes(x=size, y=memory_size, color=nb_proc_verb))) +
+    xlab("Matrix rank") +
+    ylab("Memory consumption (gigabytes)") +
+    labs(colour="Number of processes")+
+#    ggtitle("Memory consumption for different matrix sizes")+
+    theme(legend.position = "none")+scale_color_brewer(palette="Set1")+
+    geom_text_repel(
+        data = subset(results, size == max(size)),
+        aes(label = nb_proc_verb),
+        nudge_x = 45,
+        segment.color = NA,
+        show.legend = FALSE
+      )
+size_mem
+#+end_src
+
+#+RESULTS:
+[[file:figures/scalability_3.pdf]]
+
+#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 7 :height 3.5
 grid_arrange_shared_legend(size_time, size_mem, nrow=1, ncol=2)
 #+end_src
 
 #+RESULTS:
 [[file:figures/scalability_plot_size.pdf]]
 
-#+begin_src R :file figures/scalability_plot_nbproc.pdf :results value graphics :results output :session *R* :exports both :width 9 :height 2.8
+#+begin_src R :file figures/scalability_plot_nbproc.pdf :results value graphics :results output :session *R* :exports both :width 8 :height 3.5
 grid_arrange_shared_legend(nbproc_time, nbproc_mem, nrow=1, ncol=2)
 #+end_src
 
 #+RESULTS:
 [[file:figures/scalability_plot_nbproc.pdf]]
+
+
+#+begin_src R :results output :session *R* :exports both
+fit_sim = lm(data=results, simulation_time ~ nb_proc*(size+I(size^2)))
+summary(fit_sim)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = simulation_time ~ nb_proc * (size + I(size^2)), 
+    data = results)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.192256 -0.050079 -0.004809  0.045721  0.231054 
+
+Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -1.522e-01  1.866e-01  -0.815   0.4339    
+nb_proc           -1.162e-04  7.907e-05  -1.469   0.1725    
+size               6.919e-08  2.214e-07   0.313   0.7610    
+I(size^2)         -8.691e-14  4.689e-14  -1.853   0.0935 .  
+nb_proc:size       1.608e-09  9.379e-11  17.142 9.64e-09 ***
+nb_proc:I(size^2)  3.450e-16  1.987e-17  17.366 8.49e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1343 on 10 degrees of freedom
+Multiple R-squared:  0.9999,	Adjusted R-squared:  0.9999 
+F-statistic: 2.46e+04 on 5 and 10 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+grid.lines = 26
+x.pred <- seq(min(results$nb_proc), max(results$nb_proc), length.out = grid.lines)
+y.pred <- seq(min(results$size), max(results$size), length.out = grid.lines)
+xy <- expand.grid( nb_proc = x.pred, size = y.pred)
+z.pred <- matrix(predict(fit_sim, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+# fitted points for droplines to surface
+fitpoints <- predict(fit_sim)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library("plot3D")
+scatter3D(
+   results$nb_proc, results$size, results$simulation_time, ticktype = "detailed", phi = 20, theta = -50, bty ="g",
+    pch = 20, cex = 2, type="l", r=10,
+    surf = list(x = x.pred, y = y.pred, z = z.pred,  
+    facets = NA, fit = fitpoints),colvar=NULL)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-23284Iao/figure23284S2p.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library("plot3D")
+scatter3D(results$nb_proc, results$size, results$simulation_time, ticktype = "detailed", phi = 0, theta = -50, bty ="g",
+           surf = list(x = unique(results$nb_proc), y = unique(results$size), z =  matrix(results$simulation_time, nrow=length(unique(results$nb_proc))),  facets = NA))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-23284Iao/figure23284QCE.png]]
+
+
+
+#+begin_src R :results output :session *R* :exports both
+fit_sim = lm(data=results,  memory_size ~ (nb_proc + I(nb_proc^2)) + I(size^2))
+summary(fit_sim)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = memory_size ~ (nb_proc + I(nb_proc^2)) + I(size^2), 
+    data = results)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.046408 -0.005840  0.001738  0.011710  0.058452 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  -3.785e-02  2.247e-02  -1.685   0.1179    
+nb_proc       1.264e-04  2.519e-05   5.019   0.0003 ***
+I(nb_proc^2)  1.288e-07  5.211e-09  24.712 1.17e-11 ***
+I(size^2)     8.166e-13  1.063e-15 767.967  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.02691 on 12 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:      1 
+F-statistic: 2.043e+05 on 3 and 12 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+grid.lines = 26
+x.pred <- seq(min(results$nb_proc), max(results$nb_proc), length.out = grid.lines)
+y.pred <- seq(min(results$size), max(results$size), length.out = grid.lines)
+xy <- expand.grid( nb_proc = x.pred, size = y.pred)
+z.pred <- matrix(predict(fit_sim, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+# fitted points for droplines to surface
+fitpoints <- predict(fit_sim)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library("plot3D")
+scatter3D(
+   results$nb_proc, results$size, results$memory_size, ticktype = "detailed", phi = -10, theta = -50, bty ="g",
+    pch = 18, cex = 2, 
+    surf = list(x = x.pred, y = y.pred, z = z.pred,  
+    facets = NA, fit = fitpoints),colvar=NULL)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-23284Iao/figure23284e_o.png]]
+
 
 * Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
