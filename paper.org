@@ -1367,9 +1367,9 @@ Figure{fig:macro_real}.
 #+begin_src R :results output :session *R* :exports both
   library(gridExtra)
   library(ggplot2)
-  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/Stampede/offloading_dgemm.csv')
+  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
   dgemm$m = as.double(dgemm$m)
-  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/Stampede/offloading_dtrsm.csv')
+  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
   dtrsm$m = as.double(dtrsm$m)
 
   dgemm_new = dgemm[dgemm$automatic_offload == 'True',]
@@ -1442,7 +1442,9 @@ get_legend<-function(myggplot){
   p1 = ggplot(dgemm_new, aes_string(x='m*n*k', y='time', color='offload')) +
       geom_point() + geom_smooth(method="lm",fullrange=T) + theme(legend.position="top") + 
       geom_text(data = labels, aes(x=x, y=y, color=offload, label=label)) + ylim(0,1.1*max(dgemm_new$time)) +
-      ggtitle('Duration of DGEMM') + theme_bw()
+      ggtitle('Duration of DGEMM') + theme_bw() +
+      xlab("M.N.K [Flop]") + ylab("Duration [s]") + scale_color_brewer(palette="Set1")
+
   p1_legend = get_legend(p1);
   p1 = p1 + theme(legend.position="none")
   labels = rbind(
@@ -1451,7 +1453,8 @@ get_legend<-function(myggplot){
   p2 = ggplot(dtrsm_new, aes_string(x='m*n*n', y='time', color='offload')) +
       geom_point()+ geom_smooth(method="lm",fullrange=T) +  ylim(0,1.1*max(dtrsm_new$time)) +
       geom_text(data = labels, aes(x=x, y=y, color=offload, label=label)) +
-      ggtitle('Duration of DTRSM') + theme_bw()
+      ggtitle('Duration of DTRSM') + theme_bw() +
+      xlab("M.N² [Flop]") + ylab("Duration [s]") + scale_color_brewer(palette="Set1")
   p2 = p2 + theme(legend.position="none")
 
    lay <- rbind(c(1), c(2));
