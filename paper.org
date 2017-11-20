@@ -671,48 +671,51 @@ very limited information about the setup (\eg software versions, background
 processes, ...).
 
 ** MPI Communication Modeling
-The first challenge arising when modeling communication of MPI
-applications is related to the complex network optimizations done in
-real MPI implementations. Different transmission protocols (short,
-eager, rendez-vous) may be used depending on the message size, which
-incurs different synchronization semantics. These optimizations also
-lead to very different effective latency and bandwidth values
-depending on message size. To capture all such effects, SMPI relies on
+The complex network optimizations done in real MPI implementations
+pose a challenge when modeling MPI applications.
+Transmission protocols (\ie short, eager, rendez-vous) can be selected
+based on the message size, with each protocol incurring its own
+synchronization semantics.
+#+LATEX: \AL{Is \ie correct or should I rather use \eg for that list?}
+These optimizations furthermore cause the network's latency and bandwidth
+factors to depend on message size. To capture this behavior, SMPI relies on
 a generalization of the LogGPS model\cite{smpi} where several
-synchronization and performance modes can be specified. Such model can
-be instantiated through a carefully controlled series of messages
+synchronization and performance modes can be specified. This model
+needs to be instantiated once per platform through a carefully controlled series of messages
 (=MPI_Send= and =MPI_Recv=) between two nodes and through a set of
 piece-wise linear regressions.
 
-The second key challenge is raised by the modeling of network topology
-and contention. SMPI relies on the flow-level models of SimGrid: each
-communication is represented by a /flow/, as single entity rather than
-as sets of individual packets. Assuming steady-state, the contention
+The second challenge concerns modeling network topologies
+and contention. SMPI relies on SimGrid's flow-level communication models: each ongoing
+communication is represented by a /flow/ and thus as a single entity rather than
+a number of individual packets. With *steady-state* being assumed, contention
 between active communications is modeled as a bandwidth sharing
 problem that accounts for non-trivial phenomena (\eg RTT-unfairness of
-TCP, cross-traffic interference or simply network
-heterogeneity\cite{Velho_TOMACS13}). Every time a communication starts or
-ends, the bandwidth sharing has to be recomputed, which can be too
-slow and complex to scale to large platforms. Although transient
-phenomenon and network protocol instability are not modeled, it allows
-to efficiently account for network topology and heterogeneity. The
-main advantage of this approach is that the simulation time of a
-communication is independent on message size, which is an asset for
-simulating large scale tightly coupled applications such as HPL.
+TCP, cross-traffic interference or network
+heterogeneity\cite{Velho_TOMACS13}). However, a communication
+that starts or ends has to trigger a possibly expensive re-computation
+of the bandwidth sharing in order to keep results accurate, making
+this approach too slow and complex to scale to large platforms. Transient
+phenomena and network protocol *instability* are not modeled but network
+topology and heterogeneity are accounted for. A consequence of this flow-based model is that the *simulation cost* of a
+message passing through the network is independent of its size. This
+is advantageous for large-scale applications frequently sending large messages.
+#+LATEX: \CH{"A consequence ..." This statement sounds wrong?}
 
-The third challenge in term of performance modeling is incurred by MPI
-collective operations which are generally of utmost importance to
-application performance. Performance optimization of MPI collective
-operations has received significant attention. MPI implementations
-thus have commonly several alternatives for each collective operation
-and select one at runtime depending on message size and communicator
-geometry.  SimGrid's SMPI layer implements all the specific collective
+The third and last challenge in terms of performance modeling
+deals with collective operations which generally play a key factor for 
+application performance. Consequently, performance optimization
+of these operations has been studied intensively. Today, MPI implementations
+commonly have several alternatives for each collective operation
+and select one at runtime, depending on message size and communicator
+geometry. SimGrid's SMPI layer implements all the specific collective
 communication algorithms from several real MPI implementations (\eg
 Open MPI, MPICH, ...) and their selection logic to ensure that any
 simulated run of an application is as faithful as possible to real
-executions. Yet, since HPL ships with its own implementation of
-collective operation, this is however not likely to be the source of
+executions. HPL, however, ships with its own implementation of
+collective operations and therefore this is not likely to be the source of
 discrepancy between simulation and real executions.
+#+LATEX: \AL{These discrepancies were not yet discussed here. And what is the challenge?}
 
 ** Application Behavior Modeling
 Regarding, the capture of the behavior of the application, as we
