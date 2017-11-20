@@ -712,9 +712,9 @@ geometry.  SimGrid's SMPI layer implements all the specific collective
 communication algorithms from several real MPI implementations (\eg
 Open MPI, MPICH, ...) and their selection logic to ensure that any
 simulated run of an application is as faithful as possible to real
-executions. Since HPL ships with its own implementation of collective
-operation, this is however not likely to be the source of discrepancy
-between simulation and real executions.
+executions. Yet, since HPL ships with its own implementation of
+collective operation, this is however not likely to be the source of
+discrepancy between simulation and real executions.
 
 ** Application Behavior Modeling
 Regarding, the capture of the behavior of the application, as we
