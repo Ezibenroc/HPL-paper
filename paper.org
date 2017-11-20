@@ -979,19 +979,19 @@ grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), 
 
 #+RESULTS:
 
-#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6 :height 2.5
+#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6.2 :height 2.5
 plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
     xlab('Matrix rank') +
     ylab('Performance [Gflop/s]') +
-    ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI processes)")
+    ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI process)")
 plot2 = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
     xlab('Matrix rank') +
     ylab('Time [seconds]') +
-    ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI processes)")
+    ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI process)")
 
 grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
 #+end_src
