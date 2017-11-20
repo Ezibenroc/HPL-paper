@@ -1602,11 +1602,122 @@ real life execution.
 # - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
 ** Simulating HPL
 *** Performance Prediction
-- Gflop Plots, impossibility to reach the desired performance
-- Additionnal points in favorable conditions do not improve much
-  except when multiplying bw by a factor 10, which is totally
-  unrealistic.
-*** Investigation
+Figure\ref{fig:stampede_prediction} (solid line) depicts the HPL
+performance prediction obtained with SMPI and the modeling of Stampede
+described in the previous section. Surprisingly, the outcome is way
+below what was obtained in 2013. After checking in our simulations
+that all the time outside MPI was actually spent in the MKL functions
+we had modeled (to ensure we had not forgotten to model some part of
+HPL), we suspected some network modeling problem and decided to
+investigate whether undue network congestion could explain such poor
+performance. Unfortunately, using a perfect network model without any
+congestion (dashed line Figure\ref{fig:stampede_prediction}) only
+results in a minor improvement. Since in our experiments with the KNC,
+either the CPU or the KNC seemed to be use at once, and a specifically
+optimized version of the MKL may have been used in 2013, we even tried
+to simply remove the offloading latency and to model each node as a
+single compound \SI{1.2}{\tera\flops} node but it is far from
+sufficient to explain the gap between our simulations and what was
+obtained in 2013. The only significant improvement we obtained was by
+removing the latency and increasing the bandwidth by a factor 10,
+which is completely unrealistic.
+
+#+BEGIN_EXPORT latex
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
+  \caption{Performance prediction of HPL on Stampede using SimGrid.}
+  \label{fig:stampede_prediction}
+  \labspace
+\end{figure}
+#+END_EXPORT
+
+**** HPL prediction                                             :noexport:
+
+Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic desabled"
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+# files <- dir('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
+# tables <- lapply(files, read.csv)
+# results = do.call(rbind, tables)
+
+classical = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_1000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_2000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_3875000.csv'))
+classical$mode = 'classical'
+
+highbw = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_1000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_2000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_3875000.csv'))
+highbw$mode = 'highbw'
+
+fatpipe = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_1000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_2000000.csv'),
+    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_3875000.csv'))
+fatpipe$mode = 'fatpipe'
+
+results = rbind(classical, highbw, fatpipe)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file figures/stampede_simgrid.pdf :exports both :width 5 :height 3 :session *R* 
+res_lab = results[results$mode != 'highbw' & results$size > 3E6,];
+res_lab$x=res_lab$size;
+res_lab$y=res_lab$Gflops;
+res_lab$xl=res_lab$x*.9;
+res_lab$yl=res_lab$y*.9;
+
+
+res_lab$xl=res_lab$x*.8;
+res_lab$yl=res_lab$y*.9;
+
+res_lab[res_lab$mode=='classical',]$xl=3.4e6
+res_lab[res_lab$mode=='classical',]$yl=2.5e6
+res_lab[res_lab$mode=='fatpipe',]$xl=2.e6
+res_lab[res_lab$mode=='fatpipe',]$yl=4.1e6
+
+res_lab$label = NA;
+res_lab[res_lab$mode=='fatpipe',]$label = "Simulation\n (No Contention)";
+res_lab[res_lab$mode=='classical',]$label = "Simulation\n (Fat Tree)";
+
+ggplot(results[results$mode != 'highbw',], aes(x=size, y=Gflops, color=mode, linetype=mode)) + 
+    # Inner labels
+    geom_segment(data=res_lab, 
+                 aes(x=xl, xend=x, y=yl, yend=y), linetype="solid",
+                 color="black") +
+    geom_label(data=res_lab, 
+               aes(label = factor(label), x=xl, y=yl, fill=mode),
+               colour =  "white", fontface = "bold") +
+    # SMPI lines
+    geom_point() + geom_line() +  
+    # Top500 perf
+    geom_hline(yintercept=5.16811e+06) + 
+    annotate("text",x=3875000, 1E2,y=5.4e+06, hjust="right",
+        label="Top 500 performance",color="black") + 
+    annotate("text",x=3875000, 1E2,y=4.96e+06, hjust="right",
+        label="(5.168 TeraFlop/s)",color="black") + 
+    annotate("point",x=3875000, 1E2,y=5.16811e+06,color="black") + 
+    # Cosmetics
+    guides(fill=FALSE, color=FALSE, linetype=FALSE) + ylab("GFlop/s") + xlab("Matrix rank") +
+    theme_bw() +  scale_color_brewer(palette="Set1") +  scale_fill_brewer(palette="Set1")+ 
+    theme(legend.position="top") +
+    ggtitle('Performance of HPL')
+#+end_src
+
+#+RESULTS:
+[[file:figures/stampede_simgrid.pdf]]
+
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geom_point() + geom_line() + ggtitle('Simulation time')
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-23284Iao/figure232842Rn.png]]
+
+*** Performance Gap Investigation
+
 We explain our investigation and possible reasons for the previous
 mismatch.
 - Gantt chart + analysis + explanation that there is something wrong with communications. Three parts in the communications:
