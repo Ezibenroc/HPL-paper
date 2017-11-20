@@ -412,6 +412,7 @@ can therefore be quite time consuming as it requires to carefully tune
 all the BLAS kernels, the MPI runtime, and all the previous parameters
 of HPL.
 ** A typical run on a supercomputer
+\label{sec:stampede}
 In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
 TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
 June 2016. In 2017, this machine got upgraded into Stampede2. The Stampede1 platform
@@ -1474,51 +1475,127 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 [[file:/tmp/babel-1674kfe/figure1674sWN.png]]
 
 *** Communications
-
-SMPI's communication model is a hybrid model between the LogP family
-and a fluid model, supporting different modes for the send operation
-such as fully asynchronous, detached or eager. For each message, the
-mode used is determined solely on the message size. It is hence
-possible to model the resulting performance through a piece-wise,
-linear model, as depicted in Figure\ref{fig:stampede_calibration}.
-For a thorough discussion of the calibration techniques, see\cite{smpi}.
-
-SMPI uses this model by default, however, it is not leveraged in the
-particular case of HPL as its communication patterns use primarily large, bulk messages,
-making small messages scarce. Almost all messages are hence only sent
-via the /detached/ mode (depicted in green).
-\CH{I'm not sure why we chose the breakpoint the way it is for detached; this is not obvious?}
+Again, we cannot know for sure which version of Intel MPI was used in
+2013, so we decided to use the default (recommended) one in use on
+Stampede in May 2017, i.e., version 3.1.4. As explained in
+Section\ref{sec:smpi}, SMPI's communication model is a hybrid model
+between the LogP family and a fluid model, supporting different modes
+for the send operation such as fully asynchronous, detached or
+eager. For each message, the mode used is determined solely on the
+message size. It is hence possible to model the resulting performance
+through a piece-wise, linear model, as depicted in
+Figure\ref{fig:stampede_calibration}.  For a thorough discussion of
+the calibration techniques, see\cite{smpi}. Although the behavior of
+the =MPI_Send= is quite stable and piece-wise regular, the behavior of
+=MPI_Recv= is more surprising: for small messages (below 17420 bytes,
+i.e., purple, blue and red dots), on can observe two modes with "slow"
+communications being both twice longer and much more common than
+"fast" ones. We observed such behavior several times although both MPI
+process were connected through the same local switch and we can assess
+such "perturbation" was present throughout the whole execution of our
+calibrations. We decided to ignore such phenomenon when simulating HPL
+on stampede and opted for the more favorable scenario (fast
+communications). Note that anyway most HPL communication patterns use
+primarily large, bulk messages, making small messages scarce sent:
+almost all messages are hence only sent via the /rendez-vous/ mode
+(depicted in dark green).
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
-  \caption{Visualization of the analysis results as obtained on the Stampede system.}
+  \caption{Modeling communication time on stampede. Each color corresponds to a
+      manually adjusted breakpoint corresponding to a synchronization mode 
+      (eager, rendez-vous,...). }
   \label{fig:stampede_calibration}
   \labspace
 \end{figure}
 #+END_EXPORT
 
-*** Network topology
-
 # Interestingly, the Stampede website says it's "56 GB/s" but I
 # checked and can only find 56 Gbit/s. I hence go with that, as it
 # seems more reasonable as well.
 
-Stampede leverages Mellanox FDR InfiniBand technology with
-\SI{56}{\giga\bit\per\second}, setup in a
-fat-tree topology on two levels (called cores and
-leafs) with 8\nbsp{}SX6536 core-switches, each with 648\nbsp{}ports and
-\SI{73}{\tera\bit\per\second} capacity, and 320\nbsp{}36-port
-leaf-switches with a capacity of \SI{4}{\tera\bit\per\second}. 
-20\nbsp{}ports of each leaf-switch are connected to compute nodes, whereas the remaining 16\nbsp{}ports are connected to
-the core-switches. In this topology, any message reaches the
-destination within no more than 5\nbsp{}hops.
+As explained in Section\ref{sec:stampede}, Stampede leverages Mellanox
+FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
+a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
+assumed the routing was done through D-mod-K\cite{dmodk} as it is
+commonly used on such topologies and configured SMPI accordingly.
+**** Stampede network calibration figures                       :noexport:
+This figure is generated in [[file:~/Work/SimGrid/platform-calibration/data/stampede_17_06_01-17:14/calibration/analysis.org][the platform calibration repository]]. Data
+should be read from there. Final adjustments (in the "Combined plot
+section") were done here:
 
+#+begin_src R :results output :session *R* :exports both
+library(gridExtra)
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+p1 = eth$p_send + theme(legend.position="top", legend.background = element_rect(fill = "white", colour = NA)) + guides(colour = guide_legend(override.aes = list(alpha = 1)))
+#     + annotate("text",x=1E2,y=2.3E-6, label="40GB IB model",color="black")
+
+
+p2 = eth$p_recv + theme(legend.position="top", legend.background = element_rect(fill = "white", colour = NA)) 
+#     + annotate("text",x=1E2,y=2.3E-6, label="40GB IB model",color="black")
+
+p1_legend = get_legend(p1);
+p1 = p1 + theme(legend.position="none")
+p2 = p2 + theme(legend.position="none")
+
+# lay <- rbind(c(1,1),
+#              c(2,3));
+# p = grid.arrange(p1_legend,p1,p2, layout_matrix = lay,widths=c(2,2), heights=c(1.3,4));
+# ggsave(filename="/tmp/taurus_send_recv.pdf",plot=p,width = 6, height = 4)
+
+lay <- rbind(c(1,2));
+p = grid.arrange(p1,p2, layout_matrix = lay,widths=c(2,2), heights=c(4));
+ggsave(filename="/tmp/stampede_send_recv_eth.pdf",plot=p,width = 6, height = 3)
+#+end_src
+
+#+RESULTS:
+: Warning message:
+: Transformation introduced infinite values in continuous x-axis
+: Warning messages:
+: 1: Transformation introduced infinite values in continuous x-axis 
+: 2: Transformation introduced infinite values in continuous x-axis
+
+#+begin_src R :results output :session *R* :exports both
+ggsave(filename="/tmp/stampede_send_recv_eth.png",plot=p,width = 6, height = 3)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src sh :results output :exports both
+cp /tmp/stampede_send_recv_eth.png ./figures/stampede_calibration_send.png
+#+end_src
+
+#+RESULTS:
 *** Summarizing modeling uncertainties
-- MKL version ???
-- iMPI version ???
-- HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
+We cannot know for sure which versions of the compiler, of Intel MPI
+and of the MKL were used but we decided to go for rather optimistic
+choices. The model for the MKL and for Intel MPI are close to the peak
+performance and although the compiler may have managed to perform
+thorough optimizations in HPL outside of the MKL, most of these parts
+of code are executed but not accounted for in our simulations: this
+allows to obtain fully deterministic simulations without harming the
+outcome of the simulation as they only represent a tiny fraction of
+the total execution time of HPL. A few HPL compilation flags (\eg
+whether =MPI_DATATYPE= should be used or not) could no be deduced from
+the 2013 Stamped HPL output but we believe their impact should be
+minimal. Finally, the HPL output reports the use of HPL v2.1 but the
+main difference between v2.1 and v2.2 concerns the option to
+continuously report factorization progress, hence we decided to apply
+our modifications to the most recent version of HPL.
+
+From all these choices, we could therefore expect the prediction of
+our simulations to be close although rather optimistic compared to a
+real life execution.
+# - iMPI version ???
+# - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
 ** Simulating HPL
 *** Performance Prediction
 - Gflop Plots, impossibility to reach the desired performance
@@ -1908,6 +1985,12 @@ pages = {366-376},
  publisher = {Chapman \& Hall/CRC},
 } 
 
+@InProceedings{dmodk,
+  author = 	 {Eitan Zahavi},
+  title = 	 {D-Mod-K Routing Providing Non-Blocking Traffic for Shift Permutations on Real Life Fat Trees},
+  booktitle = {Proc. of the ????},
+  year = 	 {2010},
+}
 #+end_src
 
 * Emacs Setup 							   :noexport:
