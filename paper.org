@@ -1325,7 +1325,6 @@ a higher latency (higher intercept).
     \vspace{-1em}
     \label{fig:hpl_mkl}
   \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}\centering
-    \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
     \scalebox{.88}{\begin{tabular}{l|r|r|r|r}
     & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
     & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] & Coefficient [\si{\sec\per\flop}]& Intercept [\sec] \\
