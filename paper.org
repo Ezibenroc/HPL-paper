@@ -605,38 +605,31 @@ due to the size of the obtained traces (\approx 110 TB at the scale of
 Stampede1) and the complexity of the application (\eg six broadcast strategies implemented by HPL, ...)
 that influence the performance significantly.
 
-The second approach discussed in literature is /online simulation/.
+The second approach discussed in literature is /online simulation/ and
+is required to study HPL.
 Here, the application is executed (emulated) in a tightly controlled way on top of the simulator. The
 simulator itself is responsible for determining when each process
 should be allowed to run. Executing the application allows researchers
 to observe its behavior *at the level of MPI*. Only a few
 recent simulators support the online approach, such as the
 extreme-scale simulator xSim\cite{xsim}, SST Macro\cite{sstmacro} and
-SimGrid/SMPI\cite{simgrid}.
- 
-Since HPL implements its own broadcast algorithms, trace-based
-(offline) simulation is not sufficient for investigating HPL as these strategies are vital for
-its performance. Hence, emulation is required but it comes with at least
-two challenges:
-- Firstly, as we have seen before, the time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
-  $\mathcal{O}(N^2)$ communications are performed, with $N$ being very
-  large. The execution on the Stampede cluster took roughly two hours
-  on 6,006 compute nodes. Although the emulation could be done in
-  parallel, we want to limit the computing resources used
-  for an emulation. Using only a single node, a naive
-  emulation of HPL at the scale of the Stampede1 run would take about
-  500 days if perfect scaling is reached.
-- Secondly, the tremendous memory consumption and consequent high
-  number of RAM accesses for read/write operations need to be dealt with 
-
-To the best of our knowledge, only SST Macro and
+SimGrid/SMPI\cite{simgrid}. To the best of our knowledge, only SST Macro and
 SimGrid/SMPI are openly available and mature enough to the faithful emulation of
 HPL as xSim is at this point not freely available. For the following
 discussion of our work, we rely on SimGrid as we 
 have an excellent knowledge of its internals although the developments we
-propose would a priori also be possible with SST Macro.
-
-#+LATEX: \CH{I don't like that we introduce the online approach and existing algorithms, then come back to HPL and its requirements and then back to the simulators.}
+propose would a priori also be possible with SST Macro. Emulation with
+SimGrid comes with at least two challenges:
+- Firstly, as we have seen before, the time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
+  $\mathcal{\Theta}(N^2)$ communications are performed, with $N$ being very
+  large. The execution on the Stampede cluster took roughly two hours
+  on 6,006 compute nodes. Using only a single node, a naive
+  emulation of HPL at the scale of the Stampede1 run would take about
+  500 days if perfect scaling is reached. Although the emulation could
+  be done in parallel, we want to limit the computing resources used
+  for an emulation. 
+- Secondly, the tremendous memory consumption and consequent high
+  number of RAM accesses for read/write operations need to be dealt with.
 
 # Real execution:
 # - Matrix of size 3,875,000
