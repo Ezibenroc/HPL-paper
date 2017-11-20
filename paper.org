@@ -920,8 +920,8 @@ Regenerating the validation plot for smpi_execute".
 library(ggplot2)
 library(gridExtra)
 library(grid)
-old <- read.csv("~/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L0.csv")
-new <- read.csv("~/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L1.csv")
+old <- read.csv("/home/alegrand/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L0.csv")
+new <- read.csv("/home/alegrand/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L1.csv")
 old$kernel_sampling = FALSE
 new$kernel_sampling =  TRUE
 results = rbind(old, new)
@@ -1455,9 +1455,9 @@ Figure{fig:macro_real}.
 #+begin_src R :results output :session *R* :exports both
   library(gridExtra)
   library(ggplot2)
-  dgemm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
+  dgemm <- read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
   dgemm$m = as.double(dgemm$m)
-  dtrsm <- read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
+  dtrsm <- read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
   dtrsm$m = as.double(dtrsm$m)
 
   dgemm_new = dgemm[dgemm$automatic_offload == 'True',]
@@ -1725,23 +1725,23 @@ which is completely unrealistic.
 Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic desabled"
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
-# files <- dir('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
+# files <- dir('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
 # tables <- lapply(files, read.csv)
 # results = do.call(rbind, tables)
 
-classical = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_1000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_2000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_3875000.csv'))
+classical = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_1000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_2000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_3875000.csv'))
 classical$mode = 'classical'
 
-highbw = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_1000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_2000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_3875000.csv'))
+highbw = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_1000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_2000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_3875000.csv'))
 highbw$mode = 'highbw'
 
-fatpipe = rbind(read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_1000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_2000000.csv'),
-    read.csv('~/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_3875000.csv'))
+fatpipe = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_1000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_2000000.csv'),
+    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_3875000.csv'))
 fatpipe$mode = 'fatpipe'
 
 results = rbind(classical, highbw, fatpipe)
@@ -1873,7 +1873,7 @@ parameters are not the ones in fullrun, probably because several
 decisions have been hardcoded.
 *** Gantt charts                                                 :noexport:
 #+begin_src sh :results output :exports both
-cp ~/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
+cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
 #+end_src
 
 #+RESULTS:
