@@ -1311,7 +1311,7 @@ still of the order of $MNK$ (resp. $MN^2$ for =DTRSM=), the modeling of
 the time it takes to run =DGEMM= (resp. =DTRSM=) is thus very different
 for small and large matrices. As an illustration,
 Figure\ref{fig:hpl_mkl} depicts the time needed by the MKL for
-matrices whose dimension are randomly taken in $[1,8000]$: offloading
+matrices whose dimension are randomly taken in $[1,8\,000]$: offloading
 to the KNC results in a better throughput (lower slope) at the cost of
 a higher latency (higher intercept).
 
