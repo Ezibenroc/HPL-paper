@@ -543,31 +543,31 @@ End of Tests.
 :END:
 #+LaTeX: \label{sec:con:diff}
 
-The performance achieved by Stampede, \SI{5168}{\tera\flops}, should
-be compared to the peak performance of the 6,006 nodes, i.e.,
-\SI{8084}{\tera\flops}. This discrepancy may be imputed to the node
+The performance achieved by Stampede, \SI{5168}{\tera\flops}, needs to
+be compared to the peak performance of the 6,006 nodes, \ie
+\SI{8084}{\tera\flops}. This discrepancy may be attributed to the node
 usage (\eg, the MKL), to the MPI library, to the network topology that
 may not be able to deal with very intensive communication workload, to
-load imbalance among nodes if some node happen to be slower for some
+load imbalance among nodes when some node happens to be slower for some
 reason (defect, system noise, ...), to the algorithmic structure of
-HPL, etc. In any case, it is quite hard to know what to expect
-precisely without running the application on such a machine.
+HPL, etc. In any case, it is difficult to know precisely what to expect
+without running the application on a machine of this complexity.
 
-It is quite clear that given the level of complexity of both HPL and
-of the underlying hardware, simple models (analytic expressions based
-on $N, P, Q$ and estimations of platform characteristics as done in
-Section\ref{sec:hpl}) may provide trends but by no way precisely
-indicate the performance achieved for a given configuration (e.g., the
-exact effect of the 6 variants of the broadcast algorithms in term of
-network contention). Likewise, such expressions do not really allow to
-identify how to improve the performance of the system at hand.
+It is clear that due to the level of complexity of both HPL and
+the underlying hardware, simple performance models (analytic expressions based
+on $N, P, Q$ and estimations of platform characteristics *as done in*
+Section\ref{sec:hpl}) may be able provide trends but can by no means
+predict the performance for a given configuration (\eg the
+exact effect of the 6 variants of the broadcast algorithms in terms of
+network contention). Likewise, these expressions do not allow
+engineers to improve the performance through identifying performance bottlenecks.
 
-The particularly complex optimizations (partially non blocking
+Particularly complex optimizations (partially non-blocking
 collective communication algorithms intertwined with computations)
-done in HPL requires a very faithful modeling of both the application
-and the platform. However, given the scale of such executions (3,785
-steps involving 6,006 nodes during two hours), precisely simulating
-such application can quickly become intractable.
+done in HPL require a very faithful modeling of both the application
+and the platform. However, *given the scale of these executions*
+(3,785\nbsp{}steps involving 6,006\nbsp{}nodes during two hours), precise
+simulations of applications can quickly become intractable.
 * Related Work
 #+LaTeX: \label{sec:relwork}
 
