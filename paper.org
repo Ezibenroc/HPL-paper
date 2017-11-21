@@ -976,7 +976,7 @@ plot2 = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=ker
     ylab('Time [seconds]') +
     ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI process)")
 
-grid_arrange_shared_legend(plot1, plot2, ncol=2, position="top")
+grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 #+end_src
 
 #+RESULTS:
