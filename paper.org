@@ -644,7 +644,7 @@ of unmodified MPI applications written in C/C++ or Fortan.
 
 Many simulators of distributed computing systems focus foremost on
 scalability. Although SimGrid has been successfully used to simulate \eg
-peer-to-peer systems comprising two million nodes using only a
+peer-to-peer systems comprising two million peers using only a
 single standard machine\cite{simgrid_simix2_12}, the main focus of the SimGrid development
 team has been to provide validated performance models, particularly
 for *network-enabled* operations. This is generally done by comparing simulation
