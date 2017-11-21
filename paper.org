@@ -706,7 +706,7 @@ simulated run of an application is as faithful as possible to real
 executions. HPL, however, ships with its own implementation of
 collective operations and therefore this is not likely to be the source of
 discrepancy between simulation and real executions.
-#+LATEX: \AL{These discrepancies were not yet discussed here. And what is the challenge?}
+#+LATEX: \CH{These discrepancies were not yet discussed here. And what is the challenge?}
 
 ** Application Behavior Modeling
 We briefly explained in the previous section that SMPI relies on the /online/
