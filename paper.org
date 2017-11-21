@@ -664,10 +664,9 @@ processes, ...).
 ** MPI Communication Modeling
 The complex network optimizations done in real MPI implementations
 pose a challenge when modeling MPI applications.
-Transmission protocols (\ie short, eager, rendez-vous) can be selected
+Transmission protocols (\eg eager or rendez-vous) can be selected
 based on the message size, with each protocol incurring its own
 synchronization semantics.
-#+LATEX: \AL{Is \ie correct or should I rather use \eg for that list?}
 These optimizations furthermore cause the network's latency and bandwidth
 factors to depend on message size. To capture this behavior, SMPI relies on
 a generalization of the LogGPS model\cite{smpi} where several
