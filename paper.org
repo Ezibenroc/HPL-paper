@@ -200,7 +200,7 @@ proposal.
 # almost impossible to faithfully predict resource-hungry applications. 
 # In this work, we show how we adapted HPL and the SMPI simulator of the SimGrid
 # simulation framework to predict HPL's behavior on the 6,006 nodes of
-# the Stampede1 cluster. We first outline how we reduced the time spent executing
+# the Stampede cluster. We first outline how we reduced the time spent executing
 # code from HPL to only \SI{0.3}{\percent} without loosing accuracy by
 # using empirically obtained
 # performance models for the computation kernels before we discuss the
@@ -210,7 +210,7 @@ proposal.
 # approach through the simulation of HPL at scale on a commonly
 # available single server node by accurately predicting its
 # runtime on a \SI{120}{\tera\byte} large problem instance that was used
-# to evaluate the Stampede1 system for the TOP500 list.
+# to evaluate the Stampede system for the TOP500 list.
 #+LaTeX: \end{abstract}
 
 
@@ -269,7 +269,7 @@ faithful models for several functions (such as DGEMM, ...) and how we managed
 to reduce a memory consumption of hundreds of terabyte to several
 gigabytes, allowing us to simulate HPL on a commonly available server node.
 We furthermore demonstrate the effectiveness of our solution by
-simulating a large-scale scenario run on the Stampede1 cluster at TACC
+simulating a large-scale scenario run on the Stampede cluster at TACC
 that was submitted to the TOP500 in 2013. Our approach is
 applicable to other machines, including latest generation machines
 such as Stampede2, that was not yet fully deployed at the time of our investigation.
@@ -413,7 +413,7 @@ of HPL.
 \label{sec:stampede}
 In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
 TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
-June 2016. In 2017, this machine got upgraded into Stampede2. The Stampede1 platform
+June 2016. In 2017, this machine got upgraded into Stampede2. The Stampede platform
 consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
@@ -424,10 +424,10 @@ capacity), which are themselves connected to 8 648-port
 ''core\nbsp{}switches`` (each with a capacity of \SI{73}{\tera\bit\per\second}). 
 The peak performance of the 2\nbsp{}Xeon CPUs available to each node is approximately \SI{346}{\giga\flops},
 while the peak performance of the KNC co-processor is about
-\SI{1}{\tera\flops}. Hence, Stampede1 could attain a theoretical total peak performance of
+\SI{1}{\tera\flops}. Hence, Stampede could attain a theoretical total peak performance of
 \SI{8520}{\tera\flops}.
 
-The Stampede1 supercomputer reached \SI{5168}{\tera\flops} when
+The Stampede supercomputer reached \SI{5168}{\tera\flops} when
 it got ranked in the TOP500. According to the log (see
 Figure\ref{fig:hpl_output}) that was submitted and provided to us,
 this execution took roughly two hours. This run used $77\times78 = 6,006$ processes and a matrix of
@@ -594,7 +594,7 @@ traces\cite{scalaextrap,pmac_lspp13} but whenever the application relies on
 non-blocking communication patterns, the execution becomes
 non-deterministic. In the case of HPL, this approach is thus unusable
 due to the size of the obtained traces (\approx 110 TB at the scale of
-Stampede1) and the complexity of the application (\eg six broadcast strategies implemented by HPL, ...)
+Stampede) and the complexity of the application (\eg six broadcast strategies implemented by HPL, ...)
 that influence the performance significantly.
 
 The second approach discussed in literature is /online simulation/ and
@@ -616,7 +616,7 @@ SimGrid comes with at least two challenges:
   $\mathcal{\Theta}(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
   on 6,006 compute nodes. Using only a single node, a naive
-  emulation of HPL at the scale of the Stampede1 run would take about
+  emulation of HPL at the scale of the Stampede run would take about
   500 days if perfect scaling is reached. Although the emulation could
   be done in parallel, we want to limit the computing resources used
   for an emulation. 
@@ -658,7 +658,7 @@ the NAS parallel benchmarks as well as of HPL for small-scale clusters (up to
 144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
 in\cite{smpi}). In this article, we try to make the comparison on a
 much larger scale. This scale, however, comes with the downside of a less well-controlled scenario since the
-Stampede1 run of HPL was done several years ago and we only have
+Stampede run of HPL was done several years ago and we only have
 very limited information about the setup (\eg software versions, background
 processes, ...).
 
