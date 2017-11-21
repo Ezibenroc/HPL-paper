@@ -596,6 +596,7 @@ non-deterministic. In the case of HPL, this approach is thus unusable
 due to the size of the obtained traces (\approx 110 TB at the scale of
 Stampede) and the complexity of the application (\eg six broadcast strategies implemented by HPL, ...)
 that influence the performance significantly.
+\TC{Also, the trace is simply too large? E.g. the trace for the Stampede's simulation would take more than 100GB (compressed).}
 
 The second approach discussed in literature is /online simulation/ and
 is required to study HPL.
@@ -893,7 +894,7 @@ experiment.
        the absence of performance variability when kernel models are
        used. Such variability could however easily be accounted for in
        the model.
-       \AL{I do not think we should be so confident on the reason of the overestimation}
+       \TC{I do not think we should be so confident on the reason of the overestimation}
 *** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
 Regenerating the validation plot for smpi_execute".
@@ -1096,6 +1097,7 @@ bogus data and hence produce bogus data. We also determined that their
 impact on the performance prediction was minimal and that precisely
 modeling them was simply not worth the effort: we simply modeled them
 as being instantaneous.
+\TC{We also removed five HPL functions (e.g. HPL_dlacpy). Should we mention this?}
 
 Note that working on bogus data has a few consequences as HPL
 implements an LU factorization with partial pivoting and a special
@@ -1196,6 +1198,7 @@ SimGrid folds parallel applications into a single process and hence,
 local static and global variables become an issue as it must be guaranteed that
 each rank has its own set of global variables. SMPI supports two
 mechanisms to achieve this: The usage of either =mmap= or =dlopen=.
+\TC{The implementation of mmap and dlopen is not a contribution of this paper, maybe we should put this in the state of the art and only discuss here the impact of the choice?}
 *** mmap
 When =mmap= is used, SMPI copies the =data= segment on startup for each
 rank into the heap. When control is transferred from one rank to
@@ -1242,6 +1245,7 @@ utilization drops. Running the simulation while monitoring the system
 shows that the program is regularly stalled while the kernel loads the
 CPU at 100%, which explains the low CPU utilization for the program
 itself.
+\TC{This is false, see the entry from 2017-07-22 in my journal. If we use a tempfs file system, the CPU load remains high, we only have a large memory consumption.}
 
 As described above, we fold the memory and realise significant
 physical memory savings. However, the allocations are still performed
