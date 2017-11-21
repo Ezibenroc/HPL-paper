@@ -187,9 +187,7 @@ using the freely available version of HPL. Such performance reveals much
 lower than what was reported and which was obtained using a
 closed-source version specifically designed by the Intel
 engineers. Our simulation allows us to hint where the main algorithmic
-improvements must have been done in HPL. We conclude with a brief
-illustration of typical capacity planning studies enabled by our
-proposal.
+improvements must have been done in HPL. 
 
 # With supercomputers growing both in size and popularity, it has become
 # important to reduce their usage for the optimization of application
@@ -218,10 +216,7 @@ proposal.
 % this is need to trim the number of authors and et al. for more than 3 authors
 \bstctlcite{IEEEexample:BSTcontrol}
 #+END_EXPORT
-* TODO Introduction
-:LOGBOOK:
-- State "TODO"       from              [2017-11-20 lun. 15:15]
-:END:
+* Introduction
 
 The world's largest and fastest machines are ranked twice a year in the so-called
 TOP500 list. Among the benchmarks that are often used to evaluate
@@ -244,46 +239,51 @@ underlying platform.
 # performance be attained. 
 
 Alas, the time it takes to run HPL on the number one system has
-sharply increased and took around 17 hours on the 33rd TOP500 list in
-2012 
-\CH{TODO update this!; see
-http://www.icl.utk.edu/~luszczek/pubs/post165s1.pdf}. This duration
+sharply increased and typically requires several hours of dedication.
+# \CH{TODO update this!; see http://www.icl.utk.edu/~luszczek/pubs/post165s1.pdf}. 
+This duration
 and the power consumption of several MW per hour on a TOP500 machine makes test-running HPL on the whole
 machine in order to tweak parameters financially infeasible. 
 Yet, performance results of an already deployed, current-generation machine typically also
 plays a role in the funding process for future machines and is hence considered critical for
 HPC centers and vendors, who would benefit largely from being able to
 accurately estimate HPL performance outcomes without actually running
-the benchmark.
-This estimation can be done either via (mathematical) performance models (e.g., by
-estimating performance of specific functions) or by a simulation based approach.
-While performance models neglect the
-oftentimes serious impact of the network (\eg due to congestion, shared bandwidth,
-...), this is not in general true for the simulation approach.
+the benchmark for hours.
+# This estimation can be done either via (mathematical) performance models (e.g., by
+# estimating performance of specific functions) or by a simulation based approach.
+# While performance models neglect the
+# oftentimes serious impact of the network (\eg due to congestion, shared bandwidth,
+# ...), this is not in general true for the simulation approach.
 
-\CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
+# \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
 
-In this article, we explain how to perform simulations using
+In this article, we explain how to predict the performance of HPL through simulations using
 SimGrid's SMPI simulator. We particularly detail how we obtained
-faithful models for several functions (such as DGEMM, ...) and how we managed
-to reduce a memory consumption of hundreds of terabyte to several
-gigabytes, allowing us to simulate HPL on a commonly available server node.
-We furthermore demonstrate the effectiveness of our solution by
+faithful models for several functions (\eg =DGEMM= and =DPOTRF=) and how we managed
+to reduce a memory consumption of a hundred of terabytes to several
+gigabytes, allowing us to emulate HPL on a commonly available server node.
+We demonstrate the effectiveness of our solution by
 simulating a large-scale scenario run on the Stampede cluster at TACC
-that was submitted to the TOP500 in 2013. Our approach is
-applicable to other machines, including latest generation machines
-such as Stampede2, that was not yet fully deployed at the time of our investigation.
+that was submitted to the TOP500 in 2013. 
+# Our approach is
+# applicable to other machines, including latest generation machines
+# such as Stampede2, that was not yet fully deployed at the time of our investigation.
 
-The remainder of this article is structured as follows: Section\ref{sec:con}
-discusses ...
-Section\ref{sec:relwork} gives references to already existing
-related work. In Section\ref{sec:em}, we discuss extensively the
-optimizations on all levels (\ie simulator, application, system) that were necessary in order to make a large-scale run
-feasible. The scalability of our approach is evaluated in
-Section\ref{sec:scalabilityevol}. The modeling of the platform, the
-network and the communication is detailed in
+The remainder of this article is structured as follows:
+Section\ref{sec:con} presents the main characteristics of the HPL
+application and provides detail on the run that was conducted at TACC
+in 2013.  Section\ref{sec:relwork} discusses existing related work and
+explains why emulation (or /online simulation/) is the only relevant
+approach when studying an application as complex as HPL. In
+Section\ref{sec:smpi}, we briefly present SimGrid/SMPI upon which we
+build while we discuss extensively in Section\ref{sec:em} the
+optimizations on all levels (\ie simulator, application, system) that
+were necessary to make a large-scale run feasible. The scalability of
+our approach is evaluated in Section\ref{sec:scalabilityevol}. The
+modeling of the stampede platform and the comparison of our simulation
+with the 2013 execution is detailed in
 Section\ref{sec:science}. Lastly, Section\ref{sec:cl} concludes this
-paper by summarizing our work and results.
+article by summarizing our work and results.
 
 * Context
 #+LaTeX: \label{sec:con}
@@ -659,8 +659,7 @@ the NAS parallel benchmarks as well as of HPL for small-scale clusters (up to
 in\cite{smpi}). In this article, we try to make the comparison on a
 much larger scale. This scale, however, comes with the downside of a less well-controlled scenario since the
 Stampede run of HPL was done several years ago and we only have
-very limited information about the setup (\eg software versions, background
-processes, ...).
+very limited information about the setup (\eg software versions).
 
 ** MPI Communication Modeling
 The complex network optimizations done in real MPI implementations
@@ -1798,7 +1797,6 @@ scatter3D(
 #+RESULTS:
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
-
 * Modeling Stampede and Simulating HPL
 #+LaTeX: \label{sec:science}
 
@@ -2325,52 +2323,69 @@ cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications
 
 #+RESULTS:
 
-* TODO Conclusions
-:LOGBOOK:
-- State "TODO"       from              [2017-11-15 mer. 16:26]
-:END:
+* Conclusions
 #+LaTeX: \label{sec:cl}
 
-We already had conducted successful small-scale validation studies. We
-conclude that our large-scale (in)validation is unfortunately not
+Studying HPC applications at scale can be very time- and
+resource-consuming. Simulation can be an effective approach in this
+context and we already had conducted successful small-scale validation
+studies in term of performance prediction of several applications
+standard HPC applications\cite{smpi,heinrich:hal-01523608}.  In this
+article we propose and evaluate extensions to the SimGrid/SMPI
+framework allowing us to emulate HPL at the scale of a
+supercomputer. HPL is particularly challenging in term of simulation
+as it implements its own set of non blocking collective operations
+relying on =MPI_Iprobe= and intertwined with computations.
+
+More specifically, we try to reproduce the execution of HPL on the
+Stampede supercomputer conducted in 2013 for the TOP500, which
+involved a 120TB matrix and lasted for two hours on 6006 nodes.  Our
+emulation of a similar configuration runs on a single machine for
+about 47 hours and requires less than 16GB of RAM. Such emulation
+leverages several non trivial operating-system level optimizations
+(memory mapping, dynamic library loading, huge pages) that have been
+integrated in the last version of SimGrid/SMPI.
+
+This scale comes with the downside of a less well-controlled scenario
+since the Stampede run of HPL was done several years ago and we only
+have very limited information about the setup (\eg software versions
+and configuration). We conduct a careful modeling of Stampede, which
+allows simulation allows us to evaluate the performance that would
+have been obtained using the freely available version of HPL.
+Unfortunately, despite all our efforts, the predicted performance
+reveals much lower than what was reported and which was obtained. This
+discrepancy can be explained by the fact that a closed-source version
+specifically designed and optimized by the Intel engineers was used in
+2013 and that some of the HPL configuration parameters seem to have
+been misreported. Our analysis points toward probable algorithmic
+differences.
+
+We conclude that our large-scale (in)validation is unfortunately not
 possible as we do not have access to the original source code used by
-Intel but we claim that the modifications we did were minor and should
-easily be applied to their version. Such a simulator would then be a
-valuable tuning tool.
-
-
-Prediction of makespan of applications running on large-scale clusters
-is an intricate problem. In this article, we explained the problems
-that we encountered and how we adjusted parts of HPL to make
-emulation feasible. Although we had to change or remove some of the source code of the
-program, changesets remained small and were applied to less than $1\%$ of
-the code base. These modifications allowed us to run HPL on top of a
-simulation framework, SimGrid / SMPI, using just a commodity laptop
-instead of a cluster with several thousand nodes.
-
-We also pointed out that not only the application or the runtime may
-render an out-of-the-box approach at large-scale infeasible but that
-the kernel configuration may be the cause as well. More specifically,
-we showed that performance can become unsupportable due to page table
-sizes, when support for huge pages is not activated.
+the Intel Engineers but we claim that the modifications we did are
+minor and should easily be applied to their version. Indeed, HPL
+comprises 16K lines of ANSI C over 149 files and our modification only
+concern 14 files and involve 286 line insertions and 18 deletions.
 
 Although being capable of predicting an application's performance on a
-platform is by itself interesting, we believe that this will become
-invaluable in the future to aid compute centers with the decision of
-whether a new machine will work best for a given application or if an
-upgrade of the current machine should be considered. This goal will be
-subject to a more thorough investigation in the very near future.
+platform is by itself interesting, we believe that this capability
+will become invaluable in the future to aid compute centers with the
+decision of whether a new machine will work best for a given
+application or if an upgrade of the current machine should be
+considered. 
+# This goal will be subject to a more thorough investigation
+# in the very near future.
 
-As we saw in Section\ref{sec:hplchanges}, two BLAS functions (=dgemm=
-and =dtrsm=) were the dominating factor with regards to the runtime although other BLAS
-functions were called as well. For this study, we neglected the other
-functions but with a fully automatic calibration procedure for any
-BLAS function results could effortlessly become more precise as the
-application could just be linked against a BLAS-replacement
-library. 
-#+LaTeX: \CH{Problem here: HPL uses \texttt{HPL\_dtrsm()} wrappers.}
+# As we saw in Section\ref{sec:hplchanges}, two BLAS functions (=dgemm=
+# and =dtrsm=) were the dominating factor with regards to the runtime although other BLAS
+# functions were called as well. For this study, we neglected the other
+# functions but with a fully automatic calibration procedure for any
+# BLAS function results could effortlessly become more precise as the
+# application could just be linked against a BLAS-replacement
+# library. 
+# #+LaTeX: \CH{Problem here: HPL uses \texttt{HPL\_dtrsm()} wrappers.}
 
-#+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
+# #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
 
 * Acknowledgements
 
