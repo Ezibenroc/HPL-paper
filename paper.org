@@ -1855,6 +1855,15 @@ In any cases, such behavior is easily accounted for by replacing the
 macro in Figure\ref{fig:macro_simple} by the one in
 Figure{fig:macro_real}.
 
+\TC{The KNC plots are wrong. They have an intercept of more than 2 whereas in reality it is about 0.5. I think they have been made with the old results, when no warm-up was done. See the files:}
+
+| Function | Mode | File                                    |
+|----------+------+-----------------------------------------|
+| dgemm    | KNC  | stampede/calibration/6/large_dgemm.csv  |
+| dgemm    | CPU  | stampede/calibration/7/dgemm_module.csv |
+| dtrsm    | KNC  | stampede/calibration/6/large_dtrsm.csv  |
+| dtrsm    | CPU  | stampede/calibration/7/dtrsm_module.csv |
+
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
   \centering
