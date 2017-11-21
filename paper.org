@@ -179,8 +179,8 @@ precisely, we take as a motivating use case the large-scale run
 performed on the Stampede cluster at TACC in 2013, when it got ranked
 6th in the TOP500. While this qualification run required the
 dedication of 6006 computing nodes of the supercomputer and more than
-\SI{120}{\tera\byte} of RAM for more than 2 hours, we manage to simulate a similar
-configuration on a commodity computer with \SI{16}{\giga\byte} of RAM in about 37
+120TB of RAM for more than 2 hours, we manage to simulate a similar
+configuration on a commodity computer with 16GB of RAM in about 37
 hours. Allied to a careful modeling of Stampede, this simulation
 allows us to evaluate the performance that would have been obtained
 using the freely available version of HPL. Such performance reveals much
@@ -190,8 +190,6 @@ engineers. Our simulation allows us to hint where the main algorithmic
 improvements must have been done in HPL. We conclude with a brief
 illustration of typical capacity planning studies enabled by our
 proposal.
-
-\CH{"120 TB" and "16 GB" are not in bold, because of the SI package.}
 
 # With supercomputers growing both in size and popularity, it has become
 # important to reduce their usage for the optimization of application
@@ -370,7 +368,6 @@ listed subsequently:
 - $P$ and $Q$ are the number of process rows and the
   number of process columns, respectively;
 - =RFACT= determines the panel factorization algorithm. Possible values: Crout, left- or right-looking.
-#+LATEX:  \CH{Crout? What's that}
 - =SWAP= specifies the swapping algorithm to be used for pivoting. Two
   algorithms are available: one based on /binary exchange/ (*along* a virtual tree topology) and the other one based on
   a /spread-roll/ (*TOPOLOGY here?* with a higher number of parallel communications). HPL
@@ -396,12 +393,10 @@ listed subsequently:
   communication with computations. In HPL 2.2 and 2.1, this capability
   has been deactivated for =long= as it seems to get some machines stuck when
   there are too many ongoing messages.
-- =DEPTH= controls how many iterations can overlap with each others.
-  \CH{See TUNING file. Elaborate.}
+- =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
-The sequential complexity of *such operation* is given by
-#+LATEX: \CH{Which one?}
-$\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + O(N)$ where $N$ is the
+The sequential complexity of this factorization is given by
+$\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + \O(N)$ where $N$ is the
 size of the matrix to factorize. The time complexity is expected to
 be: $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{PQ\cdot w} + \Theta((P+Q)\cdot{}N^2),$$ where
 $w$ is the flop rate of each node and 
@@ -463,7 +458,6 @@ Intel's MKL.
 \end{figure}
 #+END_EXPORT
 
-\AL{All the C source codes are wrapped in int main() for no reason.}
 *** Hidden information about the Stampede execution              :noexport:
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
@@ -1303,16 +1297,16 @@ large-scale simulation on a single node. Most of this work mostly
 consists in identifying and eliminating bottlenecks one after the
 other while making sure the consequences on performance prediction are
 harmless. Doing so, the goal is to reduce as much as possible the
-complexity of simulating HPL from $O(N^3) + O(N^2.P.Q)$ to a more
+complexity of simulating HPL from $\O(N^3) + \O(N^2.P.Q)$ to a more
 reasonable complexity. The removal of most of the computations allow
-to get rid of the $O(N^3)$. Since there are $N/NB$ steps, the ideal
+to get rid of the $\O(N^3)$. Since there are $N/NB$ steps, the ideal
 complexity reduction would be to decrease the cost of an iteration to
 something independent of $N$. Thanks to SimGrid fluid models, the time to
 simulate a communication does not depend on $N$. The time to
 simulate a step of HPL should therefore mostly depend on $P$ and
 $Q$. Yet, some of memory operations on the panel related to pivoting
 are intertwined in HPL with collective communications, which does not
-allow to completely get rid of the $O(N)$ complexity without
+allow to completely get rid of the $\O(N)$ complexity without
 modifying a bit more deeply HPL.
 
 Although our goal is to model and simulate HPL on the Stampede
