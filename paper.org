@@ -276,7 +276,6 @@ that was submitted to the TOP500 in 2013. Our approach is
 applicable to other machines, including latest generation machines
 such as Stampede2, that was not yet fully deployed at the time of our investigation.
 
-\CH{This needs to be fixed}
 The remainder of this article is structured as follows: Section\ref{sec:con}
 discusses ...
 Section\ref{sec:relwork} gives references to already existing
@@ -313,7 +312,7 @@ paper by summarizing our work and results.
         \draw [fill=lightgray] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
         \draw [fill=gray] (\i, 12-\i) -- (\i, 12-\i-1) -- (\i+1, 12-\i-1) -- (\i+1, 12-\i) -- cycle;
         \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
-        \draw[<->] (\i, 12-\i+0.5) -- (\i+1, 12-\i+0.5) node [pos=0.5, yshift=+0.15cm] {\scalebox{.6}{$NB$}};
+        \draw[<->] (\i, 12-\i+0.5) -- (\i+1, 12-\i+0.5) node [pos=0.5, yshift=+0.15cm] {\scalebox{.8}{\texttt{NB}}};
       }
       \foreach \i in {3}{
         \draw [fill=white] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
@@ -332,7 +331,7 @@ paper by summarizing our work and results.
     \removelatexerror
     \begin{algorithm}[H]
       allocate and initialize $A$\;
-      \For{$k=N$ \KwTo $0$ \KwStep $NB$}{
+      \For{$k=N$ \KwTo $0$ \KwStep \texttt{NB}}{
         allocate the panel\;
         factor the panel\;
         broadcast the panel\;
@@ -365,7 +364,6 @@ The principle of the factorization is depicted in
 Figure\ref{fig:hpl_overview} and consists of a series of panel
 factorizations followed by an update. The main parameters of HPL are
 listed subsequently:
-#+LATEX: \AL{Why format $A$ (etc.) and =NB= differently ?}
 - $N$ is the order of the square matrix $A$.
 - =NB= is the ''blocking factor``, i.e., the granularity at
   which HPL operates when panels are distributed or worked on.
