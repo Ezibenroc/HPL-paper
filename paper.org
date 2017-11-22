@@ -1236,47 +1236,48 @@ simulation, and the higher the gain.
 # https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
 
 ** Huge pages    
-For larger matrix sizes (e.g., when $N$ is above a few hundreds of
+For larger matrix orders (\ie with $N$ larger than a few hundreds of
 thousands), the performance of the simulation quickly
-deteriorates. The memory consumption gets surprisingly high and the CPU
-utilization drops. Running the simulation while monitoring the system
+deteriorates as the memory consumption rises rapidly and the CPU
+utilization drops unless . Running the simulation while monitoring the system
 shows that the program is regularly stalled while the kernel loads the
-CPU at 100%, which explains the low CPU utilization for the program
+CPU at \SI{100}{\percent}, which explains the low CPU utilization for the program
 itself.
 \TC{This is false, see the entry from 2017-07-22 in my journal. If we use a tempfs file system, the CPU load remains high, we only have a large memory consumption.}
 
-As described above, we fold the memory and realise significant
-physical memory savings. However, the allocations are still performed
-for and the /virtual/ memory is still allocated for every process. This
-implies that there is no reduction in the overall amount of virtual
-addresses, causing the page table to become too large to be
-efficiently maintained. In general, the size of the page table containing
-pages of size \SI{4096}{\byte} can be computed as:
+As aforementioned, we fold the memory in order to reduce the /physical/
+memory usage. The /virtual/ memory, on the other hand, is still
+allocated for every process *since the allocation calls are still executed*.
+Without a reduction of allocated virtual addresses, the page table
+rapidly becomes too large to be efficiently maintained. More
+precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte} can be computed as:
 
     #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot \texttt{sizeof(double)}}{4,096} \cdot \texttt{sizeof(pointer)} \]
 
-This means that for a matrix of size $N=4,000,000$, the page table
-grows to $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie to
-\SI{250}{\gibi\byte}. The x86-64 architecture supports several page
-sizes. On Linux, these larger pages are known as huge page. A typical
-size for these pages is \SI{2}{\mebi\byte}, although there exists other sizes
-(\SIrange{2}{256}{\mebi\byte}).
+This means that only to store the addresses for a matrix of order $N=4,000,000$, the page table
+grows to $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
+\SI{250}{\gibi\byte}. Thankfully, the x86-64 architecture supports several page
+sizes, known as ''huge pages`` *in* Linux. Typically, these pages are
+around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
+(\SIrange{2}{256}{\mebi\byte}) are possible as well.
 
-Resolving this problem requires administrator (root) privileges as the
-Linux kernel support for /hugepages/ needs to be activated. One should
-then simply mount a =hugetlbfs= file system, allocate at least one huge
-page and then pass the path of the allocated file system to
-Simgrid. The implementation consists in passing the flag MAP_HUGETLB
-to =mmap= in =SMPI_SHARED_MALLOC= and replacing the file given to mmap by
-a file opened in the hugetlbfs file system.
+Unfortunately, changing the page size requires administrator (root) privileges as the
+Linux kernel support for /hugepages/ needs to be activated and a
+=hugetlbfs= file system must be mounted. After at least one huge
+page was allocated, the path of the allocated file system can then be
+passed on to SimGrid that will then pass the flag =MAP_HUGETLB=
+to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
+a file opened in the =hugetlbfs= file system.
 
-In our case, setting the page size to \SI{2}{\mebi\byte} resulted in
-the page table to shrink from \SI{250}{\gibi\byte} to
-\SI{0.488}{\gibi\byte}.  It is also noteworthy that using hugetables
-decreases the amount of page faults thereby improving even further
-simulation time. For instance, with a size of 300,000 and 64 MPI
-process, the CPU utilization rises from 66% to 99%, hence reducing
-simulation time from about \SI{580}{\sec} to about \SI{175}{\sec}.
+Setting the page size to \SI{2}{\mebi\byte} has two advantages:
+Firstly, the page table size drastically decreases. For example, for a
+matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte} to 
+\SI{0.488}{\gibi\byte}. Secondly, simulation time decreases drastically since using hugepages
+reduces the amount of page faults and time spent on page table
+management by the kernel. For a matrix of order $300,000$ and $64$ MPI
+processes, we saw CPU utilization rise from \SI{66}{\percent} to
+\SI{99}{\percent} and a reduction of simulation time from about
+\SI{580}{\sec} to roughly \SI{175}{\sec}.
 # Values from Figure 4.9 in Tom's report
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
