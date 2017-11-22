@@ -1173,23 +1173,23 @@ decreases from about \SI{13.5}{\giga\byte} to less than
 \SI{40}{\mega\byte}.
 ** Panel reuse
 The original HPL code \texttt{malloc}s/\texttt{free}s panels in each
-iteration whereas the size of the panel only decreases along
-iterations. As described above, the partial sharing of panels requires
-some extra effort, introducing an overhead. At scale, repeated
-allocations / frees become a bottleneck due to this overhead. Since
+iteration, with the size of the panel strictly decreasing from
+iteration to iteration. As we explained above, the partial sharing of panels requires
+some extra effort and introduces an overhead that makes these repeated
+allocations / frees become a bottleneck. Since
 the very first allocation can fit all subsequent panels, we modified
-HPL to only allocate the very first panel and reuse it from an
+HPL to only allocate the very first panel and reuse it from one
 iteration to another (see Figure\ref{fig:panel_reuse}).
 
-As usual, this optimization is harmless in term of simulation
-accuracy: the maximum observed error, in comparison with the previous
-version, is always lower than 1%. The gain in terms of simulation
-time, albeit less impressive than for previous optimizations, is
-significant: For a matrix of size 40,000 and 64 MPI processes, the
-simulation time decreases by four seconds, from \SI{20.5}{\sec} to
-\SI{16.5}{\sec}, thanks to a reduction of the system time from \SI{5.9}{\sec} to
-\SI{1.7}{\sec}. The number of page faults decreased from 2 millions to
-0.2 million, thus confirming the dramatic effect such
+We consider this optimization harmless with respect to simulation
+accuracy as the maximum error that we observed, compared to the previous
+version, was always less than \SI{1}{\percent}. The gain in terms of simulation
+time is significant, albeit less impressive than for previous
+optimizations: For a very small matrix of size $40,000$ and $64$ MPI processes,
+the simulation time decreases by four seconds, from \SI{20.5}{\sec} to
+\SI{16.5}{\sec}, thanks to a reduction of time consumed by the system,
+from \SI{5.9}{\sec} to \SI{1.7}{\sec}. The number of page faults decreased from $2$ million to
+$0.2$ million, confirming the dramatic effect this
 series of allocation/deallocation would have at scale.
 ** MPI process representation (mmap vs. dlopen)
 SimGrid folds parallel applications into a single process and hence,
