@@ -997,7 +997,7 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
     if((Side) == HplLeft) {                                                         \
         expected_time = coefficient*((double)(M))*((double)(M))*((double)(N));      \
     } else {                                                                        \
-        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N));;     \
+        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N));      \
     }                                                                               \
     expected_time += intercept                                                      \
     if(expected_time > 0)                                                           \
@@ -1107,7 +1107,7 @@ modification was harmless in term of performance prediction while it
 allows to additionally speed-up the simulation by a factor of $\approx3$ to $4$
 on small scenarios ($N=30,000$) and significantly more on larger setups.
 ** Memory folding
-\TC{We also removed five HPL functions (e.g. HPL_dlacpy). Should we mention this?}
+#+LATEX: \TC{We also removed five HPL functions, e.g. HPL\_dlacpy. Should we mention this?}
 As explained in Section\ref{sec:smpi}, when emulating an application
 with SMPI, all MPI processes are run within the same simulation process on a single
 node. The memory consumption of the simulation can therefore quickly reach
@@ -1321,10 +1321,10 @@ processes, we saw CPU utilization rise from \SI{66}{\percent} to
 \TC{The KNC plots are wrong. They have an intercept of more than 2 whereas in reality it is about 0.5. I think they have been made with the old results, when no warm-up was done. See the files:
 | Function | Mode | File                                    |
 |----------+------+-----------------------------------------|
-| dgemm    | KNC  | stampede/calibration/6/large_dgemm.csv  |
-| dgemm    | CPU  | stampede/calibration/7/dgemm_module.csv |
-| dtrsm    | KNC  | stampede/calibration/6/large_dtrsm.csv  |
-| dtrsm    | CPU  | stampede/calibration/7/dtrsm_module.csv |
+| dgemm    | KNC  | stampede/calibration/6/large\_dgemm.csv  |
+| dgemm    | CPU  | stampede/calibration/7/dgemm\_module.csv |
+| dtrsm    | KNC  | stampede/calibration/6/large\_dtrsm.csv  |
+| dtrsm    | CPU  | stampede/calibration/7/dtrsm\_module.csv |
 }
 #+END_EXPORT
 
@@ -1381,7 +1381,7 @@ stalling too much the simulation process.
 #+LATEX: \CH{We already reported this before. Remove?}
 Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
-As these experiments worked out satisfactorily, we can now try to
+As these experiments worked out satisfyingly, we can now try to
 simulate with Stampede one of the largest supercomputers.
 ** Hidden section                                                 :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
@@ -1840,48 +1840,48 @@ scatter3D(
 *** Computations
 Each node of the Stampede cluster comprises two 8-core Intel Xeon
 E5-2680 8C \SI{2.7}{\GHz} CPU and one 61-core Intel Xeon Phi SE10P
-(KNC) \SI{1.1}{\GHz} accelerator, which is roughly three times more
+(KNC) \SI{1.1}{\GHz} accelerator that is roughly three times more
 powerful than the two CPUs. The Xeon Phis can be used in two ways:
-either, as a classical accelerator, i.e., to offload expensive
-computations from the CPU onto the accelerator or by compiling
-binaries for the Xeon Phi and running MPI directly between Xeon
-Phi. While the accelerator's memory of \SI{8}{\gibi\byte} is rather
+either as a classical accelerator, \ie to offload expensive
+computations from the CPU onto the accelerator, or by compiling
+binaries specifically for the Xeon Phi and *running MPI directly between* Xeon
+Phis. While the accelerator's \SI{8}{\gibi\byte} of RAM are rather
 small, the main advantage of the second approach is that data does not
 need to be transferred back and forth between the node's CPU and the
 accelerator via the x16 PCIe bus.
 
 The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
-does not allow to know precisely how the KNC were configured but we
-know for sure that a single MPI process per node was run and that the
-KNC must rather have been used as an accelerator. The easier for such
-a setup is to rely on the Intel's Math Kernel Library that comes with
-support for automatic offloading for several BLAS functions. Although
-we cannot know for sure which version was used in 2013, we decided to
-use the default in use on Stampede in the beginning of 2017, i.e.,
-version 11.1.1. The description of the MKL documentation indicates
+does not provide an explanation about how the KNC was used. We
+are certain, however, that only a single MPI process per node was run and that the
+KNC was hence rather used as an accelerator. This is easily possible 
+with the Intel's Math Kernel Library that comes with
+support for automatic offloading for selected BLAS functions. 
+Alas, we do not know which version was used in 2013 and therefore decided to
+use the default on Stampede in the beginning of 2017, \ie
+version\nbsp{}11.1.1. The MKL documentation states
 that depending on the matrix geometry, the computation will be done
-either on all the cores of the CPU or on the KNC.  In the case of
-DGEMM the computation of $A=\alpha.A+\beta.B\times C$ with $A, B, C$ of respective
-dimension $M\times K$, $K\times N$, $M\times N$, is offloaded to the KNC whenever $M$
-and $N$ are both larger than $1280$ and $K$ is larger than $256$. For
-the =DTRSM= operation, offloading is performed only if both $M$ and $N$
-are larger than $512$. As an illustration, Figure\ref{fig:hpl_mkl}
-depicts the time needed by the MKL for matrices whose dimension are
-randomly taken in $[1,8\,000]$: offloading to the KNC results in a
-better throughput (lower slope) at the cost of a higher latency
-(higher intercept). Although the number of flops is still of the order
-of $MNK$ (resp. $MN^2$ for =DTRSM=), the modeling of the time it takes
-to run =DGEMM= (resp. =DTRSM=) is thus very different for small and large
+either on all the cores of the CPU or *exclusively?* on the KNC.  In the case of
+=DGEMM=, the computation of $A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ being of
+dimensions $M\times{}K$, $K\times{}N$ and $M\times{}N$, respectively, is offloaded onto the KNC whenever $M$
+and $N$ are both larger than $1280$ while $K$ is *simultaneously* larger
+than $256$. Similarly, offloading for =DTRSM= is used when both $M$ and $N$
+are larger than $512$. To illustrate this, Figure\ref{fig:hpl_mkl}
+depicts the time we measured for MKL's =DGEMM= and =DTRSM= implementations
+on matrices with dimensions 
+randomly taken from $[1,8\,000]$. Clearly, offloading to the KNC results in a
+better throughput (lower slope) but incurs a higher latency
+(higher intercept). The *number of flops* is always of the order
+of $M\cdot{}N\cdot{}K$ ($M\cdot{}N^2$ for =DTRSM=) but the model that describes the time it
+takes to run =DGEMM= (=DTRSM=) is very different for small and large
 matrices. The table in Figure\ref{fig:macro_real} indicates the
-parameters of the linear regression for the four settings (=DGEMM=
-vs. =DTRSM= and =CPU= vs. =PHI=). The effective performance is close to the
-peak performance: e.g., for =DGEMM= on the =PHI=, the flop rate is
+parameters of the linear regression for the four scenarios (=DGEMM=
+vs. =DTRSM= and =CPU= vs. =Phi=). The effective performance is close to the
+peak performance: \eg for =DGEMM= on the =Phi=, the flop rate is
 $2/\num{1.981e-12} = \SI{1.009}{\tera\flops}$. Since the granularity
-used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (but
-maybe for the very last iteration) should run on the KNC. 
-In any cases, such behavior is easily accounted for by replacing the
-macro in Figure\ref{fig:macro_simple} by the one in
-Figure\ref{fig:macro_real}.
+used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (except
+for maybe the very last iteration) should be offloaded to the KNC. 
+In any case, this behavior can easily be accounted for by replacing the
+macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
 
 # The accelerators are essential to the performance of the cluster,
 # delivering \SI{7}{\peta\flops} of sustainable performance whereas
@@ -2017,30 +2017,31 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 \end{figure}
 #+END_EXPORT
 
-Again, we cannot know for sure which version of Intel MPI was used in
-2013, so we decided to use the default (recommended) one in use on
-Stampede in May 2017, i.e., version 3.1.4. As explained in
+We unfortunately do not know for sure which version of Intel MPI was used in
+2013, so we decided to use the default (recommended) one on Stampede
+in May 2017, \ie version 3.1.4. As explained in 
 Section\ref{sec:smpi}, SMPI's communication model is a hybrid model
-between the LogP family and a fluid model, supporting different modes
-for the send operation such as fully asynchronous, detached or
-eager. For each message, the mode used is determined solely on the
+between the LogP family and a fluid model. For each message, the send mode
+\eg fully asynchronous, detached or eager, is determined solely by the
 message size. It is hence possible to model the resulting performance
-through a piece-wise, linear model, as depicted in
-Figure\ref{fig:stampede_calibration}.  For a thorough discussion of
-the calibration techniques, see\cite{smpi}. Although the behavior of
-the =MPI_Send= is quite stable and piece-wise regular, the behavior of
-=MPI_Recv= is more surprising: for small messages (below 17420 bytes,
-i.e., purple, blue and red dots), on can observe two modes with "slow"
-communications being both twice longer and much more common than
-"fast" ones. We observed such behavior several times although both MPI
-process were connected through the same local switch and we can assess
-such "perturbation" was present throughout the whole execution of our
-calibrations. We decided to ignore such phenomenon when simulating HPL
-on stampede and opted for the more favorable scenario (fast
-communications). Note that anyway most HPL communication patterns use
-primarily large, bulk messages, making small messages scarce sent:
-almost all messages are hence only sent via the /rendez-vous/ mode
-(depicted in dark green).
+of *communication operations* through a piece-wise, linear model, as depicted in
+Figure\ref{fig:stampede_calibration}. For a thorough discussion of
+the calibration techniques, see\cite{smpi}. Although *the behavior of*
+=MPI_Send= is quite stable and piece-wise regular, *the behavior of*
+=MPI_Recv= is surprising: for small messages with a size of less than \SI{17420}{\byte}
+(represented by purple, blue and red dots), one can observe two modes,
+namely "slow" and "fast" communications. "Slow"
+communications take twice longer and are much more common than the 
+"fast" ones. We observed this behavior *several times* although both MPI
+processes that were used in the calibration were connected through 
+the same local switch. This "perturbation" was present throughout the execution of our
+calibration. 
+#+LATEX: \CH{We want to say: We don't know why this is here.}
+Considering that small messages are scarce in HPL, we eventually decided to
+ignore this phenomenon and opted to use the more favorable scenario (fast
+communications) for small messages. We believe that the impact of
+our choice on the simulation accuracy is minimal as primarily large,
+bulk messages are sent that make use of the /rendez-vous/ mode (depicted in dark green).
 
 # Interestingly, the Stampede website says it's "56 GB/s" but I
 # checked and can only find 56 Gbit/s. I hence go with that, as it
@@ -2050,7 +2051,7 @@ As explained in Section\ref{sec:stampede}, Stampede leverages Mellanox
 FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
 a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
 assumed the routing was done through D-mod-K\cite{dmodk} as it is
-commonly used on such topologies and configured SMPI accordingly.
+commonly used on this topology and configured SMPI accordingly.
 **** Stampede network calibration figures                       :noexport:
 This figure is generated in [[file:~/Work/SimGrid/platform-calibration/data/stampede_17_06_01-17:14/calibration/analysis.org][the platform calibration repository]]. Data
 should be read from there. Final adjustments (in the "Combined plot
@@ -2105,26 +2106,25 @@ cp /tmp/stampede_send_recv_eth.png ./figures/stampede_calibration_send.png
 
 #+RESULTS:
 *** Summarizing modeling uncertainties
-We cannot know for sure which versions of the compiler, of Intel MPI
-and of the MKL were used but we decided to go for rather optimistic
+For the compiler, Intel MPI and the MKL, we were unable to determine
+which version was used in 2013, but decided to go for rather optimistic
 choices. The model for the MKL and for Intel MPI are close to the peak
-performance and although the compiler may have managed to perform
-thorough optimizations in HPL outside of the MKL, most of these parts
-of code are executed but not accounted for in our simulations: this
-allows to obtain fully deterministic simulations without harming the
-outcome of the simulation as they only represent a tiny fraction of
+performance. For the compiler, it is imaginable that it managed to optimize
+HPL thoroughly outside of the MKL. Yet, most of these parts
+are executed but not accounted for in our simulations: this
+allows us to obtain fully deterministic simulations without harming the
+outcome of the simulation as these parts only represent a tiny fraction of
 the total execution time of HPL. A few HPL compilation flags (\eg
 =HPL_NO_MPI_DATATYPE= and =HPL_COPY_L= that control whether MPI datatypes
-should be used or not and how) could no be deduced from
-the 2013 Stamped HPL output but we believe their impact should be
+should be used and how, respectively) could not be deduced from
+HPL's original output on Stampede but we believe their impact to be
 minimal. Finally, the HPL output reports the use of HPL v2.1 but the
-main difference between v2.1 and v2.2 concerns the option to
-continuously report factorization progress, hence we decided to apply
-our modifications to the most recent version of HPL.
+main difference between v2.1 and v2.2 is the option to
+continuously report factorization progress. We hence decided to apply
+our modifications to the later version of HPL.
 
-From all these choices, we could therefore expect the prediction of
-our simulations to be close although rather optimistic compared to a
-real life execution.
+Due to these choices, we could expect the prediction of
+our simulations to be optimistic but close to results obtained by a real life execution.
 # - iMPI version ???
 # - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
 ** Simulating HPL
