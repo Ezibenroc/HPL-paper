@@ -410,7 +410,7 @@ listed subsequently:
 
 The sequential complexity of this factorization is given by
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + \O(N)$ where $N$ is the
-size of the matrix to factorize. The time complexity is expected to
+order of the matrix to factorize. The time complexity is expected to
 be: $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{PQ\cdot w} + \Theta((P+Q)\cdot{}N^2),$$ where
 $w$ is the flop rate of each node and 
 the second term corresponds to the communication overhead which is
@@ -444,7 +444,7 @@ The Stampede supercomputer reached \SI{5168}{\tera\flops} when
 it got ranked in the TOP500. According to the log (see
 Figure\ref{fig:hpl_output}) that was submitted and provided to us,
 this execution took roughly two hours. This run used $77\times78 = 6,006$ processes and a matrix of
-size $N = 3,875,000$, occupying roughly
+order $N = 3,875,000$, occupying roughly
 \SI{120}{\tera\byte} of memory, i.e., \SI{20}{\giga\byte} per node.
 One MPI process per node was used and the exploitation of each node's
 computational resources (the 16 CPU-cores and the Xeon Phi) may have been done through openMP and/or
@@ -628,7 +628,7 @@ SimGrid comes with at least two challenges:
   number of RAM accesses for read/write operations need to be dealt with.
 
 # Real execution:
-# - Matrix of size 3,875,000
+# - Matrix of order 3,875,000
 # - Using 6,006 MPI processes
 # - About 2 hours
 # Requirement for the emulation of Stampede's execution:
@@ -889,7 +889,7 @@ experiment.
        observed for a small scenario is depicted in
        Figure\ref{fig:kernel_sampling}. On the one hand, this modification
        speeds up the simulation by orders of magnitude, as we expected, when matrix
-       size increases. On the other hand, this also leads to a more
+       order increases. On the other hand, this also leads to a more
        optimistic performance estimation. We believe this may not only
        be caused by an inaccuracy in our model but also by a reduction in context-switches, \eg by the operating system.
        #+LATEX: \CH{Re-work this. "Absence of performance variability when kernel models are used."}
@@ -1168,7 +1168,7 @@ the main datastructure that is being communicated between ranks, the
 The error introduced by these new allocations, compared to
 the version from Section *REFERENCE*, is negligible (below 1%) while we gain
 a drastic improvement of the memory consumption. For instance, for a
-matrix of size $40,000$ and $64$ MPI processes, the memory consumption
+matrix of order $40,000$ and $64$ MPI processes, the memory consumption
 decreases from about \SI{13.5}{\giga\byte} to less than
 \SI{40}{\mega\byte}.
 ** Panel reuse
@@ -1185,13 +1185,13 @@ We consider this optimization harmless with respect to simulation
 accuracy as the maximum error that we observed, compared to the previous
 version, was always less than \SI{1}{\percent}. The gain in terms of simulation
 time is significant, albeit less impressive than for previous
-optimizations: For a very small matrix of size $40,000$ and $64$ MPI processes,
+optimizations: For a very small matrix of order $40,000$ and $64$ MPI processes,
 the simulation time decreases by four seconds, from \SI{20.5}{\sec} to
 \SI{16.5}{\sec}, thanks to a reduction of time consumed by the system,
 from \SI{5.9}{\sec} to \SI{1.7}{\sec}. The number of page faults decreased from $2$ million to
 $0.2$ million, confirming the dramatic effect this
 series of allocation/deallocation would have at scale.
-** MPI process representation (mmap vs. dlopen)
+** TODO MPI process representation (mmap vs. dlopen)
 SimGrid folds parallel applications into a single process and hence,
 local static and global variables become an issue as it must be guaranteed that
 each rank has its own set of global variables. SMPI supports two
@@ -1222,7 +1222,7 @@ consistency can always be guaranteed.
 *** Impact of choice of mmap/dlopen
 The choice of mmap or dlopen influences the simulation time indirectly
 through its direct impact on system/user time and page faults.  As an
-example, for a matrix of size 80,000 and 32 MPI processes, the number
+example, for a matrix of order 80,000 and 32 MPI processes, the number
 of minor page faults drops from \num{4412047} (with =mmap=) to
 \num{6880} (with =dlopen=). This results in a drop in system time from 
 \SI{10.64}{\sec} (out of \SI{51.47}{\sec} in total) to
@@ -2284,7 +2284,7 @@ have overlapped.
 
 The broadcast and swapping algorithms generate very heavy
 communication patterns, which is not surprising since for a matrix of
-this size, several hundreds of megabytes need to be broadcast. Our
+this order, several hundreds of megabytes need to be broadcast. Our
 attempts to use other variants did not allow to significantly improve
 overall performance. A quick investigation of the Intel binary
 indicates that it ships with another broadcast algorithm whose name is
