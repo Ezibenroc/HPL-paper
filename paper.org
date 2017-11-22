@@ -1331,44 +1331,40 @@ processes, we saw CPU utilization rise from \SI{66}{\percent} to
 # SMPI_DGEMM_COEFFICIENT=1.029e-11 SMPI_DGEMM_INTERCEPT=2.737e-02 SMPI_DGEMM_PHI_COEFFICIENT=1.981e-12 SMPI_DGEMM_PHI_INTERCEPT=6.316e-01 \
 # SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
 
-In Section\ref{sec:em} we described the work we did in order to run a
-large-scale simulation on a single node. Most of this work mostly
-consists in identifying and eliminating bottlenecks one after the
-other while making sure the consequences on performance prediction are
-harmless. Doing so, the goal is to reduce as much as possible the
-complexity of simulating HPL from $\O(N^3) + \O(N^2.P.Q)$ to a more
-reasonable complexity. The removal of most of the computations allow
-to get rid of the $\O(N^3)$. Since there are $N/NB$ steps, the ideal
-complexity reduction would be to decrease the cost of an iteration to
-something independent of $N$. Thanks to SimGrid fluid models, the time to
-simulate a communication does not depend on $N$. The time to
-simulate a step of HPL should therefore mostly depend on $P$ and
-$Q$. Yet, some of memory operations on the panel related to pivoting
-are intertwined in HPL with collective communications, which does not
-allow to completely get rid of the $\O(N)$ complexity without
-modifying more deeply HPL.
+In Section\ref{sec:em} we explained the problems we encountered when trying
+large-scale simulation on a single node and how we solved them. 
+Most of this consisted of identifying and eliminating bottlenecks one after the
+other while simultaneously making sure that the accuracy of our performance prediction was
+not impacted. Clearly, the main goal was to reduce the
+*complexity* of simulating HPL from $\O(N^3) + \O(N^2\cdot{}P\cdot{}Q)$ to a more
+reasonable *complexity*. The $\O(N^3)$ was removed through evading most
+of the computations. Ideally, since there are $N/NB$ steps, 
+the complexity would be decreased to something independent of
+$N$. SimGrid's fluid models, used to simulate communications, do not
+depend on $N$. Therefore, the time to simulate a step of HPL should mostly depend on $P$ and
+$Q$. Yet, some memory operations on the panel that are related to pivoting
+are intertwined in HPL with collective communications, meaning that it
+is impossible to completely get rid of the $\O(N)$ complexity without
+modifying HPL more profoundly.
 
 Although our goal is to model and simulate HPL on the Stampede
-platform eventually, we decided to produce some first evaluation on a
+platform, we decided to try a first evaluation on a
 similar, albeit non-existing, platform comprising 4,096 8-core nodes
 interconnected through a $\langle2;16,32;1,16;1,1;8\rangle$ fat-tree topology
 built on ideal network links with a bandwidth of
-\SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}.  We run
+\SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}. We ran
 simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
-with matrices of size \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}. To
-illustrates the scalability of HPL simulation with all the previously
-described optimizations enabled, the largest simulation took
-approximately 47 hours and \SI{16}{\giga\byte} of memory. The smallest
-one took 20 minutes and \SI{282}{\mega\byte} of memory.
+with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
+The largest simulation took, with all previously described
+optimizations enabled, close to $47$ hours and consumed
+\SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
 
 Figure\ref{fig:hpl_scalability} compares in detail the impact of changes to
-process number or matrix size on total makespan and memory. 
-In the first and second row, the matrix size and number of processes, respectively,
-are varied. When the matrix size ($N$) is changed, as depicted in the
-two panels of the first row, memory consumption and
-simulation time both grow slightly quadratically as the amount of matrix
+process number or matrix order on total makespan and memory. 
+When the matrix order ($N$) is increased, memory consumption and
+simulation time both *grow* slightly quadratically as the amount of matrix
 elements grows quadratically ($N^{2}$) and the number of steps of the
-algorithm also grows linearly.
+algorithm also *grows* linearly.
 
 As becomes apparent when studying the results shown in the lower two
 panels, simulation time is perfectly linear in the number of processes
@@ -1377,14 +1373,16 @@ consumption only mildly depends on the number of processes: the matrix
 size determines the "lower bound" for the memory consumption and a
 constant amount of memory is then added for the private memory of
 panels and global variables that every process requires.
+\CH{There are no lower panels in that figure anymore. Remove?}
 
-For all these simulations, the CPU utilization is above 98%. This
+For all these simulations, the CPU utilization is above \SI{98}{\percent}. This
 means that the kernel is still able to manage the page table without
-stalling too much the simulation process. Moreover, all the
-simulations spend less than 10% of their execution time in kernel
+stalling too much the simulation process.
+#+LATEX: \CH{We already reported this before. Remove?}
+Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
-Therefore, the simulation of the largest supercomputers is now within
-reach.
+As these experiments worked out satisfactorily, we can now try to
+simulate with Stampede one of the largest supercomputers.
 ** Hidden section                                                 :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
 test" section of Tom's journal:
