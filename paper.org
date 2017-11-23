@@ -2325,43 +2325,43 @@ cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications
 
 Studying HPC applications at scale can be very time- and
 resource-consuming. Simulation can be an effective approach in this
-context and SMPI was successfully validated in several small-scale
+context and SMPI has previously been successfully validated in several small-scale
 studies with standard HPC applications\cite{smpi,heinrich:hal-01523608}.  In this
-article we propose and evaluate extensions to the SimGrid/SMPI
-framework, allowing us to emulate HPL at the scale of a
-supercomputer. HPL is particularly challenging in terms of simulation
+article, we propose and evaluate extensions to the SimGrid/SMPI
+framework that allow us to emulate HPL at the scale of a
+supercomputer. Our application of choice, HPL, is particularly challenging in terms of simulation
 as it implements its own set of non-blocking collective operations
-relying on =MPI_Iprobe= that are *intertwined* with computations.
+that rely on =MPI_Iprobe= to facilitate overlapping with computations.
 
-More specifically, we try to reproduce the execution of HPL on the
+More specifically, we tried to reproduce the execution of HPL on the
 Stampede supercomputer conducted in $2013$ for the TOP500, which
 involved a \SI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
-Our emulation of a similar configuration runs on a single machine for
-about $47$ hours and requires less than \SI{16}{\giga\byte} of RAM. This emulation
-leverages several non-trivial operating-system level optimizations
+Our emulation of a similar configuration ran on a single machine for
+about $47$ hours and required less than \SI{16}{\giga\byte} of RAM. This emulation
+leveraged several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have been
-integrated in the last version of SimGrid/SMPI.
+integrated into the last version of SimGrid/SMPI.
 
-The downside of this large scale is a less well-controlled scenario
-since the Stampede run of HPL was done several years ago and we only
+The downside of this large scale is a less well-controlled scenario.
+The Stampede run of HPL was done several years ago and we only
 have very limited information about the setup (\eg software versions
 and configuration), while a reservation and re-execution on the whole
-machine was impossible for us. We conduct a careful modeling of Stampede, which
-allows us to obtain the performance that would
-have been obtained using the freely available version of HPL.
+machine was impossible for us. We modeled Stampede carefully, which
+allowed us to predict the performance that would
+have been obtained using the unmodified, freely available version of HPL.
 Unfortunately, despite all our efforts, the predicted performance
 was much lower than what was reported in 2013. This
-discrepancy can be explained *by the fact* that a closed-source version
-specifically designed and optimized by the Intel engineers was used in 2013.
+discrepancy comes from the fact that a modified, closed-source version of HPL
+supplied by Intel was used in 2013.
 We believe that through these changes, some of the HPL configuration parameters were
-misreported in the output. Our analysis of the optimized
+misreported in the output. An analysis of the optimized
 HPL binary confirmed that algorithmic differences are the
 reason for the performance differences.
 
-We conclude that our large-scale (in)validation is unfortunately not
-possible as we do not have access to the source code with the changes
-made by the Intel engineers. We claim that the modifications we did are
-minor and should be applicable to their version. Indeed, while HPL
+We conclude that a large-scale (in)validation is unfortunately not
+possible due to the modified source code being unavailable to us.
+We claim that the modifications we made are
+minor and should be applicable to that optimized version. In fact, while HPL
 comprises 16K lines of ANSI C over 149 files, our modifications only
 changed 14 files and involved 286 line insertions and 18 deletions.
 
