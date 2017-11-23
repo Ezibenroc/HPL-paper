@@ -123,12 +123,12 @@
 \def\ie{i.e.,\xspace}
 \def\eg{e.g.,\xspace}
 \def\etal{~\textit{et al.\xspace}}
-\newcommand{\AL}[2][inline]{\todo[caption={},color=green!50,#1]{\small\sf\textbf{AL:} #2}}
-\newcommand{\TC}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
-\newcommand{\CH}[2][inline]{\todo[color=red!30,#1]{\small\sf \textbf{CH:} #2}}
-%\newcommand{\AL}[2][inline]{}
-%\newcommand{\TC}[2][inline]{}
-%\newcommand{\CH}[2][inline]{}
+%\newcommand{\AL}[2][inline]{\todo[caption={},color=green!50,#1]{\small\sf\textbf{AL:} #2}}
+%\newcommand{\TC}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
+%\newcommand{\CH}[2][inline]{\todo[color=red!30,#1]{\small\sf \textbf{CH:} #2}}
+\newcommand{\AL}[2][inline]{}
+\newcommand{\TC}[2][inline]{}
+\newcommand{\CH}[2][inline]{}
 
 %% Omit the copyright space.
 %\makeatletter
@@ -180,37 +180,16 @@ on a single commodity computer at the scale of a supercomputer. More
 precisely, we take as a motivating use case the large-scale run
 performed on the Stampede cluster at TACC in 2013, when it got ranked
 6th in the TOP500. While this qualification run required the
-dedication of 6006 computing nodes of the supercomputer and more than
-120TB of RAM for more than 2 hours, we manage to simulate a similar
-configuration on a commodity computer with 16GB of RAM in about 37
-hours. Allied to a careful modeling of Stampede, this simulation
+dedication of 6,006 computing nodes of the supercomputer and more than
+120\nbsp{}TB of RAM for more than 2\nbsp{}hours, we manage to simulate a similar
+configuration on a commodity computer with 16\nbsp{}GB of RAM in about
+47\nbsp{}hours. Allied to a careful modeling of Stampede, this simulation
 allows us to evaluate the performance that would have been obtained
 using the freely available version of HPL. Such performance reveals much
 lower than what was reported and which was obtained using a
 closed-source version specifically designed by the Intel
 engineers. Our simulation allows us to hint where the main algorithmic
 improvements must have been done in HPL. 
-
-# With supercomputers growing both in size and popularity, it has become
-# important to reduce their usage for the optimization of application
-# codes rather than serious research. Simulation is well-known to be
-# able to aid researchers to study the behavior of massively parallel
-# applications. Alas, running these simulations at the scale of the
-# largest supercomputers has been practically infeasible, rendering it
-# almost impossible to faithfully predict resource-hungry applications. 
-# In this work, we show how we adapted HPL and the SMPI simulator of the SimGrid
-# simulation framework to predict HPL's behavior on the 6,006 nodes of
-# the Stampede cluster. We first outline how we reduced the time spent executing
-# code from HPL to only \SI{0.3}{\percent} without loosing accuracy by
-# using empirically obtained
-# performance models for the computation kernels before we discuss the
-# network and communication models used
-# by SMPI and how we modeled an accelerator-based cluster such as Stampede.
-# We finally demonstrate the practical applicability of our
-# approach through the simulation of HPL at scale on a commonly
-# available single server node by accurately predicting its
-# runtime on a \SI{120}{\tera\byte} large problem instance that was used
-# to evaluate the Stampede system for the TOP500 list.
 #+LaTeX: \end{abstract}
 
 
@@ -224,33 +203,26 @@ The world's largest and fastest machines are ranked twice a year in the so-calle
 TOP500 list. Among the benchmarks that are often used to evaluate
 those machines, the Linpack benchmark, in particular the High-Performance Linpack (HPL)
 implementation, has emerged as the de-facto standard benchmark, although
-other benchmarks such as HPCG and HPGMG have been proposed. The high
-density of computation units in today's machines, with 100,000 cores 
-and more being common and with several machines beyond the 1,000,000 core mark
-being already in production, requires diligent optimization of application
+other benchmarks such as HPCG and HPGMG have recently been proposed to
+become the new standard. Today, machines with 100,000\nbsp{}cores 
+and more are common and several machines beyond the 1,000,000\nbsp{}cores mark
+are already in production. This high density of computation units requires diligent optimization of application
 parameters, such as problem size, process organization or choice of algorithm, as these
-will have an impact on load distribution and network utilization.
+have an impact on load distribution and network utilization.
 Furthermore, to yield best benchmark results,
 runtimes (such as OpenMPI) and supporting libraries such as LAPACK
-(particularly the DGEMM routine in the case of HPL) need to be fine-tuned and adapted to the
+(particularly the by HPL heavily used =DGEMM= routine) need to be fine-tuned and adapted to the
 underlying platform. 
 
-# Lastly, the platform itself and
-# its network need to be setup in a way that HPL can efficiently use the
-# resources it runs on. Only with these optimizations in place can peak
-# performance be attained. 
-# \CH{TODO update this!; see http://www.icl.utk.edu/~luszczek/pubs/post165s1.pdf}. 
-
-Alas, the time it takes to run HPL on the number one system has
-sharply increased and typically requires several hours of dedication.
-This duration
-and the power consumption of several MW per hour on a TOP500 machine makes test-running HPL on the whole
-machine in order to tweak parameters financially infeasible. 
+Alas, it takes typically several hours to run HPL on the list's number one system.
+This duration, combined with the power consumption that often reaches several MW per
+hour for TOP500 machines, makes it financially infeasible to test-run HPL on the whole 
+machine just to tweak parameters. 
 Yet, performance results of an already deployed, current-generation machine typically also
-plays a role in the funding process for future machines and is hence considered critical for
-HPC centers and vendors, who would benefit largely from being able to
-accurately estimate HPL performance outcomes without actually running
-the benchmark for hours.
+play a role in the funding process for future machines. Results near
+the optimal performance for the current machine are hence considered critical for
+HPC centers and vendors. These entities would benefit largely from being able to
+tune parameters without actually running the benchmark for hours.
 # This estimation can be done either via (mathematical) performance models (e.g., by
 # estimating performance of specific functions) or by a simulation based approach.
 # While performance models neglect the
@@ -259,17 +231,15 @@ the benchmark for hours.
 
 # \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
 
-In this article, we explain how to predict the performance of HPL through simulations using
-SimGrid's SMPI simulator. We particularly detail how we obtained
-faithful models for several functions (\eg =DGEMM= and =DPOTRF=) and how we managed
-to reduce a memory consumption of a hundred of terabytes to several
+In this article, we explain how to predict the performance of HPL
+through simulation with the SimGrid/SMPI simulator. We particularly detail how we obtained
+faithful models for several functions (\eg =DGEMM= and =DTRSM=) and how we managed
+to reduce the memory consumption from more than a hundred terabytes to several
 gigabytes, allowing us to emulate HPL on a commonly available server node.
 We demonstrate the effectiveness of our solution by
 simulating the run conducted on the Stampede cluster at
 TACC in 2013 for the TOP500 . 
-# Our approach is
-# applicable to other machines, including latest generation machines
-# such as Stampede2, that was not yet fully deployed at the time of our investigation.
+#+LATEX: \AL{Rephrase this maybe? We after all didn't succeed.}
 
 This article is organized as follows:
 Section\ref{sec:con} presents the main characteristics of the HPL
@@ -277,12 +247,13 @@ application and provides detail on the run that was conducted at TACC
 in 2013.  Section\ref{sec:relwork} discusses existing related work and
 explains why emulation (or /online simulation/) is the only relevant
 approach when studying an application as complex as HPL. In
-Section\ref{sec:smpi}, we briefly present SimGrid/SMPI upon which we
-build while we discuss extensively in Section\ref{sec:em} the
+Section\ref{sec:smpi}, we briefly present the simulator we used for
+this work, SimGrid/SMPI, followed by an
+extensive discussion in Section\ref{sec:em} about the
 optimizations on all levels (\ie simulator, application, system) that
 were necessary to make a large-scale run feasible. The scalability of
 our approach is evaluated in Section\ref{sec:scalabilityevol}. The
-modeling of the stampede platform and the comparison of our simulation
+modeling of the Stampede platform and the comparison of our simulation
 with the 2013 execution is detailed in
 Section\ref{sec:science}. Lastly, Section\ref{sec:cl} concludes this
 article by summarizing our contributions.
@@ -619,9 +590,9 @@ SimGrid comes with at least two challenges:
 - Firstly, as we have seen before, the time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
   $\mathcal{\Theta}(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
-  on 6,006 compute nodes. Using only a single node, a naive
+  on 6,006\nbsp{}compute nodes. Using only a single node, a naive
   emulation of HPL at the scale of the Stampede run would take about
-  500 days if perfect scaling is reached. Although the emulation could
+  500\nbsp{}days if perfect scaling is reached. Although the emulation could
   be done in parallel, we want to limit the computing resources used
   for an emulation. 
 - Secondly, the tremendous memory consumption and consequent high
@@ -1270,7 +1241,7 @@ to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
 a file opened in the =hugetlbfs= file system.
 
 Setting the page size to \SI{2}{\mebi\byte} has two advantages:
-Firstly, the page table size drastically decreases. For example, for a
+Firstly, the page table size decreases drastically. For example, for a
 matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte} to 
 \SI{0.488}{\gibi\byte}. Secondly, simulation time decreases drastically since using hugepages
 reduces the amount of page faults and time spent on page table
@@ -1355,21 +1326,16 @@ built on ideal network links with a bandwidth of
 \SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}. We ran
 simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
 with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
-The largest simulation took, with all previously described
-optimizations enabled, close to $47$ hours and consumed
-\SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
-
-Figure\ref{fig:hpl_scalability} compares for several process numbers
-the impact of the matrix order on total makespan and memory. 
-When the matrix order ($N$) is increased, memory consumption and
+The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
+With all previously described
+optimizations enabled, the largest simulation took close to $47$ hours and consumed
+\SI{16}{\gibi\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mibi\byte} of memory.
+One can also see that, when the matrix order ($N$) is increased, memory consumption and
 simulation time both *grow* slightly quadratic as the amount of matrix
-elements is $N^{2}$ and the number of steps of the
-algorithm also *grows* linearly.
+elements is $N^{2}$ and the number of steps *(iterations?)* of the algorithm also *grows* linearly.
 
 Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
-As these experiments worked out satisfyingly, we can now try to
-simulate with Stampede one of the largest supercomputers.
 ** Hidden section                                                 :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
 test" section of Tom's journal:
