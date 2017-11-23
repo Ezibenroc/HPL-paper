@@ -1359,26 +1359,13 @@ The largest simulation took, with all previously described
 optimizations enabled, close to $47$ hours and consumed
 \SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
 
-Figure\ref{fig:hpl_scalability} compares in detail the impact of changes to
-process number or matrix order on total makespan and memory. 
+Figure\ref{fig:hpl_scalability} compares for several process numbers
+the impact of the matrix order on total makespan and memory. 
 When the matrix order ($N$) is increased, memory consumption and
-simulation time both *grow* slightly quadratically as the amount of matrix
-elements grows quadratically ($N^{2}$) and the number of steps of the
+simulation time both *grow* slightly quadratic as the amount of matrix
+elements is $N^{2}$ and the number of steps of the
 algorithm also *grows* linearly.
 
-As becomes apparent when studying the results shown in the lower two
-panels, simulation time is perfectly linear in the number of processes
-when the matrix size is fixed. It is noteworthy that the memory
-consumption only mildly depends on the number of processes: the matrix
-size determines the "lower bound" for the memory consumption and a
-constant amount of memory is then added for the private memory of
-panels and global variables that every process requires.
-\CH{There are no lower panels in that figure anymore. Remove?}
-
-For all these simulations, the CPU utilization is above \SI{98}{\percent}. This
-means that the kernel is still able to manage the page table without
-stalling too much the simulation process.
-#+LATEX: \CH{We already reported this before. Remove?}
 Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
 As these experiments worked out satisfyingly, we can now try to
@@ -2324,14 +2311,14 @@ cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications
 #+LaTeX: \label{sec:cl}
 
 Studying HPC applications at scale can be very time- and
-resource-consuming. Simulation can be an effective approach in this
+resource-consuming. Simulation is often an effective approach in this
 context and SMPI has previously been successfully validated in several small-scale
 studies with standard HPC applications\cite{smpi,heinrich:hal-01523608}.  In this
-article, we propose and evaluate extensions to the SimGrid/SMPI
-framework that allow us to emulate HPL at the scale of a
+article, we proposed and evaluated extensions to the SimGrid/SMPI
+framework that allowed us to emulate HPL at the scale of a
 supercomputer. Our application of choice, HPL, is particularly challenging in terms of simulation
 as it implements its own set of non-blocking collective operations
-that rely on =MPI_Iprobe= to facilitate overlapping with computations.
+that rely on =MPI_Iprobe= in order to facilitate overlapping with computations.
 
 More specifically, we tried to reproduce the execution of HPL on the
 Stampede supercomputer conducted in $2013$ for the TOP500, which
@@ -2342,20 +2329,20 @@ leveraged several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have been
 integrated into the last version of SimGrid/SMPI.
 
-The downside of this large scale is a less well-controlled scenario.
-The Stampede run of HPL was done several years ago and we only
+The downside of scaling this high is a less well-controlled scenario.
+The reference run of HPL on Stampede was done several years ago and we only
 have very limited information about the setup (\eg software versions
 and configuration), while a reservation and re-execution on the whole
-machine was impossible for us. We modeled Stampede carefully, which
+machine was impossible for us. We nevertheless modeled Stampede carefully, which
 allowed us to predict the performance that would
-have been obtained using the unmodified, freely available version of HPL.
+have been obtained using an unmodified, freely available version of HPL.
 Unfortunately, despite all our efforts, the predicted performance
-was much lower than what was reported in 2013. This
+was much lower than what was reported in 2013. We determined that this
 discrepancy comes from the fact that a modified, closed-source version of HPL
 supplied by Intel was used in 2013.
-We believe that through these changes, some of the HPL configuration parameters were
-misreported in the output. An analysis of the optimized
-HPL binary confirmed that algorithmic differences are the
+We believe that some of the HPL configuration parameters were
+hardcoded and therefore misreported in the output. An analysis of the optimized
+HPL binary confirmed that algorithmic differences were likely to be the
 reason for the performance differences.
 
 We conclude that a large-scale (in)validation is unfortunately not
