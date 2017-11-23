@@ -319,34 +319,34 @@ article by summarizing our contributions.
 
 For this work, we use the freely-available reference-implementation of
 the High-Performance Linpack benchmark\cite{HPL}, HPL, which is 
-used to benchmark systems for the TOP500\cite{top500} list. HPL implements
+used to benchmark systems for the TOP500\cite{top500} list. HPL
+requires MPI to be available and implements
 a LU decomposition, \ie a factorization of a square matrix $A$ as the
-product of a lower triangular matrix $L$ and an upper triangular
-matrix $U$. HPL checks the correctness of this factorization by
-solving a linear system $A\cdot{}x=b$ but only the factorization step is
+product of a lower triangular matrix $L$ and an upper triangular
+matrix $U$. HPL checks the correctness of this factorization by
+solving a linear system $A\cdot{}x=b$, but only the factorization step is
 benchmarked.  The factorization is based on a right-looking variant of
 the LU factorization with row partial pivoting and allows multiple
-look-ahead depths. HPL requires MPI and uses a two-dimensional
-block-cyclic data distribution of $A$. HPL implements several custom
-collective communication algorithms to efficiently overlap computation
-with communication.
+look-ahead depths. The working principle of the factorization is depicted in
+Figure\ref{fig:hpl_overview} and consists of a series of panel
+factorizations followed by an update.
+HPL uses a two-dimensional block-cyclic data distribution of $A$. Furthermore, HPL implements several custom
+collective communication algorithms to efficiently overlap communication
+with computation.
+#+LATEX: \CH{These two sentences need to be better integrated.}
 # (e.g., when pivoting).
 
-The principle of the factorization is depicted in
-Figure\ref{fig:hpl_overview} and consists of a series of panel
-factorizations followed by an update. The main parameters of HPL are
-listed subsequently:
+The main parameters of HPL are listed subsequently:
 - $N$ is the order of the square matrix $A$.
-- =NB= is the ''blocking factor``, i.e., the granularity at
+- =NB= is the ''blocking factor``, \ie the granularity at
   which HPL operates when panels are distributed or worked on.
-- $P$ and $Q$ are the number of process rows and the
+- $P$ and $Q$ denote the number of process rows and the
   number of process columns, respectively;
 - =RFACT= determines the panel factorization algorithm. Possible values: Crout, left- or right-looking.
-- =SWAP= specifies the swapping algorithm to be used for pivoting. Two
+- =SWAP= specifies the swapping algorithm used while pivoting. Two
   algorithms are available: one based on /binary exchange/ (along a virtual tree topology) and the other one based on
   a /spread-and-roll/ (with a higher number of parallel communications). HPL
-  also provides a panel-size threshold triggering a switch from
-  one variant to the other.
+  also provides a panel-size threshold triggering a switch from one variant to the other.
 - =BCAST= sets the algorithm used to broadcast the
   panel *of columns* to the other *process columns*. Legacy versions of
   the MPI standard only supported non-blocking point-to-point communications but did
@@ -354,19 +354,19 @@ listed subsequently:
   ships with in total 6 self-implemented variants to efficiently
   overlap the time spent waiting for an incoming panel with updates to
   the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
-  =long=, and =long-modified=. The =modified= versions consist of ensuring
+  =long=, and =long-modified=. The =modified= versions guarantee that
   the process right after the root (\ie the process that will become the root
   in the next iteration) receives data first and does not participate
-  further in the broadcast. This allows this process to start working on the
+  further in the broadcast. This process can thereby start working on the
   panel as soon as possible. The =ring= and =2-ring= versions correspond
-  to the *two corresponding virtual topologies* while the =long= version
-  is a /spread and roll/ algorithm where messages are chopped into $Q$
-  pieces. This generally exploits bandwidth better. The =ring= and
-  =2-ring= variants rely on =MPI_Iprobe=, which allows the function to
-  return if no message has been fully received yet and hence to partially overlap
-  communication with computations. In HPL 2.2 and 2.1, this capability
-  has been deactivated for =long= as it seems to get some machines stuck when
-  there are too many ongoing messages.
+  to the name-giving two virtual topologies while the =long= version
+  is a /spread and roll/ algorithm where messages are chopped into $Q$
+  pieces. This generally leads to better bandwidth exploitation. The =ring= and
+  =2-ring= variants rely on =MPI_Iprobe=, meaning they
+  return control if no message has been fully received yet and hence
+  facilitate partial overlapping of communication with computations. In HPL 2.2 and 2.1, this capability
+  has been deactivated for =long=. A comment in the source code states that some
+  machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
 #+BEGIN_EXPORT latex
@@ -379,47 +379,49 @@ listed subsequently:
 \end{figure}
 #+END_EXPORT
 
-The sequential complexity of this factorization is given by
+The sequential complexity of this factorization is 
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + \O(N)$ where $N$ is the
-order of the matrix to factorize. The time complexity is expected to
-be: $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{PQ\cdot w} + \Theta((P+Q)\cdot{}N^2),$$ where
-$w$ is the flop rate of each node and 
+order of the matrix to factorize. The time complexity *is expected* to
+be: $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{P\cdot{}Q\cdot{}w} + \Theta((P+Q)\cdot{}N^2),$$ where
+$w$ is the flop rate of *each node* and 
+#+LATEX: \AL{Should we note that they're considered homogenous ("each" sounds like it could change)?}
 the second term corresponds to the communication overhead which is
-influenced by the previous parameters (=RFACT=, =SWAP=, =BCAST=, =DEPTH=,
-...).  The measure of interest reported by HPL is the overall flop
-rate $\mathrm{flop}(N)/T(N)$ and is expressed in \si{\giga\flops}.
+influenced by the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
+=DEPTH=, \ldots). 
+After each run, HPL reports the overall flop
+rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) and also
+several configurations. See Figure\ref{fig:hpl_output} for a (shortened)
+example output.
 
-Preparing a large-scale execution of HPL for a TOP500 qualification
-can therefore be quite time consuming as it requires to carefully tune
-all the BLAS kernels, the MPI runtime, and all the previous parameters
-of HPL.
+A large-scale execution of HPL on a real machine in order to submit to the TOP500
+can therefore be quite time consuming as all the BLAS kernels, the MPI runtime, and HPL's numerous parameters
+need to be tuned carefully in order to reach optimal performance.
 ** A Typical Run on a Supercomputer
 \label{sec:stampede}
 In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
 TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
-June 2016. In 2017, this machine got upgraded into Stampede2. The Stampede platform
-consisted of 6400 Sandy Bridge nodes including two 8-core Xeon E5-2680 and one
+June 2016. In 2017, this machine got upgraded and renamed Stampede2. The Stampede platform
+consisted of 6400 Sandy Bridge nodes, each with two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
 fat-tree topology built on Mellanox switches. As can be seen in 
-Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
-divided into groups of 20, with each group being connected to one of the 320 36-port switches (\SI{4}{\tera\bit\per\second}
-capacity), which are themselves connected to 8 648-port
+Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
+divided into groups of 20, with each group being connected to one of the 320 36-port switches (\SI{4}{\tera\bit\per\second}
+capacity), which are themselves connected to 8 648-port
 ''core\nbsp{}switches`` (each with a capacity of \SI{73}{\tera\bit\per\second}). 
-The peak performance of the 2\nbsp{}Xeon CPUs available to each node is approximately \SI{346}{\giga\flops},
-while the peak performance of the KNC co-processor is about
-\SI{1}{\tera\flops}. Hence, Stampede could attain a theoretical total peak performance of
-\SI{8520}{\tera\flops}.
-
-The Stampede supercomputer reached \SI{5168}{\tera\flops} when
-it got ranked in the TOP500. According to the log (see
-Figure\ref{fig:hpl_output}) that was submitted and provided to us,
-this execution took roughly two hours. This run used $77\times78 = 6,006$ processes and a matrix of
-order $N = 3,875,000$, occupying roughly
-\SI{120}{\tera\byte} of memory, i.e., \SI{20}{\giga\byte} per node.
+The peak performance of the 2 Xeon CPUs per node was approximately \SI{346}{\giga\flops},
+while the peak performance of the KNC co-processor was about
+\SI{1}{\tera\flops}. The theoretical peak performance of the
+platform was therefore \SI{8520}{\tera\flops}. However, in the TOP500, Stampede
+was ranked with \SI{5168}{\tera\flops}. According to the log submitted
+to the TOP500 (see Figure\ref{fig:hpl_output}) that was provided to us,
+this execution took roughly two hours and used $77\times78 = 6,006$
+processes. The matrix of order $N = 3,875,000$ occupied approximately
+\SI{120}{\tera\byte} of memory, \ie \SI{20}{\giga\byte} per node.
 One MPI process per node was used and the exploitation of each node's
-computational resources (the 16 CPU-cores and the Xeon Phi) may have been done through openMP and/or
+computational resources (the 16 CPU-cores and the Xeon Phi) *may have been done through openMP* and/or
 Intel's MKL.
+#+LATEX: \CH{This is too vague. Not sure OpenMP should be mentioned.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -517,27 +519,27 @@ The performance achieved by Stampede, \SI{5168}{\tera\flops}, needs to
 be compared to the peak performance of the 6,006 nodes, \ie
 \SI{8084}{\tera\flops}. This discrepancy may be attributed to the node
 usage (\eg, the MKL), to the MPI library, to the network topology that
-may not be able to deal with very intensive communication workload, to
-load imbalance among nodes when some node happens to be slower for some
-reason (defect, system noise, ...), to the algorithmic structure of
-HPL, etc. In any case, it is difficult to know precisely what to expect
+may be unable to deal with the very intensive communication workload, to
+load imbalance among nodes because some node happens to be slower for some
+reason (defect, system noise, \ldots), to the algorithmic structure of
+HPL, etc. In any case, it is difficult to know precisely *what to expect*
 without running the application on a machine of this complexity.
+#+LATEX: \CH{We talk about what caused the problem here...}
 
 It is clear that due to the level of complexity of both HPL and
 the underlying hardware, simple performance models (analytic expressions based
-on $N, P, Q$ and estimations of platform characteristics *as done in*
-Section\ref{sec:hpl}) may be able provide trends but can by no means
-predict the performance for a given configuration (\eg the
-exact effect of the 6 variants of the broadcast algorithms in terms of
-network contention). Likewise, these expressions do not allow
-engineers to improve the performance through identifying performance bottlenecks.
-
-Particularly complex optimizations (partially non-blocking
-collective communication algorithms intertwined with computations)
-done in HPL require a very faithful modeling of both the application
-and the platform. Given the scale of this scenario
-(3,785\nbsp{}steps involving 6,006\nbsp{}nodes during two hours), precise
-simulations of applications quickly becomes intractable.
+on $N, P, Q$ and estimations of platform characteristics as presented in
+Section\ref{sec:hpl}) may be able to provide trends but can by no means
+predict the performance for each configuration (\ie consider the
+exact effect of HPL's 6 different broadcast algorithms on network
+contention). Additionally, these expressions do not allow
+engineers to improve the performance through actively identifying performance bottlenecks.
+For complex optimizations such as partially non-blocking
+collective communication algorithms intertwined with computations,
+very faithful modeling of both the application and the platform is
+required. Given the scale of this scenario
+(3,785\nbsp{}*steps* on 6,006 nodes in two hours), precise
+simulations *become* quickly intractable without further work.
 * Related Work
 #+LaTeX: \label{sec:relwork}
 
@@ -546,12 +548,18 @@ widely studied over the last decades, with today's literature distinguishing mai
 between two approaches: offline and online simulation.
 
 With the most common approach, /offline simulation/, the application
-is time-independently traced during an execution. Here, only the order of MPI operations and CPU
-bursts are of interest that can then be replayed on top of a simulator
+is time-independently traced during an execution on the real
+platform. For this execution, only the order of MPI operations and CPU
+bursts are of interest so that they can be replayed on top of a simulator
 that calculates the timings through its implemented models of the network and the MPI
-layer. Since the trace can be replayed without re-executing the
-application, parameters of the platform model supplied to the
-simulator can be changed *and the impact of that change* can be evaluated. 
+layer.
+#+LATEX: \CH{The previous sentence is too long and complex.}
+Once obtained, the trace can be replayed without re-executing the
+application on the real platform. Researchers interested in finding out how
+their application reacts to changes to the underlying platform can
+then modify the platform model as often as they wish and study the
+new application's behavior. 
+#+LATEX: \CH{This is ugly.}
 Most HPC simulators available today, among them BigSim\cite{bigsim_04},
 Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 
