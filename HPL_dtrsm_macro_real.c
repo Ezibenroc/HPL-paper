@@ -11,7 +11,7 @@
     if((Side) == HplLeft) {                                                         \
         expected_time = coefficient*((double)(M))*((double)(M))*((double)(N));      \
     } else {                                                                        \
-        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N));;     \
+        expected_time = coefficient*((double)(M))*((double)(N))*((double)(N));      \
     }                                                                               \
     expected_time += intercept                                                      \
     if(expected_time > 0)                                                           \
