@@ -5,7 +5,6 @@ Modified by Piotr Luszczek, Innovative Computing Laboratory, UTK
 Modified by Julien Langou, University of Colorado Denver
 ================================================================================
 
-
 The following parameter values will be used:
 
 £\myemph{N}£        : £\myemph{3875000}£
