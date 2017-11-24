@@ -98,6 +98,7 @@
 #+LATEX_HEADER:\pgfplotsset{compat=1.13}
 
 #+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \setlist[itemize,1]{leftmargin=\dimexpr 26pt-.2in}
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
 #+LATEX_HEADER: \usepackage[ruled,vlined,english]{algorithm2e}
 #+LATEX_HEADER: \DontPrintSemicolon
