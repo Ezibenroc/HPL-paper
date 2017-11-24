@@ -496,7 +496,7 @@ may be unable to deal with the very intensive communication workload, to
 load imbalance among nodes because some node happens to be slower for some
 reason (defect, system noise, \ldots), to the algorithmic structure of
 HPL, etc. In any case, it is difficult to know precisely *what to expect*
-without running the application on a machine of this complexity.
+without running the application on a machine this complex.
 #+LATEX: \CH{We talk about what caused the problem here...}
 
 It is clear that due to the level of complexity of both HPL and
@@ -530,52 +530,49 @@ layer.
 Once obtained, the trace can be replayed without re-executing the
 application on the real platform. Researchers interested in finding out how
 their application reacts to changes to the underlying platform can
-then modify the platform model as often as they wish and study the
-new application's behavior. 
+then modify the platform model as they wish and study the
+application's new behavior. 
 #+LATEX: \CH{This is ugly.}
-Most HPC simulators available today, among them BigSim\cite{bigsim_04},
+Most HPC simulators available today, notably BigSim\cite{bigsim_04},
 Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 
 The main limitation of this approach comes from the trace
-acquisition requirement. Obtaining a trace up front at such scale and complexity
-generally renders it impossible to accurately calculate the trace, hence requiring
-a full-scale execution. This, however, is exactly what we aim to avoid.
-Additionally, the traces contain only information about a single run
-and cannot give clues about the consequences (\eg in terms of
-communication patterns) of simple modifications of application
-parameters. For simple applications (\eg =stencil=), it may be
+acquisition requirement.
+Additionally, tracing an application collects only information about
+how its behavior at the time of the run. Even simple modifications 
+(\eg to communication patterns) render the trace inaccurate. For
+uncomplicated applications (\eg =stencil=) it is sometimes
 possible to extrapolate behavior from small-scale
-traces\cite{scalaextrap,pmac_lspp13} but whenever the application relies on
-non-blocking communication patterns, the execution becomes
-non-deterministic. In the case of HPL, this approach is thus unusable
-due to the size of the obtained traces (\approx 110 TB for 
-Stampede) and the complexity of the application (\eg six broadcast strategies implemented by HPL)
-that significantly influence the performance.
-\TC{Also, the trace is simply too large? E.g. the trace for the Stampede's simulation would take more than 100GB (compressed).}
+traces\cite{scalaextrap,pmac_lspp13} but the execution becomes
+non-deterministic whenever the application relies on
+non-blocking communication patterns. This, however, is exactly the
+case for HPL. Furthermore, the size of the traces on Stampede
+are with \SI{100}{\tera\byte} prohibitive.
+#+LATEX: \TC{Also, the trace is simply too large? E.g. the trace for the Stampede's simulation would take more than 100GB (compressed).}
+#+LATEX: \CH{@TOM: OK, TB? GB? Why should we mention SMPI traces?}
 
-The second approach discussed in literature is /online simulation/ and
-is required to study HPL.
-Here, the application is executed (emulated) in a tightly controlled way on top of the simulator. The
-simulator itself is responsible for determining when each process
-should be allowed to run. Executing the application allows researchers
-to observe its behavior *at the level of MPI*. Only a few
-recent simulators support the online approach, such as the
-extreme-scale simulator xSim\cite{xsim}, SST Macro\cite{sstmacro} and
-SimGrid/SMPI\cite{simgrid}. To the best of our knowledge, only SST Macro and
-SimGrid/SMPI are openly available and mature enough to the faithful emulation of
-HPL as xSim is at this point not freely available. For the following
-discussion of our work, we rely on SimGrid as we 
+The second approach discussed in literature is /online simulation/.
+Here, the application is executed (emulated) on top of a simulator
+that is responsible for determining when each process
+is run. This approach allows researchers
+to observe application behavior *at the level of MPI* but only a few
+recent simulators such as SST Macro\cite{sstmacro},
+SimGrid/SMPI\cite{simgrid} 
+and the *closed-source* extreme-scale simulator xSim\cite{xsim} support
+it. To the best of our knowledge, only SST Macro and
+SimGrid/SMPI are not only mature enough to faithfully emulate 
+HPL but also free software. For our work, we relied on SimGrid as we 
 have an excellent knowledge of its internals although the developments we
-propose would a priori also be possible with SST Macro. Emulation with
-SimGrid comes with at least two challenges:
-- Firstly, as we have seen before, the time-complexity of the algorithm is $\mathcal{O}(N^3)$ and
-  $\mathcal{\Theta}(N^2)$ communications are performed, with $N$ being very
+propose would a priori also be possible with SST Macro. Emulation of
+HPL comes with at least two challenges:
+- Firstly, the time-complexity of the
+  algorithm is $\mathcal{O}(N^3)$. Furthermore, 
+  $\Theta(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
   on 6,006\nbsp{}compute nodes. Using only a single node, a naive
   emulation of HPL at the scale of the Stampede run would take about
   500\nbsp{}days if perfect scaling is reached. Although the emulation could
-  be done in parallel, we want to limit the computing resources used
-  for an emulation. 
+  be done in parallel, we want to use as little computing resources as possible.
 - Secondly, the tremendous memory consumption and consequent high
   number of RAM accesses for read/write operations need to be dealt with.
 
@@ -663,14 +660,13 @@ discrepancy between simulation and real executions.
 #+LATEX: \CH{These discrepancies were not yet discussed here. And what is the challenge?}
 
 ** Application Behavior Modeling
-SMPI relies on the /online/
-simulation approach where the application code is executed and part of
+SMPI relies on the /online/ simulation approach where the application code is executed and part of
 the instruction stream is intercepted and passed on to a simulator. 
 SMPI maps every MPI process of the application onto a
 lightweight simulation thread, which is run in mutual exclusion from
 the others. Every time a thread enters an MPI call, 
 it yields to the simulation kernel and the time it spent
-computing (in isolation from every other thread) since the previous
+computing (isolated from the other threads) since the previous
 MPI call can be injected into the simulator as a virtual delay. 
 
 Since all simulated MPI ranks are mapped to threads of a single
@@ -2329,6 +2325,8 @@ Experiments presented in this paper were carried out using the Grid'5000 testbed
 
 #+LATEX: \bibliographystyle{IEEEtran}
 #+LATEX: \bibliography{refs}
+
+#+LATEX: \AL{"Proc. of the ????" in the last item!}
 
 * Bib file is here                                                 :noexport:
 
