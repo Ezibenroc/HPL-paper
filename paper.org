@@ -745,7 +745,7 @@ reduce both memory footprint and simulation duration of an emulation:
     }}
     \begin{figure}%[htbp]
       \centering
-      \begin{tikzpicture}[scale=0.7]
+      \begin{tikzpicture}[yscale=0.7, scale=0.7]
         \pgfmathtruncatemacro{\size}{4}
         \pgfmathtruncatemacro{\width}{2}
         \pgfmathtruncatemacro{\sizem}{\size-1}
