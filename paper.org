@@ -693,7 +693,7 @@ host machine.
 SMPI provides two simple annotation mechanisms allowing its users
 to exploit the regularity of HPC applications and to drastically
 reduce both memory footprint and simulation duration of an emulation:
-- Kernel sampling :: for many applications, the *execution structure* is
+- *Kernel sampling*: for many applications, the *execution structure* is
      independent *on* the computation results. Most
      computation-intensive kernels (\eg BLAS kernels in the case of
      HPL) can then actually be skipped for the purpose of the
@@ -703,7 +703,7 @@ reduce both memory footprint and simulation duration of an emulation:
      regions a few times in a simulation run to obtain estimations of
      their cost. Once enough samples samples have been obtained, they
      are skipped and the cost is derived from the previously gathered samples.
-- Memory  folding :: SMPI provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE)= macro to
+- *Memory folding*: SMPI provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE)= macro to
      replace calls to =malloc= (=free=). Through these macros, programmers can
      indicate to SMPI that some data structures can safely be
      shared between processes in simulation and that the data 
