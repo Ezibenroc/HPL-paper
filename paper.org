@@ -313,7 +313,7 @@ article by summarizing our contributions.
     \vspace{1em}
   \end{minipage}
   
-  \caption{Overview of High Performance Linpack}
+  \caption{Overview of High Performance Linpack}\vspace{-1em}
   \label{fig:hpl_overview}
 \end{figure}
 #+END_EXPORT
@@ -374,7 +374,7 @@ The main parameters of HPL are listed subsequently:
 \begin{figure}[t]
   \centering
   \includegraphics[width=.85\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
-  \caption{The fat-tree network topology of Stampede.}
+  \vspace{-.5em}\caption{The fat-tree network topology of Stampede.}\vspace{-.5em}
   \label{fig:fat_tree_topology}
   \labspace
 \end{figure}
@@ -430,7 +430,7 @@ Intel's MKL.
   \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
   \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
   \end{minipage}}
-  \caption{HPL output submitted in June 2013 for the ranking of Stampede in the TOP500.}
+  \caption{HPL output submitted in June 2013 for the ranking of Stampede in the TOP500.}\vspace{-1em}
   \label{fig:hpl_output}
 \end{figure}
 #+END_EXPORT
@@ -806,7 +806,7 @@ reduce both memory footprint and simulation duration of an emulation:
 	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
 	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
       \end{tikzpicture}
-      \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical page.}
+      \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical page.}\vspace{-1em}
     \end{figure}
     #+END_EXPORT
 * Improving SMPI Emulation Mechanisms and Preparing HPL
@@ -838,7 +838,7 @@ experiment.
     \begin{minipage}[b]{\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
     \end{minipage}}
-  \caption{Replacing the calls to computationally expensive functions by a model allows to significantly reduce simulation time.}
+  \caption{Replacing the calls to computationally expensive functions by a model allows to significantly reduce simulation time.}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
 
@@ -1052,7 +1052,7 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
     \end{minipage}
   }    
   \end{minipage}}
-  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}
+  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
 
@@ -1267,7 +1267,7 @@ processes, we saw CPU utilization rise from \SI{66}{\percent} to
   \centering
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}
 %  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
-  \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank. }
+  \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank.}\vspace{-1em}
   \label{fig:hpl_scalability}
   \labspace
 \end{figure}
@@ -1973,7 +1973,7 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
   \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
   \caption{Modeling communication time on stampede. Each color corresponds to a
       manually adjusted breakpoint corresponding to a synchronization mode 
-      (eager, rendez-vous,...). }
+      (eager, rendez-vous,...). }\vspace{-1em}
   \label{fig:stampede_calibration}
   \labspace
 \end{figure}
@@ -2116,7 +2116,7 @@ unrealistic and can hence not be the solution.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
-  \caption{Performance prediction of HPL on Stampede using SimGrid.}
+  \caption{Performance prediction of HPL on Stampede using SimGrid.}\vspace{-1em}
   \label{fig:stampede_prediction}
   \labspace
 \end{figure}
@@ -2263,7 +2263,7 @@ is recommended for large problem sizes.
   \includegraphics[width=\linewidth,page=1]{./figures/fullscale_unzoomed.png}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
       red while computations are in light blue. Each communication between two process
-      is represented with a white arrow, which results in very cluttered white areas.}
+      is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
   \label{fig:hpl_gantt}
   \labspace
 \end{figure}
