@@ -907,13 +907,13 @@ grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), 
 plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
-    xlab('Matrix rank') +
+    xlab('Matrix order') +
     ylab('Performance [Gflop/s]') +
     ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI process)")
 plot2 = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
-    xlab('Matrix rank') +
+    xlab('Matrix order') +
     ylab('Time [seconds]') +
     ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI process)")
 
