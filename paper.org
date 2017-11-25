@@ -660,59 +660,51 @@ simulated run of an application is as faithful as possible to real
 executions. 
 #+LATEX: \CH{This last sentence is very ugly.}
 # HPL, however, ships with 6 self-implemented collective operations. 
-#+LATEX: \AL{We talk a lot here about why it's challenging and then we say "this is not important"}
+#+LATEX: \AL{We talk a lot here about why it's challenging and then we say "this is not important". (I cut this a lot in db9ab83b5d72c67399522939d6ebaa068f5b3811)}
 
 ** Application Behavior Modeling
-SMPI relies on the /online/ simulation approach where the application code is executed and part of
-the instruction stream is intercepted and passed on to a simulator. 
-SMPI maps every MPI process of the application onto a
-lightweight simulation thread, which is run in mutual exclusion from
-the others. Every time a thread enters an MPI call, 
-it yields to the simulation kernel and the time it spent
+In Section\ref{sec:relwork} we explained that SMPI relies on the /online/ simulation approach.
+Since SimGrid is a sequential simulator, SMPI maps every MPI process of the application onto a
+lightweight simulation thread. These threads are then run one at a
+time, \ie in mutual exclusion.
+Every time a thread enters an MPI call, 
+the SMPI takes control and the time that was spent
 computing (isolated from the other threads) since the previous
 MPI call can be injected into the simulator as a virtual delay. 
 
-Since all simulated MPI ranks are mapped to threads of a single
-process, they are effectively folded into the same address space
-and therefore global variables in the MPI application are shared
-between threads unless they are /privatized/ to ensure that the
-simulated MPI ranks are still isolated from each others. Several
-technical approaches are possible to handle this issue\cite{smpi}. The solution
-SMPI uses by default consists of remapping the data
-segment containing global variables of the code to a rank specific
-copy of that segment each time we context switch from a process to another. This
-remapping is done using the ~mmap~ system call, which leverages the
-virtual memory mechanism of the operating system.
-The main drawback of this approach is that it is somewhat 
-expensive in terms of both simulation time and memory requirements
-since the whole parallel application is actually executed on a single
-host machine.
-#+LATEX: \CH{This sentence doesn't make sense to me?}
-SMPI provides two simple annotation mechanisms allowing its users
-to exploit the regularity of HPC applications and to drastically
-reduce both memory footprint and simulation duration of an emulation:
-- *Kernel sampling*: for many applications, the *execution structure* is
-     independent *on* the computation results. Most
-     computation-intensive kernels (\eg BLAS kernels in the case of
-     HPL) can then actually be skipped for the purpose of the
-     simulation. SMPI supports several macros (\eg
-     =SMPI_SAMPLE_LOCAL= and =SMPI_SAMPLE_GLOBAL=) to annotate regular
-     computation kernels. The regularity allows SMPI to execute these
-     regions a few times in a simulation run to obtain estimations of
-     their cost. Once enough samples samples have been obtained, they
-     are skipped and the cost is derived from the previously gathered samples.
-- *Memory folding*: SMPI provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE)= macro to
-     replace calls to =malloc= (=free=). Through these macros, programmers can
-     indicate to SMPI that some data structures can safely be
-     shared between processes in simulation and that the data 
-     contained within is not of critical importance (\eg an input
-     matrix) for the execution and may even be overwritten in
-     simulation. This is possible since in simulation, only the
-     behavior of the application but not the correctness of computation results are of
-     concern. When used, SimGrid allocates a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
-     execution which is shared by all MPI processes.
-     =SMPI_SHARED_MALLOC= then only reserves a range of virtual addresses of the desired
-     size and cyclically maps them onto the previously obtained
+Mapping MPI processes to threads of a single
+process effectively folds them into the same address space.
+Consequently, global variables in the MPI application are shared
+between threads unless these variables are /privatized/ and the
+simulated MPI ranks therefore isolated from each other. Several
+technical solutions are possible to handle this issue\cite{smpi}. The solution
+that SMPI uses makes one copy of the =data=
+segment (containing all global variables) per rank at startup. When context switching to another rank,
+SMPI remaps the =data= segment via =mmap= to the copy private to that rank.
+#+LATEX: \CH{This paragraph contains processes, threads and ranks. Re-read and ensure it's really clear.}
+
+This causes online simulation to be expensive in terms of both simulation time and memory
+since the whole parallel application is executed on a single node.
+To this end, SMPI provides two simple annotation mechanisms
+to ameliorate the situation:
+- *Kernel sampling*: Control flow is in many cases
+     independent of the computation results. This allows
+     computation-intensive kernels (\eg BLAS kernels for HPL) 
+     can then be skipped during the simulation. For this purpose, SMPI
+     supports annotation of regular kernels through several macros
+     such as =SMPI_SAMPLE_LOCAL= and =SMPI_SAMPLE_GLOBAL=. The regularity allows SMPI to execute these
+     kernels a few times, estimate their cost and skip the kernel in
+     the future by deriving its cost from these samples, hence cutting
+     simulation time significantly.
+- *Memory folding*: SMPI provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE=) macro to
+     replace calls to =malloc= (=free=). They indicate that some data structures can safely be
+     shared between processes and that the data they contain is not
+     critical for the execution (\eg an input matrix) and that it may
+     even be overwritten. 
+     #+LATEX: \CH{"Recall that in simulation, only the behavior of the application but not the correctness of computation results are of concern." -- Really necessary?}
+     =SMPI_SHARED_MALLOC= functions as follows: a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
+     execution is allocated and shared by all MPI processes.
+     A range of virtual addresses *representing* a specified size is reserved and cyclically mapped onto the previously obtained
      physical address, as illustrated by Figure\ref{fig:global_shared_malloc}. 
      This mechanism allows applications to obtain a nearly constant memory
      footprint, regardless of the size of the actual allocations.
