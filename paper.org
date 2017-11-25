@@ -685,8 +685,7 @@ SMPI remaps the =data= segment via =mmap= to the copy private to that rank.
 
 This causes online simulation to be expensive in terms of both simulation time and memory
 since the whole parallel application is executed on a single node.
-To this end, SMPI provides two simple annotation mechanisms
-to ameliorate the situation:
+To deal with this, SMPI provides two simple annotation mechanisms:
 - *Kernel sampling*: Control flow is in many cases
      independent of the computation results. This allows
      computation-intensive kernels (\eg BLAS kernels for HPL) 
@@ -775,18 +774,16 @@ to ameliorate the situation:
 * Improving SMPI Emulation Mechanisms and Preparing HPL
 #+LaTeX: \label{sec:em}
 
-In this section, we present our changes to SimGrid and HPL that were
-required for a scalable and faithful simulation of HPL. We provide,
-space permitted, a brief evaluation for our modifications but refer the interested
-reader to\cite{cornebize:hal-01544827} and to our laboratory 
-#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}},
-where each modification has been investigated in more detail.
-The experiments in this section were performed on nodes of the
-Nova cluster from the Grid'5000 testbed\cite{grid5000}. On these
-nodes, a Debian Stretch image (kernel 4.9) runs on top of 
-\SI{32}{\giga\byte} RAM of memory and two 8-core Intel Xeon E5-2620 v4
-CPUs processors running at \SI{2.1}{\GHz}. Only a single core was used for each
-experiment.
+We now present our changes to SimGrid and HPL that were
+required for a scalable and faithful simulation. We provide
+only a brief evaluation of our modifications and refer the 
+reader interested in details to\cite{cornebize:hal-01544827} and our laboratory 
+#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}}.
+#+LATEX: \CH{@Tom: I absolutely hate that we refer to github here! Zenodo is much better and allows github imports.}
+For our experiments in this section, we used a single core from nodes
+of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
+\SI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
+CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
 
 ** Kernel modeling
 #+BEGIN_EXPORT latex
@@ -806,36 +803,32 @@ experiment.
 #+END_EXPORT
 
        As explained in Section\ref{sec:con:diff}, faithful prediction
-       of HPL necessitates emulation, \ie to execute the code. For its
-       computations, HPL relies heavily on BLAS kernels such as
-       =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
+       of HPL necessitates emulation, \ie to execute the code.
+       HPL relies heavily on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
        an equation of the form $Ax=b$). An analysis of an HPL
-       simulation with 64 processes and a very small matrix of order
-       $30,000$ yields that already roughly \SI{96}{\percent} of
-       the time is spent in these two very regular kernels. The values computed
-       by these functions are of no importance in the control flow of HPL
-       and can thus be ignored when simulating.
-       However, larger matrices will cause these kernels to consume
-       an even larger percentage of the computation time, meaning that
-       most of this time can be saved by redirecting calls to
-       =dgemm= and =dtrsm= to functions that evaluate a
-       performance model for the respective kernel. Figure\ref{fig:macro_simple} depicts this process.
-       The macro mechanism allows us to keep HPL code modifications to an absolute
+       simulation with $64$ processes and a very small matrix of order
+       $30,000$ showed that roughly \SI{96}{\percent} of
+       the time is spent in these two very regular kernels.
+       For larger matrices, these kernels will consume
+       an even bigger percentage of the computation time. Since these
+       kernels do not influence the control flow, simulation time can
+       be reduced by substituting =dgemm= and =dtrsm= function calls 
+       with a performance model for the respective kernel. 
+       Figure\ref{fig:macro_simple} shows an example of this
+       macro-based mechanism that allows us to keep HPL code modifications to an absolute
        minimum. The =(9.882e-12)= value represents the inverse of the
        flop rate for this computation kernel and was obtained
-       through calibration. The time it takes to execute the real
-       kernel with these parameters is then calculated and
-       consequently passed on to =smpi_execute_benched=.
-       This function effectively advances the clock of the executing
-       process by entering a sleep state for the duration it was given
-       as a parameter. The gain in simulation time we
-       observed for a small scenario is depicted in
-       Figure\ref{fig:kernel_sampling}. On the one hand, this modification
-       speeds up the simulation by orders of magnitude, as we expected, when matrix
-       order increases. On the other hand, this also leads to a more
-       optimistic performance estimation. We believe this may not only
-       be caused by an inaccuracy in our model but also by a reduction in context-switches, \eg by the operating system.
-       #+LATEX: \CH{Re-work this. "Absence of performance variability when kernel models are used."}
+       through calibration. The estimated time for the real
+       kernel is calculated based on the parameters and eventually
+       passed on to =smpi_execute_benched= that advances the clock of the executing
+       rank by this estimate by entering a sleep state.
+       The effect on simulation time for a small scenario is depicted in Figure\ref{fig:kernel_sampling}. 
+       On the one hand, this modification speeds up the simulation by
+       orders of magnitude, especially when the matrix order
+       grows. On the other hand, this kernel model leads to an
+       optimistic estimation of the floprate. This may 
+       be caused by inaccuracies in our model but also by a reduction in pre-emptions, \eg by the operating system.
+       #+LATEX: \CH{Re-work this. I don't like that we talk about inaccuracies in our model. Shouldn't the pre-emptions be modeled alread? We did rely on measurements! "Absence of performance variability when kernel models are used."}
 
 *** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
