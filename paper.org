@@ -585,79 +585,82 @@ HPL comes with at least two challenges:
 # - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
   
 * SimGrid/SMPI in a nutshell
-\label{sec:smpi}
+#+LATEX: \label{sec:smpi}
 
-SimGrid\cite{simgrid} is flexible and open-source
+SimGrid\cite{simgrid} is a flexible and open-source
 simulation framework that was originally designed in 2000 to study scheduling
-heuristics tailored for heterogeneous computing grid
-environments. Since then, SimGrid has been employed to study cloud and
-peer-to-peer systems. SMPI\cite{smpi} is a recently developed
-simulator based on SimGrid that supports faithful simulation
-of unmodified MPI applications written in C/C++ or FORTRAN.  
+heuristics tailored *for* heterogeneous *computing grid*
+environments. Since then, SimGrid has also been used to study cloud and
+peer-to-peer systems with up to two million
+peers\cite{simgrid_simix2_12}. SMPI\cite{smpi} is a simulator based on
+SimGrid used to faithfully simulate unmodified MPI applications written in C/C++ or *FORTRAN*.  
+#+LATEX: \CH{Fortran or FORTRAN? Also, the SimGrid -> SMPI part is a bit rough.}
 
-Many simulators of distributed computing systems focus foremost on
-scalability. Although SimGrid has been successfully used to simulate \eg
-peer-to-peer systems comprising two million peers using only a
-single standard machine\cite{simgrid_simix2_12}, the main focus of the SimGrid development
-team has been to provide validated performance models, particularly
-for *network-enabled* operations. This is generally done by comparing simulation
-predictions with results obtained through real experiments in order to
-confirm network and application models and improve the
-quality. In\cite{heinrich:hal-01523608}, we have for example shown how
-SMPI can be used to accurately and consistently predict (within a few
-percent) both the performance and the energy consumption of some of
-the NAS parallel benchmarks as well as of HPL for small-scale clusters (up to
-144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
-in\cite{smpi}). In this article, we try to make the comparison on a
-much larger scale. This scale, however, comes with the downside of a less well-controlled scenario since the
-Stampede run of HPL was done several years ago and we only have
-very limited information about the setup (\eg software versions).
+A main development goal for SimGrid has been to provide validated
+performance models particularly for scenarios leveraging the network. 
+Such a validation normally consists of comparing simulation
+predictions with results from real experiments to confirm or *debunk* network and application models.
+In\cite{heinrich:hal-01523608}, we have for instance validated
+SimGrid's energy module by accurately and consistently predicting within a few
+percent the performance and the energy consumption of HPL and some
+other benchmarks on small-scale clusters (up to 144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
+in\cite{smpi}).
+#+LATEX: \CH{We have 144 CORES and 128 NODES. They are not comparable! I think they're single-core nodes?}
+
+In this article, we aim to validate our models through much larger experiments.
+This scale, however, comes at the cost of a much less controlled
+scenario for real-life experiments since the Stampede run of HPL was done
+in 2013 and we only have very limited information about the
+setup (\eg software versions).
+
+#+LATEX: \CH{We could add that we have no data on energy as we mentioned our validation of the energy model with HPL}
 
 ** MPI Communication Modeling
 The complex network optimizations done in real MPI implementations
-pose a challenge when modeling MPI applications.
-Transmission protocols (\eg eager or rendez-vous) can be selected
-based on the message size, with each protocol incurring its own
+need to be considered when predicting performance of MPI applications.
+For instance, message size not only influences the network's latency
+and bandwidth factors but also the protocol used, such as ''eager`` or
+''rendez-vous``, as they are selected
+based on the message size, with each protocol having its own
 synchronization semantics.
-These optimizations furthermore cause the network's latency and bandwidth
-factors to depend on message size. To capture this behavior, SMPI relies on
-a generalization of the LogGPS model\cite{smpi} where several
-synchronization and performance modes can be specified. This model
+To deal with this, SMPI relies on a generalization of the LogGPS
+model\cite{smpi} and supports specifying synchronization and performance modes. This model
 needs to be instantiated once per platform through a carefully controlled series of messages
 (=MPI_Send= and =MPI_Recv=) between two nodes and through a set of
 piece-wise linear regressions.
+#+LABEL: \CH{This last sentence may be too long.}
 
-The second challenge concerns modeling network topologies
-and contention. SMPI relies on SimGrid's flow-level communication models: each ongoing
-communication is represented by a /flow/ and thus as a single entity rather than
-a number of individual packets. With *steady-state* being assumed, contention
-between active communications is modeled as a bandwidth sharing
+Modeling network topologies and contention is also difficult. 
+SMPI relies on SimGrid's communication models where each ongoing
+communication is represented as a whole (as opposed to single packets)
+by a /flow/. With *steady-state* being assumed, contention
+between active communications can then be modeled as a *classical?* bandwidth sharing
 problem that accounts for non-trivial phenomena (\eg RTT-unfairness of
 TCP, cross-traffic interference or network
-heterogeneity\cite{Velho_TOMACS13}). However, a communication
-that starts or ends has to trigger a possibly expensive re-computation
-of the bandwidth sharing in order to keep results accurate, making
-this approach too slow and complex to scale to large platforms. Transient
-phenomena and network protocol *instability* are not modeled but network
-topology and heterogeneity are accounted for. A consequence of this flow-based model is that the *simulation cost* of a
-message passing through the network is independent of its size. This
+heterogeneity\cite{Velho_TOMACS13}). As a consequence, communications
+that start or end must trigger (a possibly expensive) re-computation
+of the bandwidth sharing. Alas, this approach is too slow *and complex to scale* to large platforms.
+#+LATEX: \CH{What is "complex to scale"? It's simple and slow. If it was easy to scale, we wouldn't have to state that it's too slow.}
+In this model, the *simulation cost* of a message passing through the network is independent of its size. This
 is advantageous for large-scale applications frequently sending large messages.
-#+LATEX: \CH{"A consequence ..." This statement sounds wrong?}
+#+LATEX: \CH{We just mentioned it's way too slow for large-scale! Also integrate this better.}
+SimGrid does not model transient phenomena and network protocol but network
+topology and heterogeneity are accounted for. 
+#+LATEX: \CH{Rewrite this sentence}
 
-The third and last challenge in terms of performance modeling
-deals with collective operations which generally play a key factor for 
-application performance. Consequently, performance optimization
-of these operations has been studied intensively. Today, MPI implementations
-commonly have several alternatives for each collective operation
-and select one at runtime, depending on message size and communicator
-geometry. SimGrid's SMPI layer implements all the specific collective
-communication algorithms from several real MPI implementations (\eg
-Open MPI, MPICH, ...) and their selection logic to ensure that any
+Finally, collective operations are also challenging, particularly since
+these operations often play a key factor to an application's performance. Consequently, performance optimization
+of these operations has been studied intensively. As a result, MPI
+implementations now commonly have several alternatives for each
+collective operation and select one at runtime, depending on message size and communicator
+geometry. SMPI implements *all?* supported collective
+communication algorithms and the selection logic from several MPI implementations (\eg
+Open MPI, MPICH). This helps to ensure that any
 simulated run of an application is as faithful as possible to real
-executions. HPL, however, ships with its own implementation of
-collective operations and therefore this is not likely to be the source of
-discrepancy between simulation and real executions.
-#+LATEX: \CH{These discrepancies were not yet discussed here. And what is the challenge?}
+executions. 
+#+LATEX: \CH{This last sentence is very ugly.}
+# HPL, however, ships with 6 self-implemented collective operations. 
+#+LATEX: \AL{We talk a lot here about why it's challenging and then we say "this is not important"}
 
 ** Application Behavior Modeling
 SMPI relies on the /online/ simulation approach where the application code is executed and part of
