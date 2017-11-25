@@ -663,6 +663,7 @@ executions.
 #+LATEX: \AL{We talk a lot here about why it's challenging and then we say "this is not important". (I cut this a lot in db9ab83b5d72c67399522939d6ebaa068f5b3811)}
 
 ** Application Behavior Modeling
+#+LATEX: \label{sec:appmodeling}
 In Section\ref{sec:relwork} we explained that SMPI relies on the /online/ simulation approach.
 Since SimGrid is a sequential simulator, SMPI maps every MPI process of the application onto a
 lightweight simulation thread. These threads are then run one at a
@@ -1012,36 +1013,37 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 \end{figure}
 #+END_EXPORT
 
-HPL is generally configured to use huge pseudo-randomly generated
-matrices that require to be setup every time HPL is executed. HPL
-excludes the time spent for setting up the matrices and for the 
-validation of the computed result in the reported \si{\giga\flops} performance. 
-Said verification is also rendered meaningless as we skipped all the
-computations and replaced them by a kernel model. Since both 
-phases do not have an impact on the performance of the platform, we can safely
+HPL uses pseudo-randomly generated
+matrices that need to be setup every time HPL is executed. The time
+spent on this just as the validation of the computed result is
+not considered in the reported \si{\giga\flops} performance. 
+We skip all the
+computations since we replaced them by a kernel model and therefore, 
+result validation is meaningless. Since both 
+phases do not have an impact on the reported performance, we can safely
 skip them.
 
-The lion's share of the computation time was consumed by calls to
-=dgemm= and =dtrsm=. We identified in total seven other functions through
+In addition to the main computation kernels =dgemm= and =dtrsm=, 
+we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
-handling: The BLAS functions =dgemv=, =dswap=, =daxpy=,
-=dscal=, =dtrsv=, =dger=, and =idamax=. All of these functions are called during the
+handling: =dgemv=, =dswap=, =daxpy=,
+=dscal=, =dtrsv=, =dger= and =idamax=. All of these functions are called during the
 LU factorization and hence impact the performance measured by HPL; however, because of
-the removal of the =dgemm= and =dtrsm= computations they all operate (\eg copy) on
-bogus data and hence also produce bogus data. We also determined that their
-impact on the performance prediction was minimal and that 
-modeling them precisely would not pay off. We hence modeled them
-as being instantaneous.
+the removal of the =dgemm= and =dtrsm= computations, they all operate on
+bogus data and hence also produce bogus data. We also determined
+through experiments that their impact on the performance prediction is
+minimal and hence modeled them for the sake of simplicity as being instantaneous.
 
-Note that working on fake data has a few consequences as HPL
+Note that HPL
 implements an LU factorization with partial pivoting and a special
 treatment of the =idamax= function that returns the index of the first
-element equaling the maximum absolute value. The cost of this function was
-ignored as well but its return value was arbitrarily set to make the
-simulation fully deterministic. In all our evaluations, this
-modification was harmless in term of performance prediction while it
-allows to additionally speed-up the simulation by a factor of $\approx3$ to $4$
-on small scenarios ($N=30,000$) and significantly more on larger setups.
+element equaling the maximum absolute value. Although we ignored the
+cost of this function as well, we set its return value to an arbitrary
+value to make the simulation fully deterministic.
+#+LATEX: \CH{Make it determ. "Because the matrix consists of trash data"}
+We confirmed that this modification is harmless in terms of performance prediction while it
+speeds up the simulation by an additional factor of $\approx3$ to $4$
+on small ($N=30,000$) and even more on large scenarios.
 ** Memory folding
 #+LATEX: \TC{We also removed five HPL functions, e.g. HPL\_dlacpy. Should we mention this?}
 As explained in Section\ref{sec:smpi}, when emulating an application
@@ -1050,121 +1052,118 @@ node. The memory consumption of the simulation can therefore quickly reach
 several \si{\tera\byte} of RAM. 
 
 Yet, as we no longer operate on real data, storing the whole
-input matrix $A$ is needless. Since only a minimal portion of the code was
-modified, however, some functions may still read or write some parts of the matrix.
+input matrix $A$ is needless. However, since only a minimal portion of the code was
+modified, some functions may still read or write some parts of the matrix.
 It is thus not possible to simply remove the memory allocations of
-large data structures. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
-to share unimportant data structures between all MPI
-processes, minimizing the memory footprint.
+large data structures altogether. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
+to share unimportant data structures between all ranks, minimizing the memory footprint.
+#+LATEX: \CH{We could add a reference to the "memory folding" section here}
 
 The largest two allocated data structures in HPL are the input matrix =A=
-(with a size of typically several \si{\giga\byte} per process) and the =panel= which contains much
-information about the sub-matrix currently being factorized. This sub-matrix 
+(with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
+*information about the sub-matrix* currently being factorized. This sub-matrix 
 typically occupies a few hundred \si{\mega\byte} per process.
 
 Although using the default =SHARED_MALLOC= mechanism works flawlessly
-with =A=, a more careful strategy needs to be used for the
+for =A=, a more careful strategy needs to be used for the
 =panel=. Indeed, =panel= is an intricate data structure with both \texttt{int}s
 (accounting for matrix indices, error codes, MPI tags, and pivoting information)
-and \texttt{double}s (corresponding to a copy of sub-matrices of =A=). To
+and \texttt{double}s (corresponding to a copy of *sub-matrices* of =A=). To
+#+LATEX: \AL{Plural, i.e., several matrices?}
 optimize data transfers, HPL flattens this structure into a single
 allocation of \texttt{double}s (see
 Figure\ref{fig:panel_structure}). Using a fully shared memory
 allocation for the =panel= therefore leads to index corruption that results in
-classical invalid memory accesses as well as communication
+classic invalid memory accesses as well as communication
 deadlocks, as processes may not send to or receive from the correct
 process. Since \texttt{int}s and \texttt{double}s are stored in
-non-contiguous parts of this flat allocation, it is therefore
+non-contiguous parts of this *flat allocation*, it is therefore
 essential to have a mechanism that preserves the process-specific
-content. We have thus introduced a new
+content. We have thus introduced the macro
 =SMPI_PARTIAL_SHARED_MALLOC= that works as follows: 
 ~mem = SMPI_PARTIAL_SHARED_MALLOC(500, {27,42 , 100,200}, 2)~.
+#+LATEX: \AL{Should we move this to a figure? It looks aweful in the text.}
 In this example, 500 bytes are allocated in =mem= with the elements
 =mem[27]=, ..., =mem[41]= and =mem[100]=, ..., =mem[199]= being shared between
 processes (they are therefore generally completely corrupted) while all other
-elements remain private. We applied this mechanism to HPL by modifying
-only a few lines and so, panels are now shared
-between processes with the part in the middle storing the indices being private to
-each MPI process. 
+elements remain private. To apply this to HPL's =panel= data\-structure
+and partially share it between processes, we only had to modify a few lines. 
 #+LATEX: \TC{Can you please verify the preceding paragraph?}
 
 Designating memory explicitly as private, shared or partially shared
-does not only help with memory management but also with
-performance. As SMPI is internally aware of the memory's
+helps with both memory management and overall performance. 
+As SMPI is internally aware of the memory's
 visibility, it can avoid calling =memcopy= when large messages
-containing shared segments are sent from one MPI rank to another.
-For fully private data *segments* or partially shared segments, SMPI
-identifies and only copies those parts that are designated as private
-(as they are process-dependent) into the corresponding private buffers
-on the receiver side.
+containing shared *segments* are sent from one MPI rank to another.
+For fully private or partially shared *segments*, SMPI
+identifies and copies only those parts that are process-dependent
+(private) into the corresponding buffers on the receiver side.
 
-HPL simulation times are considerably improved by this, as
-the main datastructure that is being communicated between ranks, the
-=panel=, is partially shared with only the smaller part being private.
-The error introduced by these new allocations, compared to
-the version from Section *REFERENCE*, is negligible (below 1%) while we gain
-a drastic improvement of the memory consumption. For instance, for a
-matrix of order $40,000$ and $64$ MPI processes, the memory consumption
-decreases from about \SI{13.5}{\giga\byte} to less than
-\SI{40}{\mega\byte}.
+HPL simulation times are considerably improved because
+the =panel= as the most frequently transferred datastructure 
+is partially shared with only a small part being private.
+The error introduced by this technique is negligible (below \SI{1}{\percent}) while we lower
+#+LATEX: \CH{Compared to what?}
+memory consumption significantly: For a matrix of order $40,000$ and $64$ MPI processes, the memory consumption
+decreases from about \SI{13.5}{\giga\byte} to less than \SI{40}{\mega\byte}.
+#+LATEX: \CH{Check tenses :( }
 ** Panel reuse
-The original HPL code \texttt{malloc}s/\texttt{free}s panels in each
+HPL \texttt{malloc}s/\texttt{free}s panels in each
 iteration, with the size of the panel strictly decreasing from
 iteration to iteration. As we explained above, the partial sharing of panels requires
 some extra effort and introduces an overhead that makes these repeated
 allocations / frees become a bottleneck. Since
+#+LATEX: \CH{We actually don't explain this!}
 the very first allocation can fit all subsequent panels, we modified
-HPL to only allocate the very first panel and reuse it from one
-iteration to another (see Figure\ref{fig:panel_reuse}).
+HPL to allocate only the first panel and reuse it for subsequent
+iterations (see Figure\ref{fig:panel_reuse}).
 
 We consider this optimization harmless with respect to simulation
-accuracy as the maximum error that we observed, compared to the previous
-version, was always less than \SI{1}{\percent}. The gain in terms of simulation
-time is significant, albeit less impressive than for previous
+accuracy as the maximum error that we observed, *compared to the previous*
+version, was always less than \SI{1}{\percent}. Simulation
+time is reduced significantly, albeit the reached speed-up is less impressive than for previous
 optimizations: For a very small matrix of order $40,000$ and $64$ MPI processes,
 the simulation time decreases by four seconds, from \SI{20.5}{\sec} to
-\SI{16.5}{\sec}, thanks to a reduction of time consumed by the system,
-from \SI{5.9}{\sec} to \SI{1.7}{\sec}. The number of page faults decreased from $2$ million to
-$0.2$ million, confirming the dramatic effect this
-series of allocation/deallocation would have at scale.
+\SI{16.5}{\sec}. Responsible for this is a reduction of system time,
+namely from \SI{5.9}{\sec} to \SI{1.7}{\sec}. The number of page faults decreased from $2$ million to
+$0.2$ million, confirming the devastating effect these allocations/deallocations would have at scale.
 ** TODO MPI process representation (mmap vs. dlopen)
-SimGrid folds parallel applications into a single process and hence,
-local static and global variables become an issue as it must be guaranteed that
-each rank has its own set of global variables. SMPI supports two
-mechanisms to achieve this: The usage of either =mmap= or =dlopen=.
+We already explained in Section\ref{sec:appmodeling} that SMPI
+supports two mechanisms to keep local static and global variables
+private to each rank, even though they run in the same process.
 \TC{The implementation of mmap and dlopen is not a contribution of this paper, maybe we should put this in the state of the art and only discuss here the impact of the choice?}
 *** mmap
 When =mmap= is used, SMPI copies the =data= segment on startup for each
 rank into the heap. When control is transferred from one rank to
-another, the =data= segment is =mmap='ed to the location of this rank's
+another, the =data= segment is =mmap='ed to the location of the other rank's
 copy on the heap. All ranks have hence the same addresses in the
-virtual address space at their disposition although they point to
-different physical addresses based on the rank. This also means
+virtual address space at their disposition although =mmap= ensures they point to
+different physical addresses. This also means
 inevitably that caches must be flushed to ensure that no data of one
-rank leaks into the other rank. This overhead makes the usage of =mmap=
-a rather expensive operation.
+rank leaks into the other rank, making =mmap= a rather expensive operation.
 
 # \TOM{Can you tell me how often these operations were executed, as you've already done in your journal on 2017-04-11 ("Looking at the syscalls")?}
 *** dlopen
 With =dlopen=, copies of the global variables are still made but they
 are stored inside the =data= segment as opposed to the heap. When
 switching from one rank to another, the starting virtual address for
-the storage is readjusted rather than the addresses point
-to. This means that each rank has its own unique pool of addresses for
+the storage is readjusted rather than the target of the addresses.
+This means that each rank has distinct addresses for
 global variables. The main advantage of this approach is that caches do not need to
-be flushed as in the case for the =mmap= approach, because data
+be flushed as is the case for the =mmap= approach, because data
 consistency can always be guaranteed.
+#+LATEX: \CH{Is it really made inside the data segment? Verify. See my discussion with Martin in Lyon (see my journal}}
 
 *** Impact of choice of mmap/dlopen
-The choice of mmap or dlopen influences the simulation time indirectly
-through its direct impact on system/user time and page faults.  As an
-example, for a matrix of order 80,000 and 32 MPI processes, the number
+The choice of =mmap= or =dlopen= influences the simulation time indirectly
+through its impact on system/user time and page faults, \eg for a
+matrix of order $80,000$ and $32$ MPI processes, the number
 of minor page faults drops from \num{4412047} (with =mmap=) to
-\num{6880} (with =dlopen=). This results in a drop in system time from 
+\num{6880} (with =dlopen=). This results in a reduction of system time from 
 \SI{10.64}{\sec} (out of \SI{51.47}{\sec} in total) to
 \SI{2.12}{\sec}. Obviously, the larger the matrix and the number of
-process, the larger the number of context switch during the
-simulation, and the higher the gain.
+processes, the larger the number of context switch during the
+simulation, and thus the higher the gain.
 
 # See Tom's journal (Performance evaluation of the privatization
 # mechanism: =dlopen= vs =mmap= ) ; there are some graphs that we might be
@@ -1172,16 +1171,16 @@ simulation, and the higher the gain.
 # https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
 
 ** Huge pages    
-For larger matrix orders (\ie with $N$ larger than a few hundreds of
-thousands), the performance of the simulation quickly
+For larger matrix orders (\ie $N$ larger than a few hundred thousand), the performance of the simulation quickly
 deteriorates as the memory consumption rises rapidly and the CPU
-utilization drops unless . Running the simulation while monitoring the system
+utilization *drops unless* . Running the simulation while monitoring the system
 shows that the program is regularly stalled while the kernel loads the
 CPU at \SI{100}{\percent}, which explains the low CPU utilization for the program
 itself.
 \TC{This is false, see the entry from 2017-07-22 in my journal. If we use a tempfs file system, the CPU load remains high, we only have a large memory consumption.}
+\CH{What do we do with this?}
 
-As aforementioned, we fold the memory in order to reduce the /physical/
+We explained already how we fold the memory in order to reduce the /physical/
 memory usage. The /virtual/ memory, on the other hand, is still
 allocated for every process *since the allocation calls are still executed*.
 Without a reduction of allocated virtual addresses, the page table
@@ -1190,10 +1189,10 @@ precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte
 
     #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot \texttt{sizeof(double)}}{4,096} \cdot \texttt{sizeof(pointer)} \]
 
-This means that only to store the addresses for a matrix of order $N=4,000,000$, the page table
-grows to $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
+This means that the addresses in the page table for a matrix of order $N=4,000,000$
+consume $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
 \SI{250}{\gibi\byte}. Thankfully, the x86-64 architecture supports several page
-sizes, known as ''huge pages`` *in* Linux. Typically, these pages are
+sizes, known as ''huge pages`` in Linux. Typically, these pages are
 around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
 (\SIrange{2}{256}{\mebi\byte}) are possible as well.
 
@@ -1204,16 +1203,19 @@ page was allocated, the path of the allocated file system can then be
 passed on to SimGrid that will then pass the flag =MAP_HUGETLB=
 to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
 a file opened in the =hugetlbfs= file system.
+#+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP_HUGETLB?}
 
 Setting the page size to \SI{2}{\mebi\byte} has two advantages:
 Firstly, the page table size decreases drastically. For example, for a
 matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte} to 
-\SI{0.488}{\gibi\byte}. Secondly, simulation time decreases drastically since using hugepages
-reduces the amount of page faults and time spent on page table
-management by the kernel. For a matrix of order $300,000$ and $64$ MPI
+\SI{0.488}{\gibi\byte}. Secondly, simulation time decreases significantly since using hugepages
+reduces the amount of page faults and the time spent by the kernel on page table
+management. For a matrix of order $300,000$ and $64$ MPI
 processes, we saw CPU utilization rise from \SI{66}{\percent} to
 \SI{99}{\percent} and a reduction of simulation time from about
 \SI{580}{\sec} to roughly \SI{175}{\sec}.
+#+LATEX: \CH{I dislike that we give two problem sizes in one paragraph.}
+# CH: Because I/O is now reduced.
 # Values from Figure 4.9 in Tom's report
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
