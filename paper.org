@@ -550,6 +550,7 @@ case for HPL. Furthermore, the size of the traces on Stampede
 are with \SI{100}{\tera\byte} prohibitive.
 #+LATEX: \TC{Also, the trace is simply too large? E.g. the trace for the Stampede's simulation would take more than 100GB (compressed).}
 #+LATEX: \CH{@TOM: OK, TB? GB? Why should we mention SMPI traces?}
+#+LATEX: \TC{@CH: Nope, GB, and this is a crude extrapolation. No idea about the state of the art trace formats.}
 
 The second approach discussed in literature is /online simulation/.
 Here, the application is executed (emulated) on top of a simulator
@@ -1088,7 +1089,6 @@ In this example, 500 bytes are allocated in =mem= with the elements
 processes (they are therefore generally completely corrupted) while all other
 elements remain private. To apply this to HPL's =panel= data\-structure
 and partially share it between processes, we only had to modify a few lines. 
-#+LATEX: \TC{Can you please verify the preceding paragraph?}
 
 Designating memory explicitly as private, shared or partially shared
 helps with both memory management and overall performance. 
@@ -1179,6 +1179,7 @@ CPU at \SI{100}{\percent}, which explains the low CPU utilization for the progra
 itself.
 \TC{This is false, see the entry from 2017-07-22 in my journal. If we use a tempfs file system, the CPU load remains high, we only have a large memory consumption.}
 \CH{What do we do with this?}
+\TC{For the large scale runs, no we don't do this, since the memory consumption is still an issue.}
 
 We explained already how we fold the memory in order to reduce the /physical/
 memory usage. The /virtual/ memory, on the other hand, is still
@@ -2318,6 +2319,7 @@ Experiments presented in this paper were carried out using the Grid'5000 testbed
 #+LATEX: \bibliography{refs}
 
 #+LATEX: \AL{"Proc. of the ????" in the last item!}
+#+LATEX: \TC{According to Google Scholar (https://scholar.google.com/citations?user=LeUoKXYAAAAJ), this is only a technical report, not peer-reviewed.}
 
 * Bib file is here                                                 :noexport:
 
