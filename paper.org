@@ -339,7 +339,7 @@ with computation.
 
 The main parameters of HPL are listed subsequently:
 - $N$ is the order of the square matrix $A$.
-- =NB= is the ''blocking factor``, \ie the granularity at
+- =NB= is the ``blocking factor'', \ie the granularity at
   which HPL operates when panels are distributed or worked on.
 - $P$ and $Q$ denote the number of process rows and the
   number of process columns, respectively;
@@ -409,7 +409,7 @@ fat-tree topology built on Mellanox switches. As can be seen in
 Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
 divided into groups of 20, with each group being connected to one of the 320 36-port switches (\SI{4}{\tera\bit\per\second}
 capacity), which are themselves connected to 8 648-port
-''core\nbsp{}switches`` (each with a capacity of \SI{73}{\tera\bit\per\second}). 
+``core\nbsp{}switches'' (each with a capacity of \SI{73}{\tera\bit\per\second}). 
 The peak performance of the 2 Xeon CPUs per node was approximately \SI{346}{\giga\flops},
 while the peak performance of the KNC co-processor was about
 \SI{1}{\tera\flops}. The theoretical peak performance of the
@@ -620,8 +620,8 @@ setup (\eg software versions).
 The complex network optimizations done in real MPI implementations
 need to be considered when predicting performance of MPI applications.
 For instance, message size not only influences the network's latency
-and bandwidth factors but also the protocol used, such as ''eager`` or
-''rendez-vous``, as they are selected
+and bandwidth factors but also the protocol used, such as ``eager'' or
+``rendez-vous'', as they are selected
 based on the message size, with each protocol having its own
 synchronization semantics.
 To deal with this, SMPI relies on a generalization of the LogGPS
@@ -1193,7 +1193,7 @@ precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte
 This means that the addresses in the page table for a matrix of order $N=4,000,000$
 consume $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
 \SI{250}{\gibi\byte}. Thankfully, the x86-64 architecture supports several page
-sizes, known as ''huge pages`` in Linux. Typically, these pages are
+sizes, known as ``huge pages'' in Linux. Typically, these pages are
 around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
 (\SIrange{2}{256}{\mebi\byte}) are possible as well.
 
@@ -1761,47 +1761,49 @@ scatter3D(
 ** Modeling Stampede
 *** Computations
 Each node of the Stampede cluster comprises two 8-core Intel Xeon
-E5-2680 8C \SI{2.7}{\GHz} CPU and one 61-core Intel Xeon Phi SE10P
+E5-2680 8C \SI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
 (KNC) \SI{1.1}{\GHz} accelerator that is roughly three times more
-powerful than the two CPUs. The Xeon Phis can be used in two ways:
-either as a classical accelerator, \ie to offload expensive
-computations from the CPU onto the accelerator, or by compiling
-binaries specifically for the Xeon Phi and *running MPI directly between* Xeon
-Phis. While the accelerator's \SI{8}{\gibi\byte} of RAM are rather
+powerful than the two CPUs and can be used in two ways:
+either as a classical accelerator, \ie for offloading expensive
+computations from the CPU, or by compiling
+binaries specifically for and executing them directly on the Xeon Phi.
+While the accelerator's \SI{8}{\gibi\byte} of RAM are rather
 small, the main advantage of the second approach is that data does not
-need to be transferred back and forth between the node's CPU and the
+need to be transferred back and forth between the node's CPUs and the
 accelerator via the x16 PCIe bus.
 
 The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
-does not provide an explanation about how the KNC was used. We
+does not indicate how the KNC was used. We
 are certain, however, that only a single MPI process per node was run and that the
-KNC was hence rather used as an accelerator. This is easily possible 
-with the Intel's Math Kernel Library that comes with
-support for automatic offloading for selected BLAS functions. 
-Alas, we do not know which version was used in 2013 and therefore decided to
-use the default on Stampede in the beginning of 2017, \ie
-version\nbsp{}11.1.1. The MKL documentation states
-that depending on the matrix geometry, the computation will be done
-either on all the cores of the CPU or *exclusively?* on the KNC.  In the case of
-=DGEMM=, the computation of $A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ being of
+KNC was hence *likely* used as an accelerator. 
+#+LATEX: \CH{We need to clarify why we're sure (we just said the output we have doesn't give any hint)}
+With Intel's Math Kernel Library (MKL), this is effortless as the MKL comes with
+support for automatic offloading *for* selected BLAS functions. 
+Unfortunately, we do not know which MKL version was used in 2013 and therefore decided to
+use the default version used on Stampede in the beginning of 2017, \ie
+version 11.1.1. The MKL documentation states
+that, depending on the matrix geometry, the computation will run on
+either all the cores of the CPU or *exclusively?* on the KNC.  In the case of
+=DGEMM=, the computation of $A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ of
 dimensions $M\times{}K$, $K\times{}N$ and $M\times{}N$, respectively, is offloaded onto the KNC whenever $M$
-and $N$ are both larger than $1280$ while $K$ is *simultaneously* larger
+and $N$ are both larger than $1280$ while $K$ is simultaneously larger
 than $256$. Similarly, offloading for =DTRSM= is used when both $M$ and $N$
-are larger than $512$. To illustrate this, Figure\ref{fig:hpl_mkl}
+are larger than $512$. To illustrate the effect of offloading, Figure\ref{fig:hpl_mkl}
 depicts the time we measured for MKL's =DGEMM= and =DTRSM= implementations
 on matrices with dimensions 
 randomly taken from $[1,8\,000]$. Clearly, offloading to the KNC results in a
 better throughput (lower slope) but incurs a higher latency
-(higher intercept). The *number of flops* is always of the order
+(higher intercept). The complexity for =DGEMM= is always of the order
 of $M\cdot{}N\cdot{}K$ ($M\cdot{}N^2$ for =DTRSM=) but the model that describes the time it
 takes to run =DGEMM= (=DTRSM=) is very different for small and large
 matrices. The table in Figure\ref{fig:macro_real} indicates the
 parameters of the linear regression for the four scenarios (=DGEMM=
-vs. =DTRSM= and =CPU= vs. =Phi=). The effective performance is close to the
-peak performance: \eg for =DGEMM= on the =Phi=, the flop rate is
+or =DTRSM= and CPU or Phi). The measured performance was close to the
+peak performance: \eg for =DGEMM= on the Phi reached
 $2/\num{1.981e-12} = \SI{1.009}{\tera\flops}$. Since the granularity
 used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (except
-for maybe the very last iteration) should be offloaded to the KNC. 
+for *maybe* the very last iteration) *should be* offloaded to the KNC. 
+#+LATEX: \AL{Maybe? Should be? Vague.}
 In any case, this behavior can easily be accounted for by replacing the
 macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
 
@@ -1940,35 +1942,33 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 #+END_EXPORT
 
 We unfortunately do not know for sure which version of Intel MPI was used in
-2013, so we decided to use the default (recommended) one on Stampede
+2013, so we decided to use the default one on Stampede
 in May 2017, \ie version 3.1.4. As explained in 
 Section\ref{sec:smpi}, SMPI's communication model is a hybrid model
 between the LogP family and a fluid model. For each message, the send mode
-\eg fully asynchronous, detached or eager, is determined solely by the
+(\eg fully asynchronous, detached or eager) is determined solely by the
 message size. It is hence possible to model the resulting performance
-of *communication operations* through a piece-wise, linear model, as depicted in
+of communication operations through a piece-wise linear model, as depicted in
 Figure\ref{fig:stampede_calibration}. For a thorough discussion of
-the calibration techniques, see\cite{smpi}. Although *the behavior of*
-=MPI_Send= is quite stable and piece-wise regular, *the behavior of*
+the calibration techniques used to obtain this model,
+see\cite{smpi}. As illustrated, the results for
+=MPI_Send= are quite stable and piece-wise regular, but the behavior of
 =MPI_Recv= is surprising: for small messages with a size of less than \SI{17420}{\byte}
 (represented by purple, blue and red dots), one can observe two modes,
-namely "slow" and "fast" communications. "Slow"
-communications take twice longer and are much more common than the 
-"fast" ones. We observed this behavior *several times* although both MPI
+namely ``slow'' and ``fast'' communications. ``Slow''
+operations take twice longer and are much more common than the 
+``fast'' ones. We observed this behavior *several times* even though both MPI
 processes that were used in the calibration were connected through 
-the same local switch. This "perturbation" was present throughout the execution of our
+the same local switch. This ``perturbation'' was present throughout the execution of our
 calibration. 
-#+LATEX: \CH{We want to say: We don't know why this is here.}
-Considering that small messages are scarce in HPL, we eventually decided to
+#+LATEX: \CH{We say: behavior was obsevered several times, then "present throughout". Pick one. Also: We want to say: We don't know why this is here.}
+Having taken into consideration that small messages are scarce in HPL, we eventually decided to
 ignore this phenomenon and opted to use the more favorable scenario (fast
 communications) for small messages. We believe that the impact of
 our choice on the simulation accuracy is minimal as primarily large,
 bulk messages are sent that make use of the /rendez-vous/ mode (depicted in dark green).
 
-# Interestingly, the Stampede website says it's "56 GB/s" but I
-# checked and can only find 56 Gbit/s. I hence go with that, as it
-# seems more reasonable as well.
-
+#+LATEX: \CH{The following paragraph needs a better transition}
 As explained in Section\ref{sec:stampede}, Stampede leverages Mellanox
 FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
 a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
@@ -2027,13 +2027,13 @@ cp /tmp/stampede_send_recv_eth.png ./figures/stampede_calibration_send.png
 #+end_src
 
 #+RESULTS:
-*** Summarizing modeling uncertainties
-For the compiler, Intel MPI and the MKL, we were unable to determine
+*** Summary of modeling uncertainties
+For the compiler, Intel MPI and MKL, we were unable to determine
 which version was used in 2013, but decided to go for rather optimistic
-choices. The model for the MKL and for Intel MPI are close to the peak
-performance. For the compiler, it is imaginable that it managed to optimize
-HPL thoroughly outside of the MKL. Yet, most of these parts
-are executed but not accounted for in our simulations: this
+choices. The models for the MKL and for Intel MPI are close to the peak
+performance. It is plausible that the compiler managed to optimize
+computations in HPL. While it is true that most of these computations
+are executed in our simulations, they are not accounted for. This
 allows us to obtain fully deterministic simulations without harming the
 outcome of the simulation as these parts only represent a tiny fraction of
 the total execution time of HPL. A few HPL compilation flags (\eg
@@ -2047,22 +2047,23 @@ our modifications to the later version of HPL.
 
 Due to these choices, we could expect the prediction of
 our simulations to be optimistic but close to results obtained by a real life execution.
+#+LATEX: \CH{I dislike this sentence}
 # - iMPI version ???
 # - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
 ** Simulating HPL
 *** Performance Prediction
-The solid line in Figure\ref{fig:stampede_prediction} represents the HPL
+Figure\ref{fig:stampede_prediction} compares two simulation scenarios
+with the original result from 2013. The solid line represents the HPL
 performance prediction as obtained with SMPI with the Stampede model
-described in the previous section. Although we expected SMPI to be
-optimistic, the prediction was surprisingly much lower than what was
-obtained in 2013. After verifying *in our simulations*
-that no part of HPL was left unmodeled, we suspected our network model
-to be the problem and decided to
-investigate whether *undue* network congestion could explain the
-performance. Alas, even a congestion-free network model 
-(dashed line Figure\ref{fig:stampede_prediction}) only
+that we described in the previous section. Although we expected SMPI to be
+optimistic, the prediction was surprisingly much lower than the TOP500 result.
+We verified that no part of HPL was left unmodeled and decided to
+investigate whether a flaw in our network model that would result in
+too much congestion could explain the performance. 
+Alas, even a congestion-free network model 
+(represented by the dashed line in Figure\ref{fig:stampede_prediction}) only
 results in minor improvements. In our experiments with the KNC,
-either the CPU or the KNC seemed to be used at one time and a specifically
+*either the CPU or the KNC* seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
 single \SI{1.2}{\tera\flops} node does not sufficiently explain the
@@ -2071,6 +2072,7 @@ divide between our results and reality.
 A significant improvement was obtained by removing the network latency 
 and increasing the bandwidth by a factor 10, which is completely
 unrealistic and can hence not be the solution.
+#+LATEX: \AL{This case is not in the Figure and I don't think we should mention it because we call it unrealistic.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -2171,49 +2173,53 @@ ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geo
 # - 420 seconds for two iterations (250 seconds spent in HPL),
 # - 609 seconds for five iterations (265 seconds spent in HPL).
 In this section, we explain our investigation and give possible reasons for
-the previous mismatch. With SMPI it is simple to trace
-the first iterations of HPL in order to get an idea of what could be
+the aforementioned mismatch (apparent in Figure\ref{fig:stampede_prediction}). With SMPI, it is simple to trace
+the first iterations of HPL to get an idea of what could be
 improved (the trace for the first five iterations can be obtained in
-about 609 seconds on a laptop and is with compression about
-\SI{175}{\mega\byte}). Figure\ref{fig:hpl_gantt} illustrates the first iterations
+about 609 seconds on a laptop and is compressed about
+\SI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the first iterations'
 very synchronous and iterative nature: One can identify first a factorization of the panel, then a broadcast to all the
 nodes, and finally an update of trailing matrix.
-Visibly more than one fifth of each iteration is spent exclusively communicating (although the first
+#+LATEX: \CH{Describe the colors here. See the label of that Figure. Light blue = teal?}
+More than one fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation ratio),
 which prevents HPL from reaching the expected performance. 
+#+LATEX: \CH{@AL: Which performance do we expect here? We didn't mention yet that Intel uses overlapping.}
 
-Overlapping this communication with computation would improve
-performance significantly. The fact that there is
-almost no overlap can be explained by the look-ahead ~DEPTH=0~
-parameter, which is supposedly the right configuration (see
-Figure\ref{fig:hpl_output}). This choice is quite surprising as even
+Overlapping of these heavy communication phases with computation would improve
+performance significantly. The fact that this is
+*almost* not happening can be explained by the look-ahead ~DEPTH~
+#+LATEX: \CH{@AL: Almost = A bit is being overlapped. Is this true?}
+parameter that was supposedly set to =0= (see
+Figure\ref{fig:hpl_output}). This is quite surprising as even
 the tuning section of the HPL documentation indicates that a depth of
-1 generally yields the best results, even though a large problem size may
-be needed to see some performance gain. After discussing this
-surprising behavior with the Stampede-team, we were informed that the
-run in 2013 was execute with an HPL binary that was provided by Intel
-and that HPL's code was probably specifically modified for Stampede. We
+1 is supposed to yield the best results, even though a large problem size could
+be needed to see some performance gain. We discussed this
+surprising behavior with the Stampede-team an were informed that the
+run in 2013 was executed with an HPL binary provided by Intel
+and probably specifically modified for Stampede. We
 believe that some configuration values have been hardcoded to enforce an overlap of
-iterations with others. Indeed, the shortened part (marked as "=[...]=") in
-Figure\ref{fig:hpl_output} provides information about the progression of
-HPL throughout iterations and statistics *for the process owning the
-panel* about the time spent in the most important parts. 
+iterations with others. Indeed, the shortened part (marked ``[...]'') in
+Figure\ref{fig:hpl_output} provides information about the progress of
+HPL throughout iterations and statistics for the panel-owning process about the time spent *in the most important parts*. 
 According to these statistics, the total time
-spent in the =Update= section is \SI{9390}{\sec} whereas the total
-execution time is \SI{7505}{\sec}, which is impossible unless iterations have overlapped.
+spent in the =Update= section was \SI{9390}{\sec} whereas the total
+execution time was \SI{7505}{\sec}, which is impossible unless iterations have overlapped.
 
 The broadcast and swapping algorithms use *very heavy*
-communication patterns. This is not at all surprising as for a matrix of
-this order, several hundreds of megabytes need to be broadcast. 
+communication patterns. This is not at all surprising since for a matrix of
+this order, several hundred megabytes need to be broadcast. 
 We tried the other of the 6 broadcast algorithms HPL comes with but
-did not realize significantly better overall performance. 
-An analysis *of the symbols* contained in the Intel binary
-indicates that it ships with another broadcast algorithm whose name is
-=HPL_bcast_bpush= and which calls non-blocking sends, unlike the other
-broadcasting algorithms. This seems to be a plausible explanation for the
-performance obtained in 2013 although the output reports that the =BlongM=
-algorithm was used. Likewise, the swapping algorithm that was used
-(~SWAP=Binary-exchange~) involves communications that are rather long and
+did not achieve significantly better overall performance. 
+An analysis of the symbols in the Intel binary
+revealed that another broadcast algorithm named
+=HPL_bcast_bpush= was available. Unlike the others, this new algorithm relies on non-blocking sends,
+#+LATEX: \AL{We need to explain how we conclude that non-blocking sends are used}
+which explains plausibly how the performance in 2013 was obtained.
+It should be noted that the output states that the =blongM= algorithm was
+used but believe this to be incorrect.
+#+LATEX: \AL{We need to explain why we believe this to be incorrect. See the output of that option in testing/ptest/HPL_pdinfo.c lines 1002, 1020, 1038}
+Likewise, the swapping algorithm that was used (~SWAP=Binary-exchange~) involves communications that are rather long and
 organized in trees, which is surprising as the ~spread-roll~ algorithm
 is recommended for large problem sizes.
 
@@ -2233,8 +2239,7 @@ We do not aim to reverse engineer the Intel HPL code. We can, however,
 already draw two conclusions from our simple analysis: 1) it is apparent that many optimizations have been done on
 the communication side and 2) it is very likely that the reported
 parameters are not the ones used in the real execution, probably because 
-these values were hardcoded and the configuration file was not updated
-accordingly.
+these values were hardcoded and the configuration file was not updated accordingly.
 *** Gantt charts                                                 :noexport:
 #+begin_src sh :results output :exports both
 cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
