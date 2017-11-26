@@ -2265,14 +2265,14 @@ Stampede supercomputer conducted in $2013$ for the TOP500, which
 involved a \SI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
 Our emulation of a similar configuration ran on a single machine for
 about $47$ hours and required less than \SI{16}{\giga\byte} of RAM. This emulation
-leveraged several non-trivial operating-system level optimizations
-(memory mapping, dynamic library loading, huge pages) that have been
+employed several non-trivial operating-system level optimizations
+(memory mapping, dynamic library loading, huge pages) that have since been
 integrated into the last version of SimGrid/SMPI.
 
 The downside of scaling this high is a less well-controlled scenario.
 The reference run of HPL on Stampede was done several years ago and we only
 have very limited information about the setup (\eg software versions
-and configuration), while a reservation and re-execution on the whole
+and configuration), but a reservation and re-execution on the whole
 machine was impossible for us. We nevertheless modeled Stampede carefully, which
 allowed us to predict the performance that would
 have been obtained using an unmodified, freely available version of HPL.
@@ -2288,16 +2288,17 @@ reason for the performance differences.
 We conclude that a large-scale (in)validation is unfortunately not
 possible due to the modified source code being unavailable to us.
 We claim that the modifications we made are
-minor and should be applicable to that optimized version. In fact, while HPL
+minor and are applicable to that optimized version. In fact, while HPL
 comprises 16K lines of ANSI C over 149 files, our modifications only
-changed 14 files and involved 286 line insertions and 18 deletions.
+changed 14 files with 286 line insertions and 18 deletions.
 
 Although being capable of predicting an application's performance on a
-platform is by itself interesting, we believe that this capability
+platform is by itself interesting, we believe that this
 will become invaluable in the future to aid compute centers with the
 decision of whether a new machine will work best for a given
 application or if an upgrade of the current machine should be
 considered. 
+#+LATEX: \CH{This is a bit random; we motivated our investigation with data centers wanting the best results.}
 # This goal will be subject to a more thorough investigation
 # in the very near future.
 
