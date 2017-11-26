@@ -2324,9 +2324,6 @@ Experiments presented in this paper were carried out using the Grid'5000 testbed
 #+LATEX: \bibliographystyle{IEEEtran}
 #+LATEX: \bibliography{refs}
 
-#+LATEX: \AL{"Proc. of the ????" in the last item!}
-#+LATEX: \TC{According to Google Scholar (https://scholar.google.com/citations?user=LeUoKXYAAAAJ), this is only a technical report, not peer-reviewed.}
-
 * Bib file is here                                                 :noexport:
 
 Tangle this file with C-c C-v t
@@ -2628,10 +2625,10 @@ pages = {366-376},
  publisher = {Chapman \& Hall/CRC},
 } 
 
-@InProceedings{dmodk,
+@techreport{dmodk,
   author = 	 {Eitan Zahavi},
   title = 	 {D-Mod-K Routing Providing Non-Blocking Traffic for Shift Permutations on Real Life Fat Trees},
-  booktitle = {Proc. of the ????},
+  institution = {Technion Israel Institute of Technology},
   year = 	 {2010},
 }
 #+end_src
