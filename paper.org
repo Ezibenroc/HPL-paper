@@ -1270,23 +1270,24 @@ processes, we saw CPU utilization rise from \SI{66}{\percent} to
 # SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
 
 In Section\ref{sec:em} we explained the problems we encountered when trying
-large-scale simulation on a single node and how we solved them. 
-Most of this consisted of identifying and eliminating bottlenecks one after the
-other while simultaneously making sure that the accuracy of our performance prediction was
-not impacted. Clearly, the main goal was to reduce the
-*complexity* of simulating HPL from $\O(N^3) + \O(N^2\cdot{}P\cdot{}Q)$ to a more
-reasonable *complexity*. The $\O(N^3)$ was removed through evading most
-of the computations. Ideally, since there are $N/NB$ steps, 
-the complexity would be decreased to something independent of
+to run a large-scale simulation on a single node and how we solved them. 
+For the most part, we identified and eliminated bottlenecks one after
+another while simultaneously making sure that the accuracy of our performance prediction was
+not impacted. Certainly, the main goal was to reduce the
+complexity from $\O(N^3) + \O(N^2\cdot{}P\cdot{}Q)$ to something more reasonable.
+The $\O(N^3)$ was removed through skipping most computations. 
+Ideally, since there are $N/NB$ iterations, 
+the complexity would be +decreased to something+ independent of
+#+LATEX: \CH{strikethrough}
 $N$. SimGrid's fluid models, used to simulate communications, do not
-depend on $N$. Therefore, the time to simulate a step of HPL should mostly depend on $P$ and
-$Q$. Yet, some memory operations on the panel that are related to pivoting
+depend on $N$. Therefore, the time to simulate a *step* of HPL should mostly depend on $P$ and
+$Q$. Yet, some *memory operations* on the panel that are related to pivoting
 are intertwined in HPL with collective communications, meaning that it
 is impossible to completely get rid of the $\O(N)$ complexity without
 modifying HPL more profoundly.
 
-Although our goal is to model and simulate HPL on the Stampede
-platform, we decided to try a first evaluation on a
+Although our goal was to model and simulate HPL on the Stampede
+platform, we decided to *try a first evaluation* on a
 similar, albeit non-existing, platform comprising 4,096 8-core nodes
 interconnected through a $\langle2;16,32;1,16;1,1;8\rangle$ fat-tree topology
 built on ideal network links with a bandwidth of
@@ -1295,7 +1296,7 @@ simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
 with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
 The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
 With all previously described
-optimizations enabled, the largest simulation took close to $47$ hours and consumed
+optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
 \SI{16}{\gibi\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mibi\byte} of memory.
 One can also see that, when the matrix order ($N$) is increased, memory consumption and
 simulation time both *grow* slightly quadratic as the amount of matrix
