@@ -1152,7 +1152,7 @@ This means that each rank has distinct addresses for
 global variables. The main advantage of this approach is that caches do not need to
 be flushed as is the case for the =mmap= approach, because data
 consistency can always be guaranteed.
-#+LATEX: \CH{Is it really made inside the data segment? Verify. See my discussion with Martin in Lyon (see my journal}}
+#+LATEX: \CH{Is it really made inside the data segment? Verify. See my discussion with Martin in Lyon (see my journal)}
 
 *** Impact of choice of mmap/dlopen
 The choice of =mmap= or =dlopen= influences the simulation time indirectly
@@ -1204,7 +1204,7 @@ page was allocated, the path of the allocated file system can then be
 passed on to SimGrid that will then pass the flag =MAP_HUGETLB=
 to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
 a file opened in the =hugetlbfs= file system.
-#+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP_HUGETLB?}
+#+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP\_HUGETLB?}
 
 Setting the page size to \SI{2}{\mebi\byte} has two advantages:
 Firstly, the page table size decreases drastically. For example, for a
@@ -1298,7 +1298,7 @@ with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
 The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
 With all previously described
 optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
-\SI{16}{\gibi\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mibi\byte} of memory.
+\SI{16}{\gibi\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mebi\byte} of memory.
 One can also see that, when the matrix order ($N$) is increased, memory consumption and
 simulation time both *grow* slightly quadratic as the amount of matrix
 elements is $N^{2}$ and the number of steps *(iterations?)* of the algorithm also *grows* linearly.
@@ -2218,7 +2218,7 @@ revealed that another broadcast algorithm named
 which explains plausibly how the performance in 2013 was obtained.
 It should be noted that the output states that the =blongM= algorithm was
 used but believe this to be incorrect.
-#+LATEX: \AL{We need to explain why we believe this to be incorrect. See the output of that option in testing/ptest/HPL_pdinfo.c lines 1002, 1020, 1038}
+#+LATEX: \AL{We need to explain why we believe this to be incorrect. See the output of that option in testing/ptest/HPL\_pdinfo.c lines 1002, 1020, 1038}
 Likewise, the swapping algorithm that was used (~SWAP=Binary-exchange~) involves communications that are rather long and
 organized in trees, which is surprising as the ~spread-roll~ algorithm
 is recommended for large problem sizes.
