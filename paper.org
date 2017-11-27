@@ -1147,7 +1147,6 @@ this section, we discuss the impact of the choice.
   global variables. The main advantage of this approach is that caches
   do not need to be flushed as is the case for the =mmap= approach,
   because data consistency can always be guaranteed.
-#+LATEX: \CH{Is it really made inside the data segment? Verify. See my discussion with Martin in Lyon (see my journal)}
 \nopar
 *Impact of choice of mmap/dlopen*
 The choice of =mmap= or =dlopen= influences the simulation time indirectly
@@ -1746,8 +1745,8 @@ need to be transferred back and forth between the node's CPUs and the
 accelerator via the x16 PCIe bus.
 
 The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
-does not indicate how the KNC was used. We
-are certain, however, that only a single MPI process per node was run and that the
+does not indicate how the KNC was used. However, Because of the values assigned
+to $P$ and $Q$, we are certain, that only a single MPI process per node was run and that the
 KNC was hence *likely* used as an accelerator. 
 #+LATEX: \CH{We need to clarify why we're sure (we just said the output we have doesn't give any hint)}
 With Intel's Math Kernel Library (MKL), this is effortless as the MKL comes with
@@ -1940,12 +1939,11 @@ communications) for small messages. We believe that the impact of
 our choice on the simulation accuracy is minimal as primarily large,
 bulk messages are sent that make use of the /rendez-vous/ mode (depicted in dark green).
 
-#+LATEX: \CH{The following paragraph needs a better transition}
-As explained in Section\ref{sec:stampede}, Stampede leverages Mellanox
-FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
+Furthermore, we configured SMPI to use Stampede's network topology,
+\ie Mellanox FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
 a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
 assumed the routing was done through D-mod-K\cite{dmodk} as it is
-commonly used on this topology and configured SMPI accordingly.
+commonly used on this topology.
 **** Stampede network calibration figures                       :noexport:
 This figure is generated in [[file:~/Work/SimGrid/platform-calibration/data/stampede_17_06_01-17:14/calibration/analysis.org][the platform calibration repository]]. Data
 should be read from there. Final adjustments (in the "Combined plot
@@ -2017,9 +2015,8 @@ main difference between v2.1 and v2.2 is the option to
 continuously report factorization progress. We hence decided to apply
 our modifications to the later version of HPL.
 
-Due to these choices, we could expect the prediction of
-our simulations to be optimistic but close to results obtained by a real life execution.
-#+LATEX: \CH{I dislike this sentence}
+With all these modifications in place, we expected the prediction of
+our simulations to be optimistic yet close to results obtained by a real life execution.
 # - iMPI version ???
 # - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
 ** Simulating HPL
@@ -2262,10 +2259,8 @@ changed 14 files with 286 line insertions and 18 deletions.
 Although being capable of predicting an application's performance on a
 platform is by itself interesting, we believe that this
 will become invaluable in the future to aid compute centers with the
-decision of whether a new machine will work best for a given
-application or if an upgrade of the current machine should be
-considered. 
-#+LATEX: \CH{This is a bit random; we motivated our investigation with data centers wanting the best results.}
+decision of whether a new machine (and what technology) will work best for a given
+application or if an upgrade of the current machine should be considered. 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
 
