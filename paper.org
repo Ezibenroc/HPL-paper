@@ -2070,6 +2070,7 @@ A significant improvement was obtained by removing the network latency
 and increasing the bandwidth by a factor 10, which is completely
 unrealistic and can hence not be the solution.
 #+LATEX: \AL{This case is not in the Figure and I don't think we should mention it because we call it unrealistic.}
+#+LATEX: \TC{+1, especially since even this case did not reach the target performance.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -2173,7 +2174,7 @@ In this section, we explain our investigation and give possible reasons for
 the aforementioned mismatch (apparent in Figure\ref{fig:stampede_prediction}). With SMPI, it is simple to trace
 the first iterations of HPL to get an idea of what could be
 improved (the trace for the first five iterations can be obtained in
-about 609 seconds on a laptop and is compressed about
+about 609 seconds on a commodity computer and is compressed about
 \SI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the first iterations'
 very synchronous and iterative nature: One can identify first a factorization of the panel, then a broadcast to all the
 nodes, and finally an update of trailing matrix.
