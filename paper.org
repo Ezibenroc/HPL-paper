@@ -211,13 +211,12 @@ are already in production. This high density of computation units requires dilig
 parameters, such as problem size, process organization or choice of algorithm, as these
 have an impact on load distribution and network utilization.
 Furthermore, to yield best benchmark results,
-runtimes (such as OpenMPI) and supporting libraries such as LAPACK
-(particularly the by HPL heavily used =DGEMM= routine) need to be fine-tuned and adapted to the
+runtimes (such as OpenMPI) and supporting libraries (such as LAPACK) need to be fine-tuned and adapted to the
 underlying platform. 
 
 Alas, it takes typically several hours to run HPL on the list's number one system.
-This duration, combined with the power consumption that often reaches several MW per
-hour for TOP500 machines, makes it financially infeasible to test-run HPL on the whole 
+This duration, combined with the power consumption that often reaches several MW
+for TOP500 machines, makes it financially infeasible to test-run HPL on the whole
 machine just to tweak parameters. 
 Yet, performance results of an already deployed, current-generation machine typically also
 play a role in the funding process for future machines. Results near
@@ -342,7 +341,7 @@ The main parameters of HPL are listed subsequently:
 - =NB= is the ``blocking factor'', \ie the granularity at
   which HPL operates when panels are distributed or worked on.
 - $P$ and $Q$ denote the number of process rows and the
-  number of process columns, respectively;
+  number of process columns, respectively.
 - =RFACT= determines the panel factorization algorithm. Possible values: Crout, left- or right-looking.
 - =SWAP= specifies the swapping algorithm used while pivoting. Two
   algorithms are available: one based on /binary exchange/ (along a virtual tree topology) and the other one based on
