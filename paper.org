@@ -2029,8 +2029,8 @@ investigate whether a flaw in our network model that would result in
 too much congestion could explain the performance. 
 Alas, even a congestion-free network model 
 (represented by the dashed line in Figure\ref{fig:stampede_prediction}) only
-results in minor improvements. In our experiments with the KNC,
-*either the CPU or the KNC* seemed to be used at one time and a specifically
+results in minor improvements. In our experiments,
+either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
 single \SI{1.2}{\tera\flops} node does not sufficiently explain the
@@ -2139,11 +2139,9 @@ the aforementioned mismatch (apparent in Figure\ref{fig:stampede_prediction}). W
 the first iterations of HPL to get an idea of what could be
 improved (the trace for the first five iterations can be obtained in
 about 609 seconds on a commodity computer and is compressed about
-\SI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the first iterations'
-very synchronous and iterative nature: One can identify first a factorization of the panel, then a broadcast to all the
+\SI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the
+very synchronous and iterative nature of the first iterations: One can identify first a factorization of the panel, then a broadcast to all the
 nodes, and finally an update of trailing matrix.
-#+LATEX: \CH{Describe the colors here. See the label of that Figure. Light blue = teal?}
-#+LATEX: \TC{We don't see every color on the screenshot, but light blue = computation, yellow = MPI\_Wait, red = MPI\_Recv, blue = MPI\_Ssend}
 More than one fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation ratio),
 which prevents HPL from reaching the expected performance. 
@@ -2191,7 +2189,7 @@ is recommended for large problem sizes.
   \centering
   \includegraphics[width=\linewidth,page=1]{./figures/fullscale_unzoomed.png}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
-      red while computations are in light blue. Each communication between two process
+      red while computations are in teal. Each communication between two process
       is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
   \label{fig:hpl_gantt}
   \labspace
