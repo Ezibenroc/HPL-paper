@@ -1173,14 +1173,7 @@ simulation, and thus the higher the gain.
 
 ** Huge pages    
 For larger matrix orders (\ie $N$ larger than a few hundred thousand), the performance of the simulation quickly
-deteriorates as the memory consumption rises rapidly and the CPU
-utilization *drops unless* . Running the simulation while monitoring the system
-shows that the program is regularly stalled while the kernel loads the
-CPU at \SI{100}{\percent}, which explains the low CPU utilization for the program
-itself.
-\TC{This is false, see the entry from 2017-07-22 in my journal. If we use a tempfs file system, the CPU load remains high, we only have a large memory consumption.}
-\CH{What do we do with this?}
-\TC{For the large scale runs, no we don't do this, since the memory consumption is still an issue.}
+deteriorates as the memory consumption rises rapidly.
 
 We explained already how we fold the memory in order to reduce the /physical/
 memory usage. The /virtual/ memory, on the other hand, is still
@@ -1193,7 +1186,8 @@ precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte
 
 This means that the addresses in the page table for a matrix of order $N=4,000,000$
 consume $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
-\SI{250}{\gibi\byte}. Thankfully, the x86-64 architecture supports several page
+\SI{250}{\gibi\byte} on a system where double-precision floating-point numbers
+and addresses take 8 bytes. Thankfully, the x86-64 architecture supports several page
 sizes, known as ``huge pages'' in Linux. Typically, these pages are
 around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
 (\SIrange{2}{256}{\mebi\byte}) are possible as well.
@@ -1207,18 +1201,9 @@ to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
 a file opened in the =hugetlbfs= file system.
 #+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP\_HUGETLB?}
 
-Setting the page size to \SI{2}{\mebi\byte} has two advantages:
-Firstly, the page table size decreases drastically. For example, for a
-matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte} to 
-\SI{0.488}{\gibi\byte}. Secondly, simulation time decreases significantly since using hugepages
-reduces the amount of page faults and the time spent by the kernel on page table
-management. For a matrix of order $300,000$ and $64$ MPI
-processes, we saw CPU utilization rise from \SI{66}{\percent} to
-\SI{99}{\percent} and a reduction of simulation time from about
-\SI{580}{\sec} to roughly \SI{175}{\sec}.
-#+LATEX: \CH{I dislike that we give two problem sizes in one paragraph.}
-# CH: Because I/O is now reduced.
-# Values from Figure 4.9 in Tom's report
+Setting the page size to \SI{2}{\mebi\byte} reduces drastically the page table size.
+For example, for a matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte}
+to \SI{0.488}{\gibi\byte}.
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
 
