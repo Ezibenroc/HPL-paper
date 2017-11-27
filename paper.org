@@ -1261,7 +1261,7 @@ is impossible to completely get rid of the $\O(N)$ complexity without
 modifying HPL more profoundly.
 
 Although our goal was to model and simulate HPL on the Stampede
-platform, we decided to *try a first evaluation* on a
+platform, we decided to conduct a first evaluation on a
 similar, albeit non-existing, platform comprising 4,096 8-core nodes
 interconnected through a $\langle2;16,32;1,16;1,1\rangle$ fat-tree topology
 built on ideal network links with a bandwidth of
@@ -1273,8 +1273,8 @@ With all previously described
 optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
 \SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
 One can also see that, when the matrix order ($N$) is increased, memory consumption and
-simulation time both *grow* slightly quadratic as the amount of matrix
-elements is $N^{2}$ and the number of steps *(iterations?)* of the algorithm also *grows* linearly.
+simulation time both grow slightly quadratic as the amount of matrix
+elements is $N^{2}$ and the number of steps of the algorithm also linearly.
 
 Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
@@ -1930,11 +1930,10 @@ see\cite{smpi}. As illustrated, the results for
 (represented by purple, blue and red dots), one can observe two modes,
 namely ``slow'' and ``fast'' communications. ``Slow''
 operations take twice longer and are much more common than the 
-``fast'' ones. We observed this behavior *several times* even though both MPI
+``fast'' ones. We observed this behavior in several experiments even though both MPI
 processes that were used in the calibration were connected through 
-the same local switch. This ``perturbation'' was present throughout the execution of our
+the same local switch. When observed, this ``perturbation'' was present throughout the execution of that
 calibration. 
-#+LATEX: \CH{We say: behavior was obsevered several times, then "present throughout". Pick one. Also: We want to say: We don't know why this is here.}
 Having taken into consideration that small messages are scarce in HPL, we eventually decided to
 ignore this phenomenon and opted to use the more favorable scenario (fast
 communications) for small messages. We believe that the impact of
@@ -2041,12 +2040,6 @@ optimized version of the MKL may have been used in 2013.
 Removing the offloading latency and modeling each node as a
 single \SI{1.2}{\tera\flops} node does not sufficiently explain the
 divide between our results and reality.
-
-A significant improvement was obtained by removing the network latency 
-and increasing the bandwidth by a factor 10, which is completely
-unrealistic and can hence not be the solution.
-#+LATEX: \AL{This case is not in the Figure and I don't think we should mention it because we call it unrealistic.}
-#+LATEX: \TC{+1, especially since even this case did not reach the target performance.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
