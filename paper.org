@@ -1186,7 +1186,7 @@ precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte
 
 This means that the addresses in the page table for a matrix of order $N=4,000,000$
 consume $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
-\SI{250}{\gibi\byte} on a system where double-precision floating-point numbers
+\SI{250}{\giga\byte} on a system where double-precision floating-point numbers
 and addresses take 8 bytes. Thankfully, the x86-64 architecture supports several page
 sizes, known as ``huge pages'' in Linux. Typically, these pages are
 around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
@@ -1202,8 +1202,8 @@ a file opened in the =hugetlbfs= file system.
 #+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP\_HUGETLB?}
 
 Setting the page size to \SI{2}{\mebi\byte} reduces drastically the page table size.
-For example, for a matrix of order $N=4,000,000$, it shrinks from \SI{250}{\gibi\byte}
-to \SI{0.488}{\gibi\byte}.
+For example, for a matrix of order $N=4,000,000$, it shrinks from \SI{250}{\giga\byte}
+to \SI{0.488}{\giga\byte}.
 * Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
 
@@ -1284,7 +1284,7 @@ with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
 The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
 With all previously described
 optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
-\SI{16}{\gibi\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mebi\byte} of memory.
+\SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
 One can also see that, when the matrix order ($N$) is increased, memory consumption and
 simulation time both *grow* slightly quadratic as the amount of matrix
 elements is $N^{2}$ and the number of steps *(iterations?)* of the algorithm also *grows* linearly.
