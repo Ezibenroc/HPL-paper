@@ -546,11 +546,7 @@ possible to extrapolate behavior from small-scale
 traces\cite{scalaextrap,pmac_lspp13} but the execution becomes
 non-deterministic whenever the application relies on
 non-blocking communication patterns. This, however, is exactly the
-case for HPL. Furthermore, the size of the traces on Stampede
-are with \SI{100}{\tera\byte} prohibitive.
-#+LATEX: \TC{Also, the trace is simply too large? E.g. the trace for the Stampede's simulation would take more than 100GB (compressed).}
-#+LATEX: \CH{@TOM: OK, TB? GB? Why should we mention SMPI traces?}
-#+LATEX: \TC{@CH: Nope, GB, and this is a crude extrapolation. No idea about the state of the art trace formats.}
+case for HPL.
 
 The second approach discussed in literature is /online simulation/.
 Here, the application is executed (emulated) on top of a simulator
@@ -1028,7 +1024,13 @@ In addition to the main computation kernels =dgemm= and =dtrsm=,
 we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
 handling: =dgemv=, =dswap=, =daxpy=,
-=dscal=, =dtrsv=, =dger= and =idamax=. All of these functions are called during the
+=dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
+spent in fifteen functions implemented in HPL:
+=HPL_dlaswp00N=, =HPL_dlaswp01N=, =HPL_dlaswp01T=, =HPL_dlaswp02N=, =HPL_dlaswp03N=,
+=HPL_dlaswp03T=, =HPL_dlaswp04N=, =HPL_dlaswp04T=, =HPL_dlaswp05N=, =HPL_dlaswp05T=,
+=HPL_dlaswp06N=, =HPL_dlaswp06T=, =HPL_dlaswp10N=, =HPL_dlacpy= and =HPL_dlatcpy=.
+
+All of these functions are called during the
 LU factorization and hence impact the performance measured by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations, they all operate on
 bogus data and hence also produce bogus data. We also determined
@@ -1046,7 +1048,6 @@ We confirmed that this modification is harmless in terms of performance predicti
 speeds up the simulation by an additional factor of $\approx3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
 ** Memory folding
-#+LATEX: \TC{We also removed five HPL functions, e.g. HPL\_dlacpy. Should we mention this?}
 As explained in Section\ref{sec:smpi}, when emulating an application
 with SMPI, all MPI processes are run within the same simulation process on a single
 node. The memory consumption of the simulation can therefore quickly reach
