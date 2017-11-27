@@ -365,7 +365,7 @@ The main parameters of HPL are listed subsequently:
   =2-ring= variants rely on =MPI_Iprobe=, meaning they
   return control if no message has been fully received yet and hence
   facilitate partial overlapping of communication with computations. In HPL 2.2 and 2.1, this capability
-  has been deactivated for =long=. A comment in the source code states that some
+  has been deactivated for =long= and =long-modified=. A comment in the source code states that some
   machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
@@ -400,7 +400,7 @@ need to be tuned carefully in order to reach optimal performance.
 \label{sec:stampede}
 In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
 TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
-June 2016. In 2017, this machine got upgraded and renamed Stampede2. The Stampede platform
+June 2017. In 2017, this machine got upgraded and renamed Stampede2. The Stampede platform
 consisted of 6400 Sandy Bridge nodes, each with two 8-core Xeon E5-2680 and one
 Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
 through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
@@ -412,7 +412,7 @@ capacity), which are themselves connected to 8 648-port
 The peak performance of the 2 Xeon CPUs per node was approximately \SI{346}{\giga\flops},
 while the peak performance of the KNC co-processor was about
 \SI{1}{\tera\flops}. The theoretical peak performance of the
-platform was therefore \SI{8520}{\tera\flops}. However, in the TOP500, Stampede
+platform was therefore \SI{8614}{\tera\flops}. However, in the TOP500, Stampede
 was ranked with \SI{5168}{\tera\flops}. According to the log submitted
 to the TOP500 (see Figure\ref{fig:hpl_output}) that was provided to us,
 this execution took roughly two hours and used $77\times78 = 6,006$
@@ -490,7 +490,7 @@ HPL_pdgesv() end time   Sun Jun  2 15:10:04 2013
 The performance achieved by Stampede, \SI{5168}{\tera\flops}, needs to
 be compared to the peak performance of the 6,006 nodes, \ie
 \SI{8084}{\tera\flops}. This discrepancy may be attributed to the node
-usage (\eg, the MKL), to the MPI library, to the network topology that
+usage (\eg the MKL), to the MPI library, to the network topology that
 may be unable to deal with the very intensive communication workload, to
 load imbalance among nodes because some node happens to be slower for some
 reason (defect, system noise, \ldots), to the algorithmic structure of
@@ -510,7 +510,7 @@ For complex optimizations such as partially non-blocking
 collective communication algorithms intertwined with computations,
 very faithful modeling of both the application and the platform is
 required. Given the scale of this scenario
-(3,785\nbsp{}*steps* on 6,006 nodes in two hours), precise
+(3,785\nbsp{}steps on 6,006 nodes in two hours), precise
 simulations *become* quickly intractable without further work.
 * Related Work
 #+LaTeX: \label{sec:relwork}
@@ -602,6 +602,7 @@ percent the performance and the energy consumption of HPL and some
 other benchmarks on small-scale clusters (up to 144 cores in\cite{heinrich:hal-01523608} and up to 128 nodes
 in\cite{smpi}).
 #+LATEX: \CH{We have 144 CORES and 128 NODES. They are not comparable! I think they're single-core nodes?}
+#+LATEX: \TC{Maybe we should speak of 144 and 128 MPI ranks instead?}
 
 In this article, we aim to validate our models through much larger experiments.
 This scale, however, comes at the cost of a much less controlled
@@ -665,7 +666,7 @@ Since SimGrid is a sequential simulator, SMPI maps every MPI process of the appl
 lightweight simulation thread. These threads are then run one at a
 time, \ie in mutual exclusion.
 Every time a thread enters an MPI call, 
-the SMPI takes control and the time that was spent
+SMPI takes control and the time that was spent
 computing (isolated from the other threads) since the previous
 MPI call can be injected into the simulator as a virtual delay. 
 
@@ -686,7 +687,7 @@ To deal with this, SMPI provides two simple annotation mechanisms:
 - *Kernel sampling*: Control flow is in many cases
      independent of the computation results. This allows
      computation-intensive kernels (\eg BLAS kernels for HPL) 
-     can then be skipped during the simulation. For this purpose, SMPI
+     to be skipped during the simulation. For this purpose, SMPI
      supports annotation of regular kernels through several macros
      such as =SMPI_SAMPLE_LOCAL= and =SMPI_SAMPLE_GLOBAL=. The regularity allows SMPI to execute these
      kernels a few times, estimate their cost and skip the kernel in
@@ -765,7 +766,7 @@ To deal with this, SMPI provides two simple annotation mechanisms:
 	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
 	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
       \end{tikzpicture}
-      \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical page.}\vspace{-1em}
+      \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical pages.}\vspace{-1em}
     \end{figure}
     #+END_EXPORT
 * Improving SMPI Emulation Mechanisms and Preparing HPL
