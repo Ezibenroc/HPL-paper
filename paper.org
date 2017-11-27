@@ -1169,7 +1169,7 @@ deteriorates as the memory consumption rises rapidly.
 
 We explained already how we fold the memory in order to reduce the /physical/
 memory usage. The /virtual/ memory, on the other hand, is still
-allocated for every process *since the allocation calls are still executed*.
+allocated for every process since the allocation calls are still executed.
 Without a reduction of allocated virtual addresses, the page table
 rapidly becomes too large to fit in a single node. More
 precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte} can be computed as:
@@ -1744,10 +1744,9 @@ need to be transferred back and forth between the node's CPUs and the
 accelerator via the x16 PCIe bus.
 
 The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
-does not indicate how the KNC was used. However, Because of the values assigned
-to $P$ and $Q$, we are certain, that only a single MPI process per node was run and that the
-KNC was hence *likely* used as an accelerator. 
-#+LATEX: \CH{We need to clarify why we're sure (we just said the output we have doesn't give any hint)}
+does not indicate how the KNC was used. However, because of the values assigned
+to $P$ and $Q$, we are certain that only a single MPI process per node
+was run. For this reason, it is likely that the KNC used as an accelerator. 
 With Intel's Math Kernel Library (MKL), this is effortless as the MKL comes with
 support for automatic offloading *for* selected BLAS functions. 
 Unfortunately, we do not know which MKL version was used in 2013 and therefore decided to
