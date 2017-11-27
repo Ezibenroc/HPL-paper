@@ -1287,7 +1287,7 @@ modifying HPL more profoundly.
 Although our goal was to model and simulate HPL on the Stampede
 platform, we decided to *try a first evaluation* on a
 similar, albeit non-existing, platform comprising 4,096 8-core nodes
-interconnected through a $\langle2;16,32;1,16;1,1;8\rangle$ fat-tree topology
+interconnected through a $\langle2;16,32;1,16;1,1\rangle$ fat-tree topology
 built on ideal network links with a bandwidth of
 \SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}. We ran
 simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
