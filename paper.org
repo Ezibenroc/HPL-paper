@@ -827,6 +827,7 @@ CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9).
        optimistic estimation of the floprate. This may 
        be caused by inaccuracies in our model but also by a reduction in pre-emptions, \eg by the operating system.
        #+LATEX: \CH{Re-work this. I don't like that we talk about inaccuracies in our model. Shouldn't the pre-emptions be modeled alread? We did rely on measurements! "Absence of performance variability when kernel models are used."}
+       #+LATEX: \TC{I don't get the explanation about the inaccuracies. I think OS preemptions is one of the smallest factors here, especially since in real executions they will certainly fix this issue (e.g. with chrt --fifo 99) whereas in the calibration I did not take care of that.}
 
 *** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
@@ -1078,7 +1079,7 @@ typically occupies a few hundred \si{\mega\byte} per process.
 
 Although using the default =SHARED_MALLOC= mechanism works flawlessly
 for =A=, a more careful strategy needs to be used for the
-=panel=. Indeed, =panel= is an intricate data structure with both \texttt{int}s
+=panel=. Indeed, the =panel= is an intricate data structure with both \texttt{int}s
 (accounting for matrix indices, error codes, MPI tags, and pivoting information)
 and \texttt{double}s (corresponding to a copy of *sub-matrices* of =A=). To
 #+LATEX: \AL{Plural, i.e., several matrices?}
@@ -1115,7 +1116,7 @@ the =panel= as the most frequently transferred datastructure
 is partially shared with only a small part being private.
 The error introduced by this technique is negligible (below \SI{1}{\percent}) while we lower
 #+LATEX: \CH{Compared to what?}
-memory consumption significantly: For a matrix of order $40,000$ and $64$ MPI processes, the memory consumption
+memory consumption significantly: for a matrix of order $40,000$ and $64$ MPI processes, the memory consumption
 decreases from about \SI{13.5}{\giga\byte} to less than \SI{40}{\mega\byte}.
 #+LATEX: \CH{Check tenses :( }
 ** Panel reuse
@@ -1189,7 +1190,7 @@ We explained already how we fold the memory in order to reduce the /physical/
 memory usage. The /virtual/ memory, on the other hand, is still
 allocated for every process *since the allocation calls are still executed*.
 Without a reduction of allocated virtual addresses, the page table
-rapidly becomes too large to be efficiently maintained. More
+rapidly becomes too large to fit in a single node. More
 precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte} can be computed as:
 
     #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot \texttt{sizeof(double)}}{4,096} \cdot \texttt{sizeof(pointer)} \]
