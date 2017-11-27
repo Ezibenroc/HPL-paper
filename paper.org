@@ -183,8 +183,8 @@ performed on the Stampede cluster at TACC in 2013, when it got ranked
 6th in the TOP500. While this qualification run required the
 dedication of 6,006 computing nodes of the supercomputer and more than
 120\nbsp{}TB of RAM for more than 2\nbsp{}hours, we manage to simulate a similar
-configuration on a commodity computer with 16\nbsp{}GB of RAM in about
-47\nbsp{}hours. Allied to a careful modeling of Stampede, this simulation
+configuration on a commodity computer with 19\nbsp{}GB of RAM in about
+62\nbsp{}hours. Allied to a careful modeling of Stampede, this simulation
 allows us to evaluate the performance that would have been obtained
 using the freely available version of HPL. Such performance reveals much
 lower than what was reported and which was obtained using a
@@ -2250,7 +2250,7 @@ More specifically, we tried to reproduce the execution of HPL on the
 Stampede supercomputer conducted in $2013$ for the TOP500, which
 involved a \SI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
 Our emulation of a similar configuration ran on a single machine for
-about $47$ hours and required less than \SI{16}{\giga\byte} of RAM. This emulation
+about $62$ hours and required less than \SI{19}{\giga\byte} of RAM. This emulation
 employed several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have since been
 integrated into the last version of SimGrid/SMPI.
