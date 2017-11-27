@@ -2145,6 +2145,7 @@ about 609 seconds on a commodity computer and is compressed about
 very synchronous and iterative nature: One can identify first a factorization of the panel, then a broadcast to all the
 nodes, and finally an update of trailing matrix.
 #+LATEX: \CH{Describe the colors here. See the label of that Figure. Light blue = teal?}
+#+LATEX: \TC{We don't see every color on the screenshot, but light blue = computation, yellow = MPI\_Wait, red = MPI\_Recv, blue = MPI\_Ssend}
 More than one fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation ratio),
 which prevents HPL from reaching the expected performance. 
