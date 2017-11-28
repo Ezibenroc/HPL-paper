@@ -743,10 +743,10 @@ To deal with this, SMPI provides two simple annotation mechanisms:
      shared between processes and that the data they contain is not
      critical for the execution (\eg an input matrix) and that it may
      even be overwritten. 
-     =SMPI_SHARED_MALLOC= works as follows: a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
+     =SMPI_SHARED_MALLOC= works as follows (see Figure\ref{fig:global_shared_malloc}) : a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
      execution is allocated and shared by all MPI processes.
      A range of virtual addresses corresponding to a specified size is reserved and cyclically mapped onto the previously obtained
-     physical address, as illustrated by Figure\ref{fig:global_shared_malloc}. 
+     physical address.
      This mechanism allows applications to obtain a nearly constant memory
      footprint, regardless of the size of the actual allocations.
 
