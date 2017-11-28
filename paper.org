@@ -2443,7 +2443,7 @@ Tangle this file with C-c C-v t
 }
 
 @article {CODES,
- title = {Enabling Parallel Simulation of Large-Scale HPC Network Systems},
+ title = {Enabling Parallel Simulation of Large-Scale {HPC} Network Systems},
  journal = {IEEE Transactions on Parallel and Distributed Systems},
  year = {2016},
  author = {Mubarak, M. and C. D. Carothers and Robert B. Ross and Philip H. Carns}
@@ -2519,7 +2519,7 @@ pages = {366-376},
 
 @Article{Velho_TOMACS13,
   author = {Velho, Pedro and Schnorr, Lucas and Casanova, Henri and Legrand, Arnaud},
-  title = 	 {{On the Validity of Flow-level TCP Network Models for Grid and Cloud Simulations}},
+  title = 	 {{On the Validity of Flow-level {TCP} Network Models for Grid and Cloud Simulations}},
   journal = 	 {ACM Transactions on Modeling and Computer Simulation},
   year = 	 {2013},
  PUBLISHER = {ACM}, 
@@ -2530,7 +2530,7 @@ pages = {366-376},
 }
 
 @article{smpi,
-  TITLE = {Simulating MPI applications: the SMPI approach},
+  TITLE = {Simulating {MPI} applications: the {SMPI} approach},
   AUTHOR = {Degomme, Augustin and Legrand, Arnaud and Markomanolis, Georges and Quinson, Martin and Stillwell, Mark S and Suter, Frédéric},
   JOURNAL = {{IEEE Transactions on Parallel and Distributed Systems}},
   PUBLISHER = {{Institute of Electrical and Electronics Engineers}},
@@ -2549,7 +2549,7 @@ pages = {366-376},
 }
 
 @InProceedings{heinrich:hal-01523608,
-  title =        "{Predicting the Energy Consumption of MPI Applications
+  title =        "{Predicting the Energy Consumption of {MPI} Applications
                  at Scale Using a Single Node}",
   author =       "Franz C. Heinrich and Tom Cornebize and Augustin
                  Degomme and Arnaud Legrand and Alexandra Carpen-Amarie
@@ -2584,7 +2584,7 @@ pages = {366-376},
 
 @Misc{hpl,
   author = 	 {Antoine Petitet and Clint Whaley and Jack Dongarra and Andy Cleary and Piotr Luszczek},
-  title = 	 {HPL - A Portable Implementation of the High-Performance Linpack Benchmark for Distributed-Memory Computers},
+  title = 	 {{HPL} - A Portable Implementation of the {High-Performance Linpack} Benchmark for Distributed-Memory Computers},
   howpublished = {\url{http://www.netlib.org/benchmark/hpl}},
   month = 	 {February},
   year = 	 {2016},
@@ -2593,7 +2593,7 @@ pages = {366-376},
 
 @book{top500,
  author = {Meuer, Hans Werner and Strohmaier, Erich and Dongarra, Jack and Simon, Horst D.},
- title = {The TOP500: History, Trends, and Future Directions in High Performance Computing},
+ title = {The {TOP500}: History, Trends, and Future Directions in {High Performance Computing}},
  year = {2014},
  isbn = {143981595X, 9781439815953},
  edition = {1st},
@@ -2602,7 +2602,7 @@ pages = {366-376},
 
 @techreport{dmodk,
   author = 	 {Eitan Zahavi},
-  title = 	 {D-Mod-K Routing Providing Non-Blocking Traffic for Shift Permutations on Real Life Fat Trees},
+  title = 	 {{D-Mod-K} Routing Providing Non-Blocking Traffic for Shift Permutations on Real Life Fat Trees},
   institution = {Technion Israel Institute of Technology},
   year = 	 {2010},
 }
