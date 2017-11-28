@@ -2269,9 +2269,9 @@ application or if an upgrade of the current machine should be
 considered. As a future work, we intend to conduct similar studies
 with other HPC benchmarks (\eg HPCG or HPGMG) and with other top500
 machines. From our experience, we believe that a faithful and public
-reporting of the experimental conditions (compiling options, library
-versions, HPL output, etc.) would be invaluable and allow a better
-understanding of how such platforms actually behave.
+reporting of the experimental conditions (compiler options, library
+versions, HPL output, etc.) is invaluable and allows researchers
+to better understand of these platforms actually behave.
 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
