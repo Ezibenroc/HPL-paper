@@ -2087,7 +2087,7 @@ results = rbind(classical, highbw, fatpipe)
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file figures/stampede_simgrid.pdf :exports both :width 5 :height 3 :session *R* 
+#+begin_src R :results output graphics :file figures/stampede_simgrid.pdf :exports both :width 5 :height 3.5 :session *R* 
 res_lab = results[results$mode != 'highbw' & results$size > 3E6,];
 res_lab$x=res_lab$size;
 res_lab$y=res_lab$Gflops;
