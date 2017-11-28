@@ -105,7 +105,7 @@
 
 #+LaTeX: \newcommand\myemph[1]{\color{colorfuncall}\textbf{#1}}%
 
-#+LaTeX: \newcommand\labspace[1][-0.25cm]{\vspace{#1}}
+#+LaTeX: \newcommand\labspace[1][-0cm]{\vspace{#1}}
 #+LaTeX: \renewcommand\O{\ensuremath{\mathcal{O}}\xspace}%
 
 #+BEGIN_EXPORT latex
@@ -154,9 +154,17 @@
   %
 
   \author{
-  \IEEEauthorblockN{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}\\
-  \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG, 38000 Grenoble, France\\
-    tom.cornebize@univ-grenoble-alpes.fr, franz-christian.heinrich@inria.fr, arnaud.legrand@imag.fr}
+    \begin{minipage}{.55\linewidth}\centering
+      \IEEEauthorblockN{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}\\
+      \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG\\ 38000 Grenoble, France\\
+        firstname.lastname@inria.fr}
+    \end{minipage}
+    \begin{minipage}{.35\linewidth}\centering
+      \IEEEauthorblockN{Jérôme Vienne}\\
+      \IEEEauthorblockA{Texas Advanced Computing Center\\Austin, Texas, USA\\
+        viennej@tacc.utexas.edu}
+    \end{minipage}
+
   }
 
 
@@ -211,7 +219,7 @@ are already in production. This high density of computation units requires dilig
 parameters, such as problem size, process organization or choice of algorithm, as these
 have an impact on load distribution and network utilization.
 Furthermore, to yield best benchmark results,
-runtimes (such as OpenMPI) and supporting libraries (such as LAPACK) need to be fine-tuned and adapted to the
+runtimes (such as OpenMPI) and supporting libraries (such as BLAS) need to be fine-tuned and adapted to the
 underlying platform. 
 
 Alas, it takes typically several hours to run HPL on the list's number one system.
@@ -221,7 +229,7 @@ machine just to tweak parameters.
 Yet, performance results of an already deployed, current-generation machine typically also
 play a role in the funding process for future machines. Results near
 the optimal performance for the current machine are hence considered critical for
-HPC centers and vendors. These entities would benefit largely from being able to
+HPC centers and vendors. These entities would benefit from being able to
 tune parameters without actually running the benchmark for hours.
 # This estimation can be done either via (mathematical) performance models (e.g., by
 # estimating performance of specific functions) or by a simulation based approach.
@@ -232,13 +240,13 @@ tune parameters without actually running the benchmark for hours.
 # \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
 
 In this article, we explain how to predict the performance of HPL
-through simulation with the SimGrid/SMPI simulator. We particularly detail how we obtained
+through simulation with the SimGrid/SMPI simulator. We detail how we obtained
 faithful models for several functions (\eg =DGEMM= and =DTRSM=) and how we managed
 to reduce the memory consumption from more than a hundred terabytes to several
 gigabytes, allowing us to emulate HPL on a commonly available server node.
 We evaluate the effectiveness of our solution by
 simulating a scenario similar to the run conducted on the Stampede
-cluster *(TACC)* in 2013 for the TOP500 . 
+cluster (TACC) in 2013 for the TOP500 . 
 
 This article is organized as follows:
 Section\ref{sec:con} presents the main characteristics of the HPL
@@ -250,7 +258,7 @@ Section\ref{sec:smpi}, we briefly present the simulator we used for
 this work, SimGrid/SMPI, followed by an
 extensive discussion in Section\ref{sec:em} about the
 optimizations on all levels (\ie simulator, application, system) that
-were necessary to make a large-scale run feasible. The scalability of
+were necessary to make a large-scale run tractable. The scalability of
 our approach is evaluated in Section\ref{sec:scalabilityevol}. The
 modeling of the Stampede platform and the comparison of our simulation
 with the 2013 execution is detailed in
@@ -305,7 +313,7 @@ article by summarizing our contributions.
         allocate the panel\;
         factor the panel\;
         broadcast the panel\;
-        update the matrix;
+        update the sub-matrix;
       }
     \end{algorithm}
     \vspace{1em}
@@ -328,7 +336,7 @@ benchmarked.  The factorization is based on a right-looking variant of
 the LU factorization with row partial pivoting and allows multiple
 look-ahead depths. The working principle of the factorization is depicted in
 Figure\ref{fig:hpl_overview} and consists of a series of panel
-factorizations followed by an update.
+factorizations followed by an update of the trailing sub-matrix.
 HPL uses a two-dimensional block-cyclic data distribution of $A$ and implements several custom
 collective communication algorithms to efficiently overlap communication
 with computation.
@@ -338,7 +346,7 @@ The main parameters of HPL are listed subsequently:
   which HPL operates when panels are distributed or worked on.
 - $P$ and $Q$ denote the number of process rows and the
   number of process columns, respectively.
-- =RFACT= determines the panel factorization algorithm. Possible values: Crout, left- or right-looking.
+- =RFACT= determines the panel factorization algorithm. Possible values are Crout, left- or right-looking.
 - =SWAP= specifies the swapping algorithm used while pivoting. Two
   algorithms are available: one based on /binary exchange/ (along a virtual tree topology) and the other one based on
   a /spread-and-roll/ (with a higher number of parallel communications). HPL
@@ -385,8 +393,8 @@ the second term corresponds to the communication overhead which is
 influenced by the network capacity and by the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
 =DEPTH=, \ldots). 
 After each run, HPL reports the overall flop
-rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) and also
-several configurations. See Figure\ref{fig:hpl_output} for a (shortened)
+rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) for
+the given configuration. See Figure\ref{fig:hpl_output} for a (shortened)
 example output.
 
 A large-scale execution of HPL on a real machine in order to submit to the TOP500
@@ -527,14 +535,14 @@ Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 
 The main limitation of this approach comes from the trace
 acquisition requirement.
-Additionally, tracing an application collects only information about
-how its behavior at the time of the run. Even light modifications 
+Additionally, tracing an application provides only information about
+its behavior at the time of the run. Even light modifications 
 (\eg to communication patterns) may make the trace inaccurate. For
 simple applications (\eg =stencil=) it is sometimes
 possible to extrapolate behavior from small-scale
-traces\cite{scalaextrap,pmac_lspp13} but the execution becomes
+traces\cite{scalaextrap,pmac_lspp13} but the execution is
 non-deterministic whenever the application relies on
-non-blocking communication patterns. This, however, is exactly the
+non-blocking communication patterns, which is unfortunately the
 case for HPL.
 
 The second approach discussed in literature is /online simulation/.
@@ -552,7 +560,7 @@ have an excellent knowledge of its internals although the developments we
 propose would a priori also be possible with SST Macro. Emulation of
 HPL comes with at least two challenges:
 - Firstly, the time-complexity of the
-  algorithm is $\mathcal{O}(N^3)$. Furthermore, 
+  algorithm is $\Theta(N^3)$. Furthermore, 
   $\Theta(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
   on 6,006\nbsp{}compute nodes. Using only a single node, a naive
@@ -735,9 +743,9 @@ To deal with this, SMPI provides two simple annotation mechanisms:
      shared between processes and that the data they contain is not
      critical for the execution (\eg an input matrix) and that it may
      even be overwritten. 
-     =SMPI_SHARED_MALLOC= functions as follows: a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
+     =SMPI_SHARED_MALLOC= works as follows: a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
      execution is allocated and shared by all MPI processes.
-     A range of virtual addresses *representing* a specified size is reserved and cyclically mapped onto the previously obtained
+     A range of virtual addresses corresponding to a specified size is reserved and cyclically mapped onto the previously obtained
      physical address, as illustrated by Figure\ref{fig:global_shared_malloc}. 
      This mechanism allows applications to obtain a nearly constant memory
      footprint, regardless of the size of the actual allocations.
@@ -883,7 +891,7 @@ grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), 
 
 #+RESULTS:
 
-#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6.2 :height 2.5
+#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6.2 :height 3.5
 plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
@@ -962,53 +970,6 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 ** Adjusting the behavior of HPL
 #+LaTeX: \label{sec:hplchanges}
 
-#+BEGIN_EXPORT latex
-\tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
-\tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
-\tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
-\tikzstyle{bigswitch}=[base, draw]
-\begin{figure}%[htbp]
-  \centering
-  {\begin{minipage}{1.0\linewidth}
-  \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
-    \begin{minipage}[b]{\linewidth}\centering
-      \begin{tikzpicture}[yscale=.6,scale=0.8]
-        \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
-        \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
-        \draw[dashed] (3, 2) -- (3, 3);
-        \draw[dashed] (6, 2) -- (6, 3);
-        \node(1) at (1.5, 2.5) {matrix parts};
-        \node(2) at (4.5, 2.5) {indices};
-        \node(3) at (7.5, 2.5) {matrix parts};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
-      \end{tikzpicture}
-    \end{minipage}}
-  \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
-    \begin{minipage}[b]{\linewidth}\centering
-      \begin{tikzpicture}[yscale=.6]
-        \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
-        \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
-        \draw[dashed] (2, 1) -- (2, 1.5);
-        \draw[dashed] (4, 1) -- (4, 1.5);
-
-        \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
-        \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
-        \draw[dashed] (2, 0) -- (2, .5);
-        \draw[dashed] (3, 0) -- (3, .5);
-
-        \draw[-latex] (2, 1) -- (2, .5);
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
-      \end{tikzpicture}
-    \end{minipage}
-  }    
-  \end{minipage}}
-  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}\vspace{-1em}
-\end{figure}
-#+END_EXPORT
-
 HPL uses pseudo-randomly generated
 matrices that need to be setup every time HPL is executed. The time
 spent on this just as the validation of the computed result is
@@ -1058,6 +1019,53 @@ modified, some functions may still read or write some parts of the matrix.
 It is thus not possible to simply remove the memory allocations of
 large data structures altogether. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
 to share unimportant data structures between all ranks, minimizing the memory footprint.
+
+#+BEGIN_EXPORT latex
+\tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
+\tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
+\tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
+\tikzstyle{bigswitch}=[base, draw]
+\begin{figure}%[htbp]
+  \centering
+  {\begin{minipage}{1.0\linewidth}
+  \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[yscale=.6,scale=0.8]
+        \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
+        \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
+        \draw[dashed] (3, 2) -- (3, 3);
+        \draw[dashed] (6, 2) -- (6, 3);
+        \node(1) at (1.5, 2.5) {matrix parts};
+        \node(2) at (4.5, 2.5) {indices};
+        \node(3) at (7.5, 2.5) {matrix parts};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
+      \end{tikzpicture}
+    \end{minipage}}
+  \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[yscale=.6]
+        \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
+        \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
+        \draw[dashed] (2, 1) -- (2, 1.5);
+        \draw[dashed] (4, 1) -- (4, 1.5);
+
+        \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
+        \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
+        \draw[dashed] (2, 0) -- (2, .5);
+        \draw[dashed] (3, 0) -- (3, .5);
+
+        \draw[-latex] (2, 1) -- (2, .5);
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
+      \end{tikzpicture}
+    \end{minipage}
+  }    
+  \end{minipage}}
+  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}\vspace{-1em}
+\end{figure}
+#+END_EXPORT
 
 The largest two allocated data structures in HPL are the input matrix =A=
 (with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
@@ -1217,13 +1225,14 @@ to \SI{0.488}{\giga\byte}.
 #+BEGIN_EXPORT latex
 \begin{figure*}%[!htb]
   \centering
-  \begin{minipage}[b]{.27\textwidth}
-    \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
-    \vspace{-2em}
-    \caption{Automatic offloading on the KNC depends on matrix dimensions.}
-    \vspace{-1em}
-    \label{fig:hpl_mkl}
-  \end{minipage}~~~\begin{minipage}[b]{.7\textwidth}\centering
+  % \begin{minipage}[b]{.27\textwidth}
+  %   \includegraphics[width=\linewidth,page=2]{./figures/stampede_knc_model.pdf}
+  %   \vspace{-2em}
+  %   \caption{Automatic offloading on the KNC depends on matrix dimensions.}
+  %   \vspace{-1em}
+  %   \label{fig:hpl_mkl}
+  % \end{minipage}~~~
+  \begin{minipage}[b]{.7\textwidth}\centering
     \scalebox{.88}{\begin{tabular}{l|r|r|r|r}
     & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
     & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ \\
@@ -1235,6 +1244,14 @@ to \SI{0.488}{\giga\byte}.
     \caption{Modeling automatic offloading on KNC in MKL BLAS kernels.}
     \vspace{-1em}
     \label{fig:macro_real}
+  \end{minipage}~~~\begin{minipage}[b]{.27\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
+  \caption{Modeling communication time on stampede. Each color is manually adjusted and 
+       corresponds to a different synchronization mode 
+      (eager, rendez-vous,...). }\vspace{-1em}
+  \label{fig:stampede_calibration}
+  \labspace
   \end{minipage}
 \end{figure*}
 #+END_EXPORT
@@ -1588,7 +1605,7 @@ size_mem
 #+RESULTS:
 [[file:figures/scalability_3.pdf]]
 
-#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 7 :height 3.5
+#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 7 :height 4
 grid_arrange_shared_legend(size_time, size_mem, nrow=1, ncol=2)
 #+end_src
 
@@ -1753,17 +1770,13 @@ Unfortunately, we do not know which MKL version was used in 2013 and therefore d
 use the default version used on Stampede in the beginning of 2017, \ie
 version 11.1.1. The MKL documentation states
 that, depending on the matrix geometry, the computation will run on
-either all the cores of the CPU or *exclusively?* on the KNC.  In the case of
+either all the cores of the CPU or exclusively on the KNC.  In the case of
 =DGEMM=, the computation of $A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ of
 dimensions $M\times{}K$, $K\times{}N$ and $M\times{}N$, respectively, is offloaded onto the KNC whenever $M$
 and $N$ are both larger than $1280$ while $K$ is simultaneously larger
 than $256$. Similarly, offloading for =DTRSM= is used when both $M$ and $N$
-are larger than $512$. To illustrate the effect of offloading, Figure\ref{fig:hpl_mkl}
-depicts the time we measured for MKL's =DGEMM= and =DTRSM= implementations
-on matrices with dimensions 
-randomly taken from $[1,8\,000]$. Clearly, offloading to the KNC results in a
-better throughput (lower slope) but incurs a higher latency
-(higher intercept). The complexity for =DGEMM= is always of the order
+are larger than $512$, which results in a
+better throughput but incurs a higher latency. The complexity for =DGEMM= is always of the order
 of $M\cdot{}N\cdot{}K$ ($M\cdot{}N^2$ for =DTRSM=) but the model that describes the time it
 takes to run =DGEMM= (=DTRSM=) is very different for small and large
 matrices. The table in Figure\ref{fig:macro_real} indicates the
@@ -1772,8 +1785,7 @@ or =DTRSM= and CPU or Phi). The measured performance was close to the
 peak performance: \eg for =DGEMM= on the Phi reached
 $2/\num{1.981e-12} = \SI{1.009}{\tera\flops}$. Since the granularity
 used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (except
-for *maybe* the very last iteration) *should be* offloaded to the KNC. 
-#+LATEX: \AL{Maybe? Should be? Vague.}
+for maybe the very last iteration) are offloaded to the KNC. 
 In any case, this behavior can easily be accounted for by replacing the
 macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
 
@@ -1899,17 +1911,17 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 [[file:/tmp/babel-1674kfe/figure1674sWN.png]]
 
 *** Communications
-#+BEGIN_EXPORT latex
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
-  \caption{Modeling communication time on stampede. Each color corresponds to a
-      manually adjusted breakpoint corresponding to a synchronization mode 
-      (eager, rendez-vous,...). }\vspace{-1em}
-  \label{fig:stampede_calibration}
-  \labspace
-\end{figure}
-#+END_EXPORT
+# #+BEGIN_EXPORT latex
+# \begin{figure}[t]
+#   \centering
+#   \includegraphics[width=\linewidth,page=1]{./figures/stampede_calibration_send.png}
+#   \caption{Modeling communication time on stampede. Each color corresponds to a
+#       manually adjusted breakpoint corresponding to a synchronization mode 
+#       (eager, rendez-vous,...). }\vspace{-1em}
+#   \label{fig:stampede_calibration}
+#   \labspace
+# \end{figure}
+# #+END_EXPORT
 
 We unfortunately do not know for sure which version of Intel MPI was used in
 2013, so we decided to use the default one on Stampede
@@ -2020,7 +2032,7 @@ our simulations to be optimistic yet close to results obtained by a real life ex
 ** Simulating HPL
 *** Performance Prediction
 Figure\ref{fig:stampede_prediction} compares two simulation scenarios
-with the original result from 2013. The solid line represents the HPL
+with the original result from 2013. The solid red line represents the HPL
 performance prediction as obtained with SMPI with the Stampede model
 that we described in the previous section. Although we expected SMPI to be
 optimistic, the prediction was surprisingly much lower than the TOP500 result.
@@ -2028,7 +2040,7 @@ We verified that no part of HPL was left unmodeled and decided to
 investigate whether a flaw in our network model that would result in
 too much congestion could explain the performance. 
 Alas, even a congestion-free network model 
-(represented by the dashed line in Figure\ref{fig:stampede_prediction}) only
+(represented by the dashed blue line in Figure\ref{fig:stampede_prediction}) only
 results in minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
 either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
@@ -2144,25 +2156,23 @@ very synchronous and iterative nature of the first iterations: One can identify 
 nodes, and finally an update of trailing matrix.
 More than one fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation ratio),
-which prevents HPL from reaching the expected performance. 
-#+LATEX: \CH{@AL: Which performance do we expect here? We didn't mention yet that Intel uses overlapping.}
-
+which prevents HPL from reaching the Top500 performance. 
 Overlapping of these heavy communication phases with computation would improve
 performance significantly. The fact that this is
-*almost* not happening can be explained by the look-ahead ~DEPTH~
-#+LATEX: \CH{@AL: Almost = A bit is being overlapped. Is this true?}
+almost not happening can be explained by the look-ahead ~DEPTH~
 parameter that was supposedly set to =0= (see
 Figure\ref{fig:hpl_output}). This is quite surprising as even
 the tuning section of the HPL documentation indicates that a depth of
 1 is supposed to yield the best results, even though a large problem size could
 be needed to see some performance gain. We discussed this
-surprising behavior with the Stampede-team an were informed that the
+surprising behavior with the Stampede-team and were informed that the
 run in 2013 was executed with an HPL binary provided by Intel
 and probably specifically modified for Stampede. We
 believe that some configuration values have been hardcoded to enforce an overlap of
 iterations with others. Indeed, the shortened part (marked ``[...]'') in
 Figure\ref{fig:hpl_output} provides information about the progress of
-HPL throughout iterations and statistics for the panel-owning process about the time spent *in the most important parts*. 
+HPL throughout iterations and statistics for the panel-owning process
+about the time spent in the most important parts. 
 According to these statistics, the total time
 spent in the =Update= section was \SI{9390}{\sec} whereas the total
 execution time was \SI{7505}{\sec}, which is impossible unless iterations have overlapped.
@@ -2170,16 +2180,14 @@ execution time was \SI{7505}{\sec}, which is impossible unless iterations have o
 The broadcast and swapping algorithms use *very heavy*
 communication patterns. This is not at all surprising since for a matrix of
 this order, several hundred megabytes need to be broadcast. 
+Although the output states that the =blongM= algorithm was
+used it could be the case that another algorithm had been used.
 We tried the other of the 6 broadcast algorithms HPL comes with but
 did not achieve significantly better overall performance. 
 An analysis of the symbols in the Intel binary
 revealed that another broadcast algorithm named
 =HPL_bcast_bpush= was available. Unlike the others, this new algorithm relies on non-blocking sends,
-#+LATEX: \AL{We need to explain how we conclude that non-blocking sends are used}
-which explains plausibly how the performance in 2013 was obtained.
-It should be noted that the output states that the =blongM= algorithm was
-used but believe this to be incorrect.
-#+LATEX: \AL{We need to explain why we believe this to be incorrect. See the output of that option in testing/ptest/HPL\_pdinfo.c lines 1002, 1020, 1038}
+which could contribute to the performance obtained in 2013.
 Likewise, the swapping algorithm that was used (~SWAP=Binary-exchange~) involves communications that are rather long and
 organized in trees, which is surprising as the ~spread-roll~ algorithm
 is recommended for large problem sizes.
@@ -2200,7 +2208,7 @@ We do not aim to reverse engineer the Intel HPL code. We can, however,
 already draw two conclusions from our simple analysis: 1) it is apparent that many optimizations have been done on
 the communication side and 2) it is very likely that the reported
 parameters are not the ones used in the real execution, probably because 
-these values were hardcoded and the configuration file was not updated accordingly.
+these values were hardcoded and the configuration output file was not updated accordingly.
 *** Gantt charts                                                 :noexport:
 #+begin_src sh :results output :exports both
 cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
@@ -2242,7 +2250,7 @@ was much lower than what was reported in 2013. We determined that this
 discrepancy comes from the fact that a modified, closed-source version of HPL
 supplied by Intel was used in 2013.
 We believe that some of the HPL configuration parameters were
-hardcoded and therefore misreported in the output. An analysis of the optimized
+hardcoded and therefore misreported in the output. A quick analysis of the optimized
 HPL binary confirmed that algorithmic differences were likely to be the
 reason for the performance differences.
 
@@ -2254,10 +2262,17 @@ comprises 16K lines of ANSI C over 149 files, our modifications only
 changed 14 files with 286 line insertions and 18 deletions.
 
 Although being capable of predicting an application's performance on a
-platform is by itself interesting, we believe that this
-will become invaluable in the future to aid compute centers with the
-decision of whether a new machine (and what technology) will work best for a given
-application or if an upgrade of the current machine should be considered. 
+platform is by itself interesting, we believe that this will become
+invaluable in the future to aid compute centers with the decision of
+whether a new machine (and what technology) will work best for a given
+application or if an upgrade of the current machine should be
+considered. As a future work, we intend to conduct similar studies
+with other HPC benchmarks (\eg HPCG or HPGMG) and with other top500
+machines. From our experience, we believe that a faithful and public
+reporting of the experimental conditions (compiling options, library
+versions, HPL output, etc.) would be invaluable and allow a better
+understanding of how such platforms actually behave.
+
 # This goal will be subject to a more thorough investigation
 # in the very near future.
 
@@ -2275,7 +2290,8 @@ application or if an upgrade of the current machine should be considered.
 * Acknowledgements
 
 Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
-
+We warmly our TACC colleagues for their support in this study and
+providing us as much information as they could.
 ** References                                                       :ignore:
 
 # See next section to understand how refs.bib file is created.
