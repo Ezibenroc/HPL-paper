@@ -2197,7 +2197,7 @@ is recommended for large problem sizes.
   \centering
   \includegraphics[width=\linewidth,page=1]{./figures/fullscale_unzoomed.png}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
-      red while computations are in teal. Each communication between two process
+      red while computations are in cyan. Each communication between two process
       is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
   \label{fig:hpl_gantt}
   \labspace
