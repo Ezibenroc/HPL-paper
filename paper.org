@@ -369,15 +369,15 @@ The main parameters of HPL are listed subsequently:
   =2-ring= variants rely on =MPI_Iprobe=, meaning they
   return control if no message has been fully received yet and hence
   facilitate partial overlapping of communication with computations. In HPL 2.2 and 2.1, this capability
-  has been deactivated for =long= and =long-modified=. A comment in the source code states that some
+  has been deactivated for the =long= and =long-modified= algorithms. A comment in the source code states that some
   machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=.85\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
-  \vspace{-.5em}\caption{The fat-tree network topology of Stampede.}\vspace{-.5em}
+  \includegraphics[width=.95\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
+  \caption{The fat-tree network topology of Stampede.}
   \label{fig:fat_tree_topology}
   \labspace
 \end{figure}
@@ -662,7 +662,7 @@ operations.
         }
       }, decorate
     }}
-    \begin{figure}%[htbp]
+    \begin{figure}[b]%[htbp]
       \centering
       \begin{tikzpicture}[yscale=0.7, scale=0.7]
         \pgfmathtruncatemacro{\size}{4}
@@ -777,22 +777,6 @@ of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
 
 ** Kernel modeling
-#+BEGIN_EXPORT latex
-\begin{figure}%[!htb]
-%  \null\vspace{-1cm}
-  \centering
-  \subfigure[Non-intrusive macro replacement.\label{fig:macro_simple}]{
-    \begin{minipage}[b]{\linewidth}
-      \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
-    \end{minipage}}
-  \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
-    \begin{minipage}[b]{\linewidth} 
-      \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
-    \end{minipage}}
-  \caption{Replacing the calls to computationally expensive functions by a model allows to significantly reduce simulation time.}\vspace{-1em}
-\end{figure}
-#+END_EXPORT
-
        As explained in Section\ref{sec:con:diff}, faithful prediction
        of HPL necessitates emulation, \ie to execute the code.
        HPL relies heavily on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
@@ -824,6 +808,22 @@ CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9).
        pessimistic compared to a real execution.
        # #+LATEX: \CH{Re-work this. I don't like that we talk about inaccuracies in our model. Shouldn't the pre-emptions be modeled alread? We did rely on measurements! "Absence of performance variability when kernel models are used."}
        # #+LATEX: \TC{I don't get the explanation about the inaccuracies. I think OS preemptions is one of the smallest factors here, especially since in real executions they will certainly fix this issue (e.g. with chrt --fifo 99) whereas in the calibration I did not take care of that.}
+
+#+BEGIN_EXPORT latex
+\begin{figure}%[!htb]
+%  \null\vspace{-1cm}
+  \centering
+  \subfigure[Non-intrusive macro replacement.\label{fig:macro_simple}]{
+    \begin{minipage}[b]{\linewidth}
+      \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
+    \end{minipage}}
+  \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
+    \begin{minipage}[b]{\linewidth} 
+      \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
+    \end{minipage}}
+  \caption{Replacing the calls to computationally expensive functions by a model allows to significantly reduce simulation time.}\vspace{-1em}
+\end{figure}
+#+END_EXPORT
 
 *** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
@@ -2177,7 +2177,7 @@ According to these statistics, the total time
 spent in the =Update= section was \SI{9390}{\sec} whereas the total
 execution time was \SI{7505}{\sec}, which is impossible unless iterations have overlapped.
 
-The broadcast and swapping algorithms use *very heavy*
+The broadcast and swapping algorithms use very heavy
 communication patterns. This is not at all surprising since for a matrix of
 this order, several hundred megabytes need to be broadcast. 
 Although the output states that the =blongM= algorithm was
@@ -2190,7 +2190,7 @@ revealed that another broadcast algorithm named
 which could contribute to the performance obtained in 2013.
 Likewise, the swapping algorithm that was used (~SWAP=Binary-exchange~) involves communications that are rather long and
 organized in trees, which is surprising as the ~spread-roll~ algorithm
-is recommended for large problem sizes.
+is recommended for large matrices.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -2261,8 +2261,8 @@ minor and are applicable to that optimized version. In fact, while HPL
 comprises 16K lines of ANSI C over 149 files, our modifications only
 changed 14 files with 286 line insertions and 18 deletions.
 
-Although being capable of predicting an application's performance on a
-platform is by itself interesting, we believe that this will become
+We believe being capable of precisely predicting an application's
+performance on a given platform will become
 invaluable in the future to aid compute centers with the decision of
 whether a new machine (and what technology) will work best for a given
 application or if an upgrade of the current machine should be
@@ -2291,7 +2291,7 @@ understanding of how such platforms actually behave.
 
 Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
 We warmly our TACC colleagues for their support in this study and
-providing us as much information as they could.
+providing us with as much information as they could.
 ** References                                                       :ignore:
 
 # See next section to understand how refs.bib file is created.
