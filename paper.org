@@ -2029,7 +2029,7 @@ investigate whether a flaw in our network model that would result in
 too much congestion could explain the performance. 
 Alas, even a congestion-free network model 
 (represented by the dashed line in Figure\ref{fig:stampede_prediction}) only
-results in minor improvements. In our experiments,
+results in minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
 either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
