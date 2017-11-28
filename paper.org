@@ -2290,7 +2290,7 @@ to better understand of these platforms actually behave.
 * Acknowledgements
 
 Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
-We warmly our TACC colleagues for their support in this study and
+We warmly thank our TACC colleagues for their support in this study and
 providing us with as much information as they could.
 ** References                                                       :ignore:
 
