@@ -1228,8 +1228,8 @@ to \SI{0.488}{\giga\byte}.
     & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
     & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ \\
     \hline
-    \texttt{DGEMM} & \num{1.029e-11} & \num{2.737e-02} & \num{1.981e-12} & \num{6.316e-01} \\
-    \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01}
+    \texttt{DGEMM} & \num{8.919e-11} & \num{3.536e-02} & \num{1.020e-11} & \num{2.728e+00} \\
+    \texttt{DTRSM} & \num{4.621e-11} & \num{5.164e-03} & \num{3.940e-12} & \num{2.509e+00}
     \end{tabular}}\medskip\\
     \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
     \caption{Modeling automatic offloading on KNC in MKL BLAS kernels.}
@@ -1842,6 +1842,90 @@ macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
 96   dgemm 5242   6621
 981  dgemm 1510   4991
 1001 dgemm 1646   1646
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+library(dplyr)
+summary(lm(time ~ I(m*n*k), data=(dgemm_new %>% filter(offload))))
+summary(lm(time ~ I(m*n*k), data=(dgemm_new %>% filter(!offload))))
+summary(lm(time ~ I(m*n^2), data=(dtrsm_new %>% filter(offload))))
+summary(lm(time ~ I(m*n^2), data=(dtrsm_new %>% filter(!offload))))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = time ~ I(m * n * k), data = (dgemm_new %>% filter(offload)))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.58368 -0.24481  0.04579  0.28840  0.51896 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  2.728e+00  8.294e-02   32.89  < 2e-16 ***
+I(m * n * k) 1.020e-11  7.908e-13   12.89 7.47e-15 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3442 on 35 degrees of freedom
+Multiple R-squared:  0.8261,	Adjusted R-squared:  0.8211 
+F-statistic: 166.2 on 1 and 35 DF,  p-value: 7.467e-15
+
+Call:
+lm(formula = time ~ I(m * n * k), data = (dgemm_new %>% filter(!offload)))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.05637 -0.02731 -0.01780  0.02349  0.08628 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  3.536e-02  1.556e-02   2.272   0.0442 *  
+I(m * n * k) 8.919e-11  1.208e-12  73.859 3.48e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.04361 on 11 degrees of freedom
+Multiple R-squared:  0.998,	Adjusted R-squared:  0.9978 
+F-statistic:  5455 on 1 and 11 DF,  p-value: 3.485e-16
+
+Call:
+lm(formula = time ~ I(m * n^2), data = (dtrsm_new %>% filter(offload)))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.59132 -0.19214  0.02094  0.23257  0.54051 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 2.509e+00  6.699e-02   37.46   <2e-16 ***
+I(m * n^2)  3.940e-12  3.812e-13   10.33    1e-12 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.2974 on 39 degrees of freedom
+Multiple R-squared:  0.7325,	Adjusted R-squared:  0.7256 
+F-statistic: 106.8 on 1 and 39 DF,  p-value: 1.002e-12
+
+Call:
+lm(formula = time ~ I(m * n^2), data = (dtrsm_new %>% filter(!offload)))
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-0.0025837 -0.0014195  0.0003292  0.0010682  0.0019869 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 5.164e-03  6.595e-04    7.83 0.000105 ***
+I(m * n^2)  4.621e-11  9.562e-14  483.23  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.00169 on 7 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:      1 
+F-statistic: 2.335e+05 on 1 and 7 DF,  p-value: < 2.2e-16
 #+end_example
 
 #+begin_src R :results output :session *R* :exports both
