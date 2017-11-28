@@ -1146,7 +1146,7 @@ this section, we discuss the impact of the choice.
   global variables. The main advantage of this approach is that caches
   do not need to be flushed as is the case for the =mmap= approach,
   because data consistency can always be guaranteed.
-\nopar
+\noindent
 *Impact of choice of mmap/dlopen*
 The choice of =mmap= or =dlopen= influences the simulation time indirectly
 through its impact on system/user time and page faults, \eg for a
