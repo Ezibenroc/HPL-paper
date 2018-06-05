@@ -4,7 +4,7 @@
 #+TITLE:
 #+LANGUAGE:  en
 #+OPTIONS: H:5 author:nil email:nil creator:nil timestamp:nil skip:nil toc:nil ^:nil
-#+TAGS: ARNAUD(a) CHRISTIAN(c) ANNE-CECILE(A)
+#+TAGS: ARNAUD(a) CHRISTIAN(c) TOM(T)
 #+TAGS: noexport(n) DEPRECATED(d) ignore(i)
 #+TAGS: EXPERIMENT(e) LU(l) EP(e)
 #+STARTUP: overview indent inlineimages logdrawer hidestars
@@ -14,6 +14,8 @@
 #+LATEX_CLASS: IEEEtran
 #+LATEX_CLASS_OPTIONS: [nofonttune]
 #+PROPERTY: header-args :eval never-export
+
+* LaTeX Preamble                                                     :ignore:
 #+LATEX_HEADER: \usepackage{DejaVuSansMono}
 #+LATEX_HEADER: \usepackage[T1]{fontenc}
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
@@ -114,7 +116,7 @@
 \makeatother
 #+END_EXPORT
 
-* LaTeX Preamble                                                     :ignore:
+* LaTeX IEEE title and authors                                       :ignore:
 #+BEGIN_EXPORT latex
 \let\oldcite=\cite
 \renewcommand\cite[2][]{~\ifthenelse{\equal{#1}{}}{\oldcite{#2}}{\oldcite[#1]{#2}}\xspace}
@@ -826,7 +828,7 @@ CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9).
 #+END_EXPORT
 
 *** Hidden section with estimation of the quality/speed of the simulation :noexport:
-Inspire from the entry of Tom's Journal "2017-11-15 Wednesday :
+Inspire from the entry of [[file:~/Work/Journals/tom_cornebize/m2_internship_journal/journal.org::*2017-11-15%20Wednesday][Tom's journal]] ([[https://github.com/Ezibenroc/m2_internship_journal/tree/master/journal.org][Github version]]) "2017-11-15 Wednesday":
 Regenerating the validation plot for smpi_execute".
 
 #+begin_src R :results output :session *R* :exports both
