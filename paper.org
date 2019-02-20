@@ -11,8 +11,8 @@
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) | DONE(d!) CANCELLED(c@) DEFERRED(@) FLAWED(f@)
-#+LATEX_CLASS: IEEEtran
-#+LATEX_CLASS_OPTIONS: [nofonttune]
+#+LATEX_CLASS: acmart
+#+LATEX_CLASS_OPTIONS: [sigconf,review]
 #+PROPERTY: header-args :eval never-export
 
 * LaTeX Preamble                                                     :ignore:
@@ -44,7 +44,7 @@
 #+LATEX_HEADER: \usepackage[normalem]{ulem}
 #+LATEX_HEADER: \usepackage{todonotes}
 #+LATEX_HEADER: \usepackage{fancyvrb}
-#+LATEX_HEADER: \usepackage[colorlinks=true,citecolor=pdfcitecolor,urlcolor=pdfurlcolor,linkcolor=pdflinkcolor,pdfborder={0 0 0}]{hyperref}
+#+LATEX_HEADER: %\usepackage[colorlinks=true,citecolor=pdfcitecolor,urlcolor=pdfurlcolor,linkcolor=pdflinkcolor,pdfborder={0 0 0}]{hyperref}
 #+LATEX_HEADER: \usepackage{color,colortbl}
 #+LATEX_HEADER: \definecolor{gray98}{rgb}{0.98,0.98,0.98}
 #+LATEX_HEADER: \definecolor{gray20}{rgb}{0.20,0.20,0.20}
@@ -116,7 +116,7 @@
 \makeatother
 #+END_EXPORT
 
-* LaTeX IEEE title and authors                                       :ignore:
+* ACM title and authors                                    :ignore:
 #+BEGIN_EXPORT latex
 \let\oldcite=\cite
 \renewcommand\cite[2][]{~\ifthenelse{\equal{#1}{}}{\oldcite{#2}}{\oldcite[#1]{#2}}\xspace}
@@ -133,41 +133,24 @@
 %\newcommand{\TC}[2][inline]{}
 %\newcommand{\CH}[2][inline]{}
 
-%% Omit the copyright space.
-%\makeatletter
-%\def\@copyrightspace{}
-%\makeatother
-
-%\def\IEEEauthorblockN#1{\gdef\IEEEauthorrefmark##1{\ensuremath{{}^{\textsf{##1}}}}#1}
-%\newlength{\blockA}
-%\setlength{\blockA}{.35\linewidth}
-%\def\IEEEauthorblockA#1{
-%  \scalebox{.9}{\begin{minipage}{\blockA}\normalsize\sf
-%    \def\IEEEauthorrefmark##1{##1: }
-%    #1
-%  \end{minipage}}
-%}
-% \def\IEEEauthorrefmark#1{#1: }
-
 \title{Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer}
+
+\author{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
+\affiliation{%
+  \institution{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG}
+  \city{Grenoble}
+  \state{France}
+  \postcode{38000}
+}
+\email{firstname.lastname@inria.fr}
+
+% The default list of authors is too long for headers.
+% \renewcommand{\shortauthors}{B. Trovato et al.}
+
 %\title{Simulating the Energy Consumption of MPI~Applications}
 % Predicting the Performance and the Power Consumption of MPI Applications With SimGrid
   %\titlerunning{Power-aware simulation for large-scale systems with SimGrid}
   %
-
-  \author{
-    \begin{minipage}{.55\linewidth}\centering
-      \IEEEauthorblockN{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}\\
-      \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG\\ 38000 Grenoble, France\\
-        firstname.lastname@inria.fr}
-    \end{minipage}
-    \begin{minipage}{.35\linewidth}\centering
-      \IEEEauthorblockN{Jérôme Vienne}\\
-      \IEEEauthorblockA{Texas Advanced Computing Center\\Austin, Texas, USA\\
-        viennej@tacc.utexas.edu}
-    \end{minipage}
-
-  }
 
 
   \maketitle              % typeset the title of the contribution
@@ -203,11 +186,6 @@ engineers. Our simulation allows us to hint where the main algorithmic
 improvements must have been done in HPL. 
 #+LaTeX: \end{abstract}
 
-
-#+BEGIN_EXPORT latex
-% this is need to trim the number of authors and et al. for more than 3 authors
-\bstctlcite{IEEEexample:BSTcontrol}
-#+END_EXPORT
 * Introduction
 
 The world's largest and fastest machines are ranked twice a year in the so-called
@@ -2620,6 +2598,7 @@ pages = {366-376},
 # "\\documentclass[conference, 10pt]{IEEEtran}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n  \\usepackage{graphicx}\n  \\usepackage{hyperref}"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (add-to-list 'org-latex-classes '("llncs" "\\documentclass{llncs2e/llncs}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (add-to-list 'org-latex-classes '("acm-proc-article-sp" "\\documentclass{acm_proc_article-sp}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+# eval:    (add-to-list 'org-latex-classes '("acmart" "\\documentclass{acmart}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (add-to-list 'org-latex-classes '("sig-alternate" "\\documentclass{sig-alternate}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (setq org-alphabetical-lists t)
 # eval:    (setq org-src-fontify-natively t)
