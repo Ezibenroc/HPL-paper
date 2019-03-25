@@ -743,7 +743,67 @@ To deal with this, SMPI provides two simple annotation mechanisms:
     # allocations cannot be fully removed as many parts of the code
     # still access it from time to time.
 
-* Improving SMPI Emulation Mechanisms and Preparing HPL
+* Modeling HPL kernels and MPI communications
+\TC{TODO}
+- Kernels have several parameters but for each of them a very simple
+  model can be identified (size)
+  - Depict behavior for a few ones + MKL
+  - Depict behavior of send receive for a few modern platforms
+- Most kernels are mostly explained by one parameter but have
+  different and significant variability (heteroskedastic + asymetric
+  noise)
+  - Modeling option 0: T ~ \alpha
+  - Modeling option 1: T ~ \alpha.S (+ \beta) with S=M.N.K
+  - Modeling option 2: T ~ \alpha.M.N.K + \beta.M.N + \gamma.N.P + ..
+  - Modeling option 0',1',2': T ~ if(M<\Sigma_1..) {...} else {} where the
+    \Sigma's have to be estimated.
+  - Noise option 0: T ~ ... + 0
+  - Noise option 1: T ~ ... + gausian noise
+  - Noise option 2: T ~ ... + noise that depends on parameters
+  - Noise option 3: T ~ ... + specific asymetric noise that depends on
+    parameters
+  - Noise option 0',1',2',3': mixture \pi_1 , \dots, \pi_k
+- Injecting the model in the simulation is easy but how is done the
+  estimation ?
+  |    | N0                | N1                | N2                    | N3                                       |
+  |----+-------------------+-------------------+-----------------------+------------------------------------------|
+  | M0 | mean              | mean, sd          | -                     | sample histogram or estimate half-normal |
+  | M1 | linear regression | linear regression | normalize by size, sd | normalize by size + \uparrow                    |
+  | M2 | linear regression | linear regression | Bayesian sampling     | Bayesian sampling                        |
+  - Tools:
+    - mean, sd, histogram sampling, linear regression are standard
+      tool in R, python/statsmodels
+    - Bayesian sampling requires more elaborate tool like STAN or
+      PyMC3. The probabilistic model is formally stated.
+  - All M' options, require N0 or N1. Several implementations are
+    available: Yet, N1 can generally be obtained by averaging
+    sufficiently over input parameters.
+    - M'0: cubist (piecewise constant, multi-dimensional),
+    - M'1: segmented (piecewise linear but continuous) or our own
+      implementation based on the Hastie, Tibshirani, Friedman book.
+    - M'2: ok if model is given, more difficult if model has to be
+      identified.
+  - N' options generally require N0 or N1. 
+    - M0 + N'1: clustering
+    - M1 + N'1: flexmix
+** Modeling MPI communications
+- SimGrid priori this work: M1' + N0. Breakpoint estimation was manual.
+- Proposal: M1' + N1' (pytree + flexmix)
+- Future work: M1' + N3' (pytree + flexmix + STAN)
+** Modeling DGEMM
+Full modeling of DGEMM (Modeling option 2 + Noise option 4) is
+  - T ~ \alpha.M.N.K + \beta.M.N + ... +  |N(0,\alpha'.MNK + ....) |
+  - T ~ \alpha (M.N.K + |N(0,\sigma^2)|) but part of the noise can be explained
+    by M, N, and K.
+  - T ~ \alpha.M.N.K
+The consequence of using simpler options are already visible but will
+be illustrated later.
+** Modeling Minor kernels
+Decent modeling of Minor kernels (Modeling option 1 + Noise option 4)
+  - T ~ \alpha.(size + |N(0,\sigma)|)
+The consequence of using simpler options will be illustrated later.
+
+* Emulating HPL
 #+LaTeX: \label{sec:em}
 
 We now present our changes to SimGrid and HPL that were
@@ -1189,6 +1249,7 @@ to \SI{0.488}{\giga\byte}.
 # a file opened in the =hugetlbfs= file system.
 # #+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP\_HUGETLB?}
 * Scalability Evaluation
+\TC{TODO: these plots have changed, scalability is less good}
 #+LaTeX: \label{sec:scalabilityevol}
 
 #+BEGIN_EXPORT latex
@@ -1723,7 +1784,29 @@ scatter3D(
 #+RESULTS:
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
-* Modeling Stampede and Simulating HPL
+* Validation
+** XP Setup
+- Dahu: 32\times32
+- Compared to the supercomputer runs:
+  - a bit easier because (1) fewer ranks (2) more homogeneous
+    (3) more stable network
+  - a bit harder because (1) loopback vs. IB (2) RAM/Cache contention
+    (3) smaller matrix
+** Trace
+- With and w/o precise model
+
+
+| trace of the first iterations | Kernel simple | Kernel complex |
+|-------------------------------+---------------+----------------|
+| Network simple                | NOK           | OK             |
+|-------------------------------+---------------+----------------|
+| Network complex               | NOK           | OK             |
+
+Network complex may not be an issus if HPL mostly relies on large
+message sizes.
+** Global performance
+- With and w/o precise model, all on the same graph
+* Comparing with a real qualification run (Stampede)
 #+LaTeX: \label{sec:science}
 
 ** Modeling Stampede
