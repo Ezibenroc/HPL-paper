@@ -1785,25 +1785,63 @@ scatter3D(
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
 * Validation
-** XP Setup
-- Dahu: 32\times32
+To evaluate the soundness of our approach, we performed several real executions
+of HPL with different simulations using various models.
+** Experimental setup
+We used the /Dahu/ cluster from the /Grid5000/ testbed. It has 32 nodes connected
+through a single switch by 100 Gbps Omnipath links. Each node has two Intel Xeon
+Gold 6130 CPU with 16 cores per CPU. We took care of disabling hyperthreading
+and fixing the core frequencies to 3.7 GHz.
+
 - Compared to the supercomputer runs:
   - a bit easier because (1) fewer ranks (2) more homogeneous
     (3) more stable network
   - a bit harder because (1) loopback vs. IB (2) RAM/Cache contention
     (3) smaller matrix
 ** Trace
-- With and w/o precise model
+A first evaluation consists in comparing the traces of the simulations with the
+reality. We instrumented HPL to collect the start and end timestamps of each
+kernel and MPI call. The execution was limited to 256 ranks and the first five
+iterations, to limit the size of the traces.
 
+A first qualitative validation has been done by visually comparing the Gantt
+charts of the simulations with the reality (see figure
+\ref{fig:gantt_simulation}). Some more text.
 
-| trace of the first iterations | Kernel simple | Kernel complex |
-|-------------------------------+---------------+----------------|
-| Network simple                | NOK           | OK             |
-|-------------------------------+---------------+----------------|
-| Network complex               | NOK           | OK             |
+#+BEGIN_EXPORT latex
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.6\linewidth]{./figures/gantt_charts/gantt_reality.png}
+    \caption{Gantt chart of HPL first iterations in reality}
+    \label{fig:gantt_reality}
+    \labspace
+\end{figure}
 
-Network complex may not be an issus if HPL mostly relies on large
-message sizes.
+\begin{figure}[t]
+    \centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    & K simple & K complex\\
+    \hline
+    N simple
+        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}
+        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}
+        \\
+    \hline
+    N complex
+        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.png}
+        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png}
+        \\
+    \hline
+    \end{tabular}
+    \caption{Gantt charts of HPL first iterations in simulation}
+    \label{fig:gantt_simulation}
+    \labspace
+\end{figure}
+#+END_EXPORT
+
+A quantitative validation has also been conducted, by comparing the total time
+spent by each rank in each function.
 ** Global performance
 - With and w/o precise model, all on the same graph
 * Comparing with a real qualification run (Stampede)
@@ -2694,3 +2732,4 @@ pages = {366-376},
 # eval:   (setq org-latex-tables-centered nil)
 # eval:   (ox-extras-activate '(ignore-headlines))
 # End:
+
