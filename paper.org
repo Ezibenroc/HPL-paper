@@ -1791,13 +1791,28 @@ of HPL with different simulations using various models.
 We used the /Dahu/ cluster from the /Grid5000/ testbed. It has 32 nodes connected
 through a single switch by 100 Gbps Omnipath links. Each node has two Intel Xeon
 Gold 6130 CPU with 16 cores per CPU. We took care of disabling hyperthreading
-and fixing the core frequencies to 3.7 GHz.
+and fixing the core frequencies to 3.7 GHz. We used HPL version 2.2 compiled
+with GCC version 6.3.0. We also used the libraries OpenMPI version 2.0.2 and
+OpenBLAS version 0.3.1.
 
-- Compared to the supercomputer runs:
-  - a bit easier because (1) fewer ranks (2) more homogeneous
-    (3) more stable network
-  - a bit harder because (1) loopback vs. IB (2) RAM/Cache contention
-    (3) smaller matrix
+HPL executions were done using a block size of 128 and a matrix of varying size
+(from 50,000 to 500,000). We used one single-threaded MPI rank per core and a
+look-ahead depth of 1. Finally, we used the increasing-2-ring broadcast with the
+Crout panel factorization algorithms.
+
+# |   | matrix_size | block_size | proc_p | proc_q | pfact | rfact | bcast | depth | swap | mem_align | process_per_node | thread_per_process |
+# |---+-------------+------------+--------+--------+-------+-------+-------+-------+------+-----------+------------------+--------------------|
+# | 1 |      175000 |        128 |     32 |     32 |     1 |     2 |     2 |     1 |    0 |         8 |               32 |                  1 |
+
+We believe that simulating faithfully an HPL execution with such settings is as
+challenging as a typical Top500 qualification run.
+- The matrix is smaller, there are less nodes, so the simulation time is lower.
+- The network is more stable due to its smaller size.
+- We simulated one rank per core. This is more difficult than simulating one
+  rank per node, as the overall performance was subject to different durations
+  for loopback vs remote communications as well as RAM and cache contention.
+- We used a smaller block size than what is usually done, this leads to an
+  higher number of iterations and therefore an increased complexity.
 ** Trace
 A first evaluation consists in comparing the traces of the simulations with the
 reality. We instrumented HPL to collect the start and end timestamps of each
@@ -1806,7 +1821,13 @@ iterations, to limit the size of the traces.
 
 A first qualitative validation has been done by visually comparing the Gantt
 charts of the simulations with the reality (see figure
-\ref{fig:gantt_simulation}). Some more text.
+\ref{fig:gantt_simulation}). In the charts, calls to \texttt{dgemm} are in
+purple, \texttt{MPI\_Send} in orange, \texttt{MPI\_Recv} in green. The charts
+show that using a deterministic or a stochastic model for the network has no
+noticeable impact on HPL simulation. On the other hand, having a more complex
+model for the kernels gives a more realistic trace. The variability in the
+computation durations leads to an increase of the time spent in communications
+and an overall slightly longer execution.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -1820,17 +1841,17 @@ charts of the simulations with the reality (see figure
 \begin{figure}[t]
     \centering
     \begin{tabular}{|c|c|c|}
+    \cline{2-3}
+    \multicolumn{1}{c|}{} & Simple kernels & Complex kernels\\
     \hline
-    & K simple & K complex\\
-    \hline
-    N simple
-        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}
-        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}
+    \rotatebox{90}{Simple network}
+        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}
+        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}
         \\
     \hline
-    N complex
-        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.png}
-        & \includegraphics[width=0.3\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png}
+    \rotatebox{90}{Complex network}
+        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.png}
+        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png}
         \\
     \hline
     \end{tabular}
@@ -1843,7 +1864,31 @@ charts of the simulations with the reality (see figure
 A quantitative validation has also been conducted, by comparing the total time
 spent by each rank in each function.
 ** Global performance
-- With and w/o precise model, all on the same graph
+Processing the trace of a full HPL execution on the whole cluster is not
+possible in a reasonable amount of time. Furthermore, in a capacity-planning
+scenario, one would be more interested in the final performance reported by HPL
+than by the details of the execution. We therefore compared the values taken by
+this metric in reality and in simulation in figure
+\ref{fig:validation_performance}.
+
+#+BEGIN_EXPORT latex
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{./figures/validation_performance.pdf}
+    \caption{Comparison of HPL performance in simulation with the reality}
+    \label{fig:validation_performance}
+    \labspace
+\end{figure}
+#+END_EXPORT
+
+The purple (resp. orange) line corresponds to simulations of HPL with simple
+(resp. complex) models, we inject deterministic (resp. stochastic) durations and
+the function \texttt{dgemm} is modeled as a linear (resp. polynomial) relation.
+This plot shows that the complex models enable a much more realistic
+simulation. The largest error is done for the matrix of size 450,000. Here, the
+simple simulation overestimates the performance by 20.6% whereas the complex
+simulation only overestimates it by 8.4%.
+
 * Comparing with a real qualification run (Stampede)
 #+LaTeX: \label{sec:science}
 
