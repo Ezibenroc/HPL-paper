@@ -133,7 +133,7 @@
 %\newcommand{\TC}[2][inline]{}
 %\newcommand{\CH}[2][inline]{}
 
-\title{Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer}
+\title{Faitfhful and efficient simulation of High Performance Linpack}
 
 \author{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
 \affiliation{%
@@ -143,6 +143,7 @@
   \postcode{38000}
 }
 \email{firstname.lastname@inria.fr}
+\acmConference[SC19]{International Conference for High Performance Computing, Networking, Storage and Analysis}{19-21 Nov. 2019}{Denver, CO, USA}
 
 % The default list of authors is too long for headers.
 % \renewcommand{\shortauthors}{B. Trovato et al.}
@@ -1785,6 +1786,7 @@ scatter3D(
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
 * Validation
+#+LaTeX: \label{sec:validation}
 To evaluate the soundness of our approach, we performed several real executions
 of HPL with different simulations using various models.
 ** Experimental setup
