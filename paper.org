@@ -354,16 +354,6 @@ The main parameters of HPL are listed subsequently:
   machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
-#+BEGIN_EXPORT latex
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.95\linewidth,page=1]{./figures/stampede.pdf}                                                                                                                               
-  \caption{The fat-tree network topology of Stampede.}
-  \label{fig:fat_tree_topology}
-  \labspace
-\end{figure}
-#+END_EXPORT
-
 The sequential complexity of this factorization is 
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + \O(N)$ where $N$ is the
 order of the matrix to factorize. The time complexity can be
@@ -381,44 +371,49 @@ example output.
 A large-scale execution of HPL on a real machine in order to submit to the TOP500
 can therefore be quite time consuming as all the BLAS kernels, the MPI runtime, and HPL's numerous parameters
 need to be tuned carefully in order to reach optimal performance.
-** A Typical Run on a Supercomputer
-\label{sec:stampede}
-In June 2013, the Stampede supercomputer at TACC was ranked 6th in the
-TOP500 by achieving \SI{5168.1}{\tera\flops} and was still ranked 20th in
-June 2017. In 2017, this machine got upgraded and renamed Stampede2. The Stampede platform
-consisted of 6400 Sandy Bridge nodes, each with two 8-core Xeon E5-2680 and one
-Intel Xeon Phi KNC MIC coprocessor. The nodes were interconnected
-through a \SI{56}{\giga\bit\per\second} FDR InfiniBand 2-level Clos
-fat-tree topology built on Mellanox switches. As can be seen in 
-Figure\ref{fig:fat_tree_topology}, the 6400 nodes are
-divided into groups of 20, with each group being connected to one of the 320 36-port switches (\SI{4}{\tera\bit\per\second}
-capacity), which are themselves connected to 8 648-port
-``core\nbsp{}switches'' (each with a capacity of \SI{73}{\tera\bit\per\second}). 
-The peak performance of the 2 Xeon CPUs per node was approximately \SI{346}{\giga\flops},
-while the peak performance of the KNC co-processor was about
-\SI{1}{\tera\flops}. The theoretical peak performance of the
-platform was therefore \SI{8614}{\tera\flops}. However, in the TOP500, Stampede
-was ranked with \SI{5168}{\tera\flops}. According to the log submitted
-to the TOP500 (see Figure\ref{fig:hpl_output}) that was provided to us,
-this execution took roughly two hours and used $77\times78 = 6,006$
-processes. The matrix of order $N = 3,875,000$ occupied approximately
-\SI{120}{\tera\byte} of memory, \ie \SI{20}{\giga\byte} per node.
-One MPI process per node was used and each node's
-computational resources (the 16 CPU-cores and the Xeon Phi) must have 
-been controlled by OpenMP and/or Intel's MKL.
+** Typical Runs on a Supercomputer
+\label{sec:typical_run}
+
+In June 2013, the Stampede supercomputer at TACC was ranked 6th in the TOP500 by
+achieving \SI{5168.1}{\tera\flops}. In November 2017, a performance of
+\SI{5884.6}{\tera\flops} gave the 18th place to the Theta supercomputer at
+ANL. Finally, we have personally performed a run of HPL on a Grid5000 cluster
+named Dahu that reached a performance of \SI{24.55}{\tera\flops}. We report in
+figure \ref{fig:typical_run} the parameters used for each of these runs.
 
 #+BEGIN_EXPORT latex
-\begin{figure}%[!htb]
-  \centering
-  \scalebox{.73}{\begin{minipage}[b]{.68\textwidth}
-  \lstset{frame=bt,language=html,numbers=none,escapechar=£}\lstinputlisting{fullrun_hpl.txt}
-  \end{minipage}}
-  \null\vspace{-2em}\caption{HPL output submitted in June 2013 for the ranking of Stampede in the TOP500.}\vspace{-1em}
-  \label{fig:hpl_output}
+\TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
+demandait de ne pas diffuser plus loin sans on accord, mais je ne sais pas s'il
+parlait du HPL.dat ou des réponses de son collègue.}
+\TC{Le run Top500 de Theta a été refait plusieurs fois. Je ne sais pas auquel
+correspond le fichier HPL.dat que l'on a. J'ai reporté la perf de novembre
+2017.}
+
+\begin{figure}[h]
+\begin{tabular}{l|lll}
+\multicolumn{1}{l|}{} & Stampede@TACC & Theta@ANL & Dahu@G5K\\
+\hline
+% Rpeak & 8,520.1              & 9,627.2              & 62.26              \\
+Rmax      & \SI{5168.1}{\tera\flops} & \SI{5884.6}{\tera\flops} & \SI{24.55}{\tera\flops}              \\
+N         & 3,875,000                & 8,360,352                & 500,000            \\
+NB        & 1,024                    & 336                      & 128                \\
+P$\times$Q     & 77$\times$78                  & 32$\times$101                 & 32$\times$32            \\
+RFACT     & Crout                    & Left                     & Right              \\
+SWAP      & Binary-exch.             & Binary-exch.             & Binary-exch.       \\
+BCAST     & Long modified            & 2 Ring modified          & 2 Ring             \\
+DEPTH     & 0                        & 0                        & 1                  \\
+Time      & 2 hours                  & 28 hours                 & 1 hour             \\
+Memory    & \SI{120}{\tera\byte}     & \SI{559}{\tera\byte}     & \SI{2}{\tera\byte} \\
+MPI ranks & 1/node                & 1/node                   & 1/core             \\
+\end{tabular}
+\caption{Typical runs of HPL}
+\label{fig:typical_run}
 \end{figure}
 #+END_EXPORT
 
 *** Hidden information about the Stampede execution              :noexport:
+Top500: https://www.top500.org/system/177931
+
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
 HPLinpack 2.1  --  High-Performance Linpack benchmark  --   October 26, 2012
@@ -465,6 +460,89 @@ HPL_pdgesv() end time   Sun Jun  2 15:10:04 2013
 ||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0007822 ...... PASSED
 #+END_SRC
 
+*** Hidden information about the Theta execution                 :noexport:
+Top500: https://www.top500.org/system/178926
+Remarks:
+- they report a Nmax of 7,680,000, which is smaller that what we have in the HPL.dat
+- none of the 3 "total cores" values is a multiple of P*Q=32*101
+
+HPL.dat:
+#+BEGIN_EXAMPLE
+HPLinpack benchmark input file
+Innovative Computing Laboratory, University of Tennessee
+HPL.out      output file name (if any)
+6            device out (6=stdout,7=stderr,file)
+1            # of problems sizes (N)
+8360352       Ns
+1            # of NBs
+336          NBs
+1            PMAP process mapping (0=Row-,1=Column-major)
+1            # of process grids (P x Q)
+32           Ps
+101           Qs
+16.0         threshold
+1            # of panel fact
+2            PFACTs (0=left, 1=Crout, 2=Right)
+1            # of recursive stopping criterium
+2            NBMINs (>= 1)
+1            # of panels in recursion
+2            NDIVs
+1            # of recursive panel fact.
+0            RFACTs (0=left, 1=Crout, 2=Right)
+1            # of broadcast
+3            BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM,6=Psh,7=Psh2)
+1            # of lookahead depth
+0            DEPTHs (>=0)
+0            SWAP (0=bin-exch,1=long,2=mix)
+1           swapping threshold
+1            L1 in (0=transposed,1=no-transposed) form
+1            U  in (0=transposed,1=no-transposed) form
+0            Equilibration (0=no,1=yes)
+8            memory alignment in double (> 0)
+#+END_EXAMPLE
+
+*** Hidden information about the Dahu execution                  :noexport:
+Code to retrieve the output, using [[https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/hpl/grenoble_2018-10-10_1811847.zip][this archive]]:
+#+begin_src python :results output :session *python* :exports both
+import json
+import zipfile
+hist = json.loads(zipfile.ZipFile('grenoble_2018-10-10_1811847.zip').read('history.json'))
+mpiruns = [c for c in hist if 'mpirun' in c['command']]
+large_run = mpiruns[3]
+print(large_run['stdout'])
+#+end_src
+
+HPL output (pruned):
+#+BEGIN_EXAMPLE
+N      :  500000
+NB     :     128
+PMAP   : Row-major process mapping
+P      :      32
+Q      :      32
+PFACT  :Wed Oct 10 15:11:45 2018<stdout>:   Crout
+NBMIN  :       2
+NDIV   :       2
+RFACT  :   Right
+BCAST  :   2ring
+DEPTH  :       1
+SWAP   : Binary-exchange
+L1     : transposed form
+U      : transposed form
+EQUIL  : yes
+ALIGN  : 8 double precision words
+
+================================================================================
+T/V                N    NB     P     Q               Time                 Gflops
+--------------------------------------------------------------------------------
+WR12R2C2      500000   128    32    32            3394.20              2.455e+04
+HPL_pdgesv() start time Wed Oct 10 15:11:51 2018
+
+HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
+
+--------------------------------------------------------------------------------
+||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0005583 ...... PASSED
+================================================================================
+#+END_EXAMPLE
 ** Performance Evaluation Challenges
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
