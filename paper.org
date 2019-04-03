@@ -418,7 +418,7 @@ $w$ is the flop rate of a single node and
 the second term corresponds to the communication overhead which is
 influenced by the network capacity and by the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
 =DEPTH=, \ldots). 
-\AL{This last term is very difficult to evaluate}
+\AL{This last term is very difficult to estimate}
 After each run, HPL reports the overall flop
 rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) for
 the given configuration. See Figure\ref{fig:hpl_output} for a (shortened)
@@ -1237,7 +1237,7 @@ allocations / frees become a bottleneck. Since
 the very first allocation can fit all subsequent panels, we modified
 HPL to allocate only the first panel and reuse it for subsequent
 iterations (see Figure\ref{fig:panel_reuse}).
-#+LaTeX: \AL{Mention extra work for \textt{DEPTH}?}
+#+LaTeX: \AL{Mention extra work for \texttt{DEPTH}?}
 
 We consider this optimization harmless with respect to simulation
 accuracy as the maximum additional error that we observed was always less than \SI{1}{\percent}. Simulation
