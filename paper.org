@@ -898,37 +898,33 @@ of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
 
 ** Kernel modeling
-       As explained in Section\ref{sec:con:diff}, faithful prediction
-       of HPL necessitates emulation, \ie to execute the code.
-       HPL relies heavily on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or =dtrsm= (for solving
-       an equation of the form $Ax=b$). An analysis of an HPL
-       simulation with $64$ processes and a very small matrix of order
-       $30,000$ showed that roughly \SI{96}{\percent} of
-       the time is spent in these two very regular kernels.
-       For larger matrices, these kernels will consume
-       an even bigger percentage of the computation time. Since these
-       kernels do not influence the control flow, simulation time can
-       be reduced by substituting =dgemm= and =dtrsm= function calls 
-       with a performance model for the respective kernel. 
-       Figure\ref{fig:macro_simple} shows an example of this
-       macro-based mechanism that allows us to keep HPL code modifications to an absolute
-       minimum. The =(1.029e-11)= value represents the inverse of the
-       flop rate for this computation kernel and was obtained
-       through calibration. The estimated time for the real
-       kernel is calculated based on the parameters and eventually
-       passed on to =smpi_execute_benched= that advances the clock of the executing
-       rank by this estimate by entering a sleep state.
-       The effect on simulation time for a small scenario is depicted in Figure\ref{fig:kernel_sampling}. 
-       On the one hand, this modification speeds up the simulation by
-       orders of magnitude, especially when the matrix order
-       grows. On the other hand, this kernel model leads to an
-       optimistic estimation of the floprate. This may 
-       be caused by inaccuracies in our model as well as by the fact
-       that the initial emulation is generally more sensitive to pre-emptions,
-       \eg by the operating system, and therefore more likely to be
-       pessimistic compared to a real execution.
-       # #+LATEX: \CH{Re-work this. I don't like that we talk about inaccuracies in our model. Shouldn't the pre-emptions be modeled alread? We did rely on measurements! "Absence of performance variability when kernel models are used."}
-       # #+LATEX: \TC{I don't get the explanation about the inaccuracies. I think OS preemptions is one of the smallest factors here, especially since in real executions they will certainly fix this issue (e.g. with chrt --fifo 99) whereas in the calibration I did not take care of that.}
+As explained in Section\ref{sec:con:diff}, faithful prediction of HPL
+necessitates emulation, \ie to execute the code.  HPL relies heavily
+on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
+=dtrsm= (for solving an equation of the form $Ax=b$). An analysis of an
+HPL simulation with $64$ processes and a very small matrix of order
+$30,000$ showed that roughly \SI{96}{\percent} of the time is spent in
+these two very regular kernels.  For larger matrices, these kernels
+will consume an even bigger percentage of the computation time. Since
+these kernels do not influence the control flow, simulation time can
+be reduced by substituting =dgemm= and =dtrsm= function calls with a
+performance model for the respective kernel.
+Figure\ref{fig:macro_simple} shows an example of this macro-based
+mechanism that allows us to keep HPL code modifications to an absolute
+minimum. The =(1.029e-11)= value represents the inverse of the flop rate
+for this computation kernel and was obtained through calibration. The
+estimated time for the real kernel is calculated based on the
+parameters and eventually passed on to =smpi_execute_benched= that
+advances the clock of the executing rank by this estimate by entering
+a sleep state.  The effect on simulation time for a small scenario is
+depicted in Figure\ref{fig:kernel_sampling}.  On the one hand, this
+modification speeds up the simulation by orders of magnitude,
+especially when the matrix order grows. On the other hand, this kernel
+model leads to an optimistic estimation of the floprate. This may be
+caused by inaccuracies in our model as well as by the fact that the
+initial emulation is generally more sensitive to pre-emptions, \eg by
+the operating system, and therefore more likely to be pessimistic
+compared to a real execution.
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -1083,10 +1079,6 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
     if(expected_time > 0)  |\color{colorfuncall}smpi\_execute\_benched|(expected_time); \
 })
 #+END_SRC
-
-#+BEGIN_EXPORT latex
-\CH{Found this in Tom's logbook. Check if this is the final version. Also, we can apparently just call \texttt{make SMPI\_OPTS=-DSMPI\_OPTIMIZATION} (what about \texttt{arch=SMPI}?). See his logbook}
-#+END_EXPORT
 ** Adjusting the behavior of HPL
 #+LaTeX: \label{sec:hplchanges}
 
