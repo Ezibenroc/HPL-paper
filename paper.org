@@ -950,8 +950,8 @@ Regenerating the validation plot for smpi_execute".
 library(ggplot2)
 library(gridExtra)
 library(grid)
-old <- read.csv("/home/alegrand/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L0.csv")
-new <- read.csv("/home/alegrand/Work/SimGrid/tom/m2_internship_journal/validation/result_size_L1.csv")
+old <- read.csv("/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/validation/result_size_L0.csv")
+new <- read.csv("/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/validation/result_size_L1.csv")
 old$kernel_sampling = FALSE
 new$kernel_sampling =  TRUE
 results = rbind(old, new)
