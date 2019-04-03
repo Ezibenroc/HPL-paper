@@ -1830,64 +1830,200 @@ scatter3D(
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
 * Modeling HPL kernels and MPI communications
-\TC{TODO}
-- Kernels have several parameters but for each of them a very simple
-  model can be identified (size)
-  - Depict behavior for a few ones + MKL
-  - Depict behavior of send receive for a few modern platforms
-- Most kernels are mostly explained by one parameter but have
-  different and significant variability (heteroskedastic + asymetric
-  noise)
-  - Modeling option 0: T ~ \alpha
-  - Modeling option 1: T ~ \alpha.S (+ \beta) with S=M.N.K
-  - Modeling option 2: T ~ \alpha.M.N.K + \beta.M.N + \gamma.N.P + ..
-  - Modeling option 0',1',2': T ~ if(M<\Sigma_1..) {...} else {} where the
-    \Sigma's have to be estimated.
-  - Noise option 0: T ~ ... + 0
-  - Noise option 1: T ~ ... + gausian noise
-  - Noise option 2: T ~ ... + noise that depends on parameters
-  - Noise option 3: T ~ ... + specific asymetric noise that depends on
-    parameters
-  - Noise option 0',1',2',3': mixture \pi_1 , \dots, \pi_k
-- Injecting the model in the simulation is easy but how is done the
-  estimation ?
-  |    | N0                | N1                | N2                    | N3                                       |
-  |----+-------------------+-------------------+-----------------------+------------------------------------------|
-  | M0 | mean              | mean, sd          | -                     | sample histogram or estimate half-normal |
-  | M1 | linear regression | linear regression | normalize by size, sd | normalize by size + \uparrow                    |
-  | M2 | linear regression | linear regression | Bayesian sampling     | Bayesian sampling                        |
-  - Tools:
-    - mean, sd, histogram sampling, linear regression are standard
-      tool in R, python/statsmodels
-    - Bayesian sampling requires more elaborate tool like STAN or
-      PyMC3. The probabilistic model is formally stated.
-  - All M' options, require N0 or N1. Several implementations are
-    available: Yet, N1 can generally be obtained by averaging
-    sufficiently over input parameters.
-    - M'0: cubist (piecewise constant, multi-dimensional),
-    - M'1: segmented (piecewise linear but continuous) or our own
-      implementation based on the Hastie, Tibshirani, Friedman book.
-    - M'2: ok if model is given, more difficult if model has to be
-      identified.
-  - N' options generally require N0 or N1. 
-    - M0 + N'1: clustering
-    - M1 + N'1: flexmix
+As we have explained in Section\ref{sec:em}, most of HPL computation
+time is spent in a dozen of specific functions for which a performance
+model has to be designed. Most computation kernels have several
+parameters from which a very simple model can generally easily be
+identified (e.g., proportional to the product of the parameters) but
+refinements including the contribution of each parameter individually
+as well as the spatial and temporal variability of the operation are
+also possible. Likewise, communications between two nodes are mostly
+linear with message size but the actual performance can wildly vary
+depending on the range of the message size as MPI switches from a
+protocol to another whenever needed. In this section we first
+introduce some notations to describe the complexity of the models we
+have investigated. Then we briefly compare the prediction of these
+models with individual measurements of both computation and
+communications to illustrate the importance of the model
+complexity. The consequence of using simpler modeling options will be
+illustrated on HPL as a whole in Section\ref{sec::validation}.
+** Figures                                                          :ignore:
+#+BEGIN_EXPORT latex
+\begin{figure}
+  \centering \subfigure[Stampede]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
+  \subfigure[Dahu\AL{FIXME}]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
+  \label{fig:nw_var}
+\end{figure}
+#+END_EXPORT
+#+BEGIN_EXPORT latex
+\begin{figure*}
+  \begin{minipage}{.5\linewidth}
+    \centering \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \caption{Illustrating the realism of modeling for BLAS functions}
+    \label{fig:blas_var}
+  \end{minipage}%
+  \begin{minipage}{.5\linewidth}
+    \centering \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \caption{Illustrating the realism of modeling for HPL functions}
+    \label{fig:HPL_var}
+  \end{minipage}
+\end{figure*}
+#+END_EXPORT
+** Modeling Notations
+#+LaTeX: \newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+#+LaTeX: \newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+#+LaTeX: \newcommand{\noise}[2][]{\ensuremath{\mathcal{N}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+#+LaTeX: \newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+#+LaTeX: \newcommand{\norm}{\ensuremath{N}\xspace}
+#+LaTeX: \newcommand{\mcdots}{\ensuremath{\!\cdot\!\cdot\!\cdot\!}\xspace}
+In the following, we denote as $T$ the duration of an operation whose
+parameters are $M$, $N$, $K$, \dots In the case of the =dgemm=
+(matrix-matrix product) operation, these parameters would describe the
+geometry of the input matrices. The first three modeling options we
+consider are the following:
+- Modeling option \model{0}: The duration is modeled as a constant
+  duration independent of the input parameters, i.e. $T \sim \alpha$, where
+  $\alpha$ is estimated through the sample average of the duration of the
+  operation. This is a reasonable model for simple and stable
+  computation kernels.
+- Modeling option \model{1}: a simple combination of the parameters
+  (e.g., $S=M.N.K$) is the primary factor driving the performance of
+  the operation, i.e. $T \sim \alpha.S ~(+ \beta)$. $\alpha$ and $\beta$ are then simply
+  estimated through a classical least-square linear regression.
+- Modeling option \model{2}: the behavior of the operation is complex
+  or requires a faithful modeling over the full range of input
+  parameters and a full polynomial model is then required, i.e. $T \sim
+  \alpha.M.N.K + \beta.M.N + \gamma.N.P + \dots$. Again, the $\alpha,\beta,\gamma,\dots$ can then be
+  simply estimated through a classical least-square linear regression.
+There are two situations where more elaborate variations need to be
+considered:
+- The platform may be slightly heterogeneous (spatial variability) and
+  the previous models should then be built for each host
+  individually. We denote this modeling option as \model[H]{} but
+  the same tool can be used.
+- The behavior of the operation may be mosly linear but solely on
+  particular parameter ranges. This is for example the case for
+  networking operations or for computing nodes on Stamped where the
+  MKL will use the Xeon Phi accelerator only when the input is large
+  enough to compensate for the data transfer. In such situations, the
+  models considered will be piece-wise linear, e.g.,
+  #+BEGIN_EXPORT latex
+  $T \sim \begin{cases} 
+      \text{if } M<\theta_1 & \alpha_1.M+\beta_1 \\
+      \text{else if } M<\theta_2 & \alpha_2.M+\beta_2 \\
+      ... \end{cases},$
+  #+END_EXPORT
+  where the $\theta, \alpha, \beta$ should be all be experimentally to be estimated.
+  We denote this kind of model as \modelp{}.
+
+All previous models can be easily fit with relatively simple linear
+regressions or maximum likelihood learning methods. However, an
+important hypothesis underlying all these methods is that the model is
+homoscedastic, i.e., that the variability is fully independent on the
+parameters. The residual (temporal) variability may an important
+phenomenon to account for as "system noise" is knows to be detrimental
+to overall performance of parallel applications like HPL. We therefore
+consider different modeling options for this temporal variability.
+- Noise option \noise{0}: the simplest option consists in simply
+  injecting the value predicted by the model, i.e., with no noise at
+  all $T \sim \model{}(M,N,K) + 0$.
+- Noise option \noise{1}: The simplest probability family to model
+  variability is the normal distribution, hence $T \sim \model{}(M,N,K) +
+  \norm(0,\sigma^2)$, where $\sigma^2$ can easily be estimated through the sample
+  variance of the model residuals.
+- Noise option \noise{2}: The residuals are modeled as a normal
+  distribution whose variance is a polynomial function of the input
+  parameters.
+# - Noise option 3: T \sim ... + specific asymetric noise that depends on
+#   parameters
+Finally, even sophisticated normal distribution from \noise{2} may be
+too simple to describe the noise observed on real platforms where it
+may be common for a same parameter set to have a few operations being
+one order of magnitude slower than all the other ones. In this case, a
+reasonable option consists in modeling noise with a mixture of normal
+distribution whose parameters $\pi_1 , \dots, \pi_k$, should be estimated. We
+denote this kind of model as \noisep{}. Likewise the per-host
+estimations are denoted by \noise[H]{}.
+
+ # |    | N0                | N1                | N2                    | N3                                       |
+ # |----+-------------------+-------------------+-----------------------+------------------------------------------|
+ # | M0 | mean              | mean, sd          | -                     | sample histogram or estimate half-normal |
+ # | M1 | linear regression | linear regression | normalize by size, sd | normalize by size + \uparrow                    |
+ # | M2 | linear regression | linear regression | Bayesian sampling     | Bayesian sampling                        |
+Linear regression is a standard tool in R\cite{R} or in
+python/statsmodels\cite{statsmodels} and models \model[H]{0\mcdots2} are
+thus easy to fit assuming \noise{1}. Model \modelp{0} assuming
+\noise{1} (piece-wise constant) can easily be fit using the
+=cubist=\cite{cubist} library. We could not find any implementation
+allowing to fit \modelp{1} (piece-wise linear, possibly discontinuous)
+assuming \noise{1} so we implemented the method of Hastie
+\etal\cite{hastie_book} in a python library (=pytree=). When the noise
+is heteroscedastic (\noise{2}), it is sometimes possible to fall back
+to the previous methods if a careful sampling method is employed (by
+sampling more on highly variable areas and fitting the
+average). Finally, for even more complex noise modeling options
+(\noisep), some custom Expectation Maximization algorithms are
+available (e.g., clustering with =mclust=\cite{mclust} for
+\model{0}\noisep{1}\cite{clustering} or with =flexmix=\cite{flexmix}for
+\model{1}\noisep{1}\cite{flexmix}). Ideally, a full and unified
+Bayesian estimation could be made with frameworks like
+STAN\cite{stan}. Such effort is underway but the previous libraries
+were sufficient for our needs.
 ** Modeling MPI communications
-- SimGrid priori this work: M1' + N0. Breakpoint estimation was manual.
-- Proposal: M1' + N1' (pytree + flexmix)
-- Future work: M1' + N3' (pytree + flexmix + STAN)
-** Modeling DGEMM
-Full modeling of DGEMM (Modeling option 2 + Noise option 4) is
-  - T ~ \alpha.M.N.K + \beta.M.N + ... +  |N(0,\alpha'.MNK + ....) |
-  - T ~ \alpha (M.N.K + |N(0,\sigma^2)|) but part of the noise can be explained
-    by M, N, and K.
-  - T ~ \alpha.M.N.K
-The consequence of using simpler options are already visible but will
-be illustrated later.
-** Modeling Minor kernels
-Decent modeling of Minor kernels (Modeling option 1 + Noise option 4)
-  - T ~ \alpha.(size + |N(0,\sigma)|)
-The consequence of using simpler options will be illustrated later.
+Prior to this work, the standard way of accounting for protocol
+changes in SMPI was to visually estimate breakpoints and to manually
+conduct linear regression for each range. The expectation duration was
+then used in the simulation with no particular effort for the noise
+(the default model was thus \modelp{1}\noise{0}). Yet, as illustrated
+on Figure\ref{fig:nw_var}, the variability can be quite particular. We
+therefore took care of correctly estimating all the parameters for
+\modelp{1}\noisep{1}, where each message size range is estimated with
+=pytree= as well as of the 2 to 4 modes of the Gaussian mixture for each
+range. Such temporal variability could explain some (overall bad)
+performance since they generally get amplified by broadcast and
+pipelined communication patterns.
+
+
+# - SimGrid priori this work: M1' + N0. Breakpoint estimation was manual.
+# - Proposal: M1' + N1' (pytree + flexmix)
+# - Future work: M1' + N3' (pytree + flexmix + STAN)
+** Modeling BLAS kernels 
+We took care of modeling the 5 mode important BLAS kernels used in HPL
+(=dgemm=, =dtrsm=, ..) with the previous modeling alternatives:
+\model{1,2}\noise{0,1,2} and \model[H]{1,2}\noise[H]{0,1,2}.  The
+\modelp{} and \noisep{} families were not investigated as nothing in
+our observations called for such complexity on classical multi-core
+machines. Figure\ref{fig:blas_var} illustrates various models and
+their respective quality for the =dgemm= function (but the other main
+BLAS kernels exhibit a similar behavior). The first observation is
+that a few node exhibit a slightly different behavior, which is
+important as these nodes will systematically be slightly slower than
+other nodes. Second, the full polynomial model allows to account for
+some of the variability induced by particular (e.g., tall and skinny)
+matrix geometries. Once platform and parameters have been fully
+accounted for, the remaining (temporal) variability remains limited
+\AL[]{??} but is still worth accounting for.
+
+# Full modeling of DGEMM (Modeling option 2 + Noise option 4) is
+#   - T \sim \alpha.M.N.K + \beta.M.N + ... +  |N(0,\alpha'.MNK + ....) |
+#   - T \sim \alpha (M.N.K + |N(0,\sigma^2)|) but part of the noise can be explained
+#     by M, N, and K.
+#   - T \sim \alpha.M.N.K
+# The consequence of using simpler options are already visible but will
+# be illustrated later.
+** Modeling Minor HPL Kernels
+Several small computation kernels (often related to memory management)
+are deeply intertwined with collective operations to allow HPL to be
+as efficient as possible. Although the total duration of these kernels
+is rather small compared to the total execution time, they may perturb
+collective communication by introducing late sends and receives. The
+behavior of one of these kernels is illustrated in
+Figure\ref{fig:HPL_var}. Again, only models
+\model[H]{0-1}\noise[H]{0-2} were investigated as none of our
+observations called for further complexity.
 * Validation on a recent small scale machine
 #+LaTeX: \label{sec:validation}
 To evaluate the soundness of our approach, we performed several real executions
