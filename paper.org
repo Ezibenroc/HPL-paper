@@ -1992,7 +1992,7 @@ To deal with this, SMPI provides two simple annotation mechanisms:
      execution is allocated and shared by all MPI processes.
      A range of virtual addresses corresponding to a specified size is reserved and cyclically mapped onto the previously obtained
      physical address.
-     This mechanism allows applications to obtain a nearly constant memory
+     This mechanism allows most applications to obtain a nearly constant memory
      footprint, regardless of the size of the actual allocations.
 
     # At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
@@ -2021,8 +2021,8 @@ of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
 
 ** Kernel modeling
-As explained in Section\ref{sec:con:diff}, faithful prediction of HPL
-necessitates emulation, \ie to execute the code.  HPL relies heavily
+Given its complexity, a faithful prediction of HPL requires emulation,
+\ie to execute the code.  HPL relies heavily
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
 =dtrsm= (for solving an equation of the form $Ax=b$). An analysis of an
 HPL simulation with $64$ processes and a very small matrix of order
@@ -2031,23 +2031,30 @@ these two very regular kernels.  For larger matrices, these kernels
 will consume an even bigger percentage of the computation time. Since
 these kernels do not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
-performance model for the respective kernel.
+performance model for the respective kernel. Unfortunately despite 
+this regularity, SimGrid's kernel sampling mechanism is completely ineffective
+with HPL because the geometry the matrices passed to these kernels 
+evolves in a very specific way during the execution. Furthermore, the 
+performance is very dependent on the target machine BLAS library and 
+would hardly be inferred from an online estimation on the simulation machine.
 Figure\ref{fig:macro_simple} shows an example of this macro-based
 mechanism that allows us to keep HPL code modifications to an absolute
 minimum. The =(1.029e-11)= value represents the inverse of the flop rate
 for this computation kernel and was obtained through calibration. The
 estimated time for the real kernel is calculated based on the
 parameters and eventually passed on to =smpi_execute_benched= that
-advances the clock of the executing rank by this estimate by entering
-a sleep state.  The effect on simulation time for a small scenario is
-depicted in Figure\ref{fig:kernel_sampling}.  On the one hand, this
+advances the clock of the executing rank by this estimate.
+The effect on simulation time for a small scenario is
+depicted in Figure\ref{fig:kernel_sampling}. This
 modification speeds up the simulation by orders of magnitude,
-especially when the matrix order grows. On the other hand, this kernel
-model leads to an optimistic estimation of the floprate. This may be
+especially when the matrix order grows. The precision of
+the simulation will be investigated in more details in the next sections
+but it can already be observed that his kernel model leads to a
+slightly more optimistic estimation of the performance. This may be 
 caused by inaccuracies in our model as well as by the fact that the
 initial emulation is generally more sensitive to pre-emptions, \eg by
 the operating system, and therefore more likely to be pessimistic
-compared to a real execution.
+compared to a real execution. 
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -2131,7 +2138,7 @@ grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), 
 
 #+RESULTS:
 
-#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 6.2 :height 3.5
+#+begin_src R :file figures/validation_kernel_modeling.pdf :results value graphics :results output :session *R* :exports both :width 8 :height 3.5
 plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
@@ -2150,7 +2157,6 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 
 #+RESULTS:
 [[file:figures/validation_kernel_modeling.pdf]]
-
 
 
 *** Hidden section with macro code                               :noexport:
