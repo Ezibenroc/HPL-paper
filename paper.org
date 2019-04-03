@@ -1213,10 +1213,12 @@ zlib 1.0
 #+LATEX_HEADER: \newcommand{\prettysmall}{\fontsize{6}{8}\selectfont}
 #+LATEX_HEADER: \let\oldtexttt=\texttt
 #+LATEX_HEADER: \renewcommand\texttt[1]{\oldtexttt{\smaller[1]{#1}}}
-# #+LATEX_HEADER: \usepackage[round-precision=3,round-mode=figures,scientific-notation=true]{siunitx}
-#+LATEX_HEADER: \usepackage[binary-units]{siunitx}
+# #+LATEX_HEADER: \usepackage[round-precision=3,ground-mode=figures,scientific-notation=true]{siunitx}
+#+LATEX_HEADER: \usepackage[binary-units,group-digits,group-separator={,}]{siunitx}
 #+LATEX_HEADER: \DeclareSIUnit\flop{Flop}
 #+LATEX_HEADER: \DeclareSIUnit\flops{\flop\per\second}
+#+LATEX_HEADER: \newcommand{\Num}[1]{\num[group-separator={,}]{#1}\xspace}
+#+LATEX_HEADER: \newcommand{\NSI}[2]{\SI[group-separator={,}]{#1}{#2}\xspace}
 #+LATEX_HEADER:\usepackage{tikz}
 #+LATEX_HEADER:\usetikzlibrary{arrows,shapes,positioning,shadows,trees,calc}
 #+LATEX_HEADER:\usepackage{pgfplots}
@@ -1540,25 +1542,26 @@ $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{P\cdot{}Q\cdot{}w} + \T
 $w$ is the flop rate of a single node and 
 the second term corresponds to the communication overhead which is
 influenced by the network capacity and by the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
-=DEPTH=, \ldots). 
-\AL{This last term is very difficult to estimate}
-After each run, HPL reports the overall flop
-rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) for
-the given configuration. See Figure\ref{fig:hpl_output} for a (shortened)
-example output.
-
-A large-scale execution of HPL on a real machine in order to submit to the TOP500
-can therefore be quite time consuming as all the BLAS kernels, the MPI runtime, and HPL's numerous parameters
-need to be tuned carefully in order to reach optimal performance.
+=DEPTH=, \ldots) and is very difficult to predict.
+# After each run, HPL reports the overall flop
+# rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) for
+# the given configuration. 
 ** Typical Runs on a Supercomputer
 \label{sec:typical_run}
-#+LaTeX:  \AL{Message: only scarce information is available from the TOP500}
-In June 2013, the Stampede supercomputer at TACC was ranked 6th in the TOP500 by
-achieving \SI{5168.1}{\tera\flops}. In November 2017, a performance of
-\SI{5884.6}{\tera\flops} gave the 18th place to the Theta supercomputer at
-ANL. Finally, we have personally performed a run of HPL on a Grid5000 cluster
-named Dahu that reached a performance of \SI{24.55}{\tera\flops}. We report in
-figure\ref{fig:typical_run} the parameters used for each of these runs.
+
+Although the TOP500 reports precise information about the core count,
+the peak performance and the effective performance, it provides almost
+no information on how (software versions, HPL parameters, etc.) this
+performance was achieved. Some colleagues agreed to provide us with
+the HPL configuration they used and the output they submitted for
+ranking. In June 2013, the Stampede supercomputer at TACC was ranked
+6th in the TOP500 by achieving \NSI{5168.1}{\tera\flops}. In November
+2017, a performance of \NSI{5884.6}{\tera\flops} gave the 18th place to
+the Theta supercomputer at ANL but required a 28 hours run on the
+whole machine. Finally, we have personally performed
+a run of HPL on a Grid5000 cluster named Dahu and on which we have a
+full control. We report in figure\ref{fig:typical_run} the parameters
+used for each of these runs. 
 
 #+BEGIN_EXPORT latex
 % \TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
@@ -1568,24 +1571,24 @@ figure\ref{fig:typical_run} the parameters used for each of these runs.
 % correspond le fichier HPL.dat que l'on a. J'ai reporté la perf de novembre
 % 2017.}
 
-\begin{figure}[h]
-\begin{tabular}{l|lll}
+\begin{figure}[t]
+\scalebox{.9}{\begin{tabular}{l|lll}
 \multicolumn{1}{l|}{} & Stampede@TACC & Theta@ANL & Dahu@G5K\\
 \hline
-% Rpeak & 8,520.1              & 9,627.2              & 62.26              \\
-Rmax      & \SI{5168.1}{\tera\flops} & \SI{5884.6}{\tera\flops} & \SI{24.55}{\tera\flops}              \\
-N         & 3,875,000                & 8,360,352                & 500,000            \\
-NB        & 1,024                    & 336                      & 128                \\
-P$\times$Q     & 77$\times$78                  & 32$\times$101                 & 32$\times$32            \\
-RFACT     & Crout                    & Left                     & Right              \\
-SWAP      & Binary-exch.             & Binary-exch.             & Binary-exch.       \\
-BCAST     & Long modified            & 2 Ring modified          & 2 Ring             \\
-DEPTH     & 0                        & 0                        & 1                  \\
-Time      & 2 hours                  & 28 hours                 & 1 hour             \\
-Memory    & \SI{120}{\tera\byte}     & \SI{559}{\tera\byte}     & \SI{2}{\tera\byte} \\
+\texttt{Rpeak}     & \NSI{8520.1}{\tera\flops} & \NSI{9627.2}{\tera\flops} & \NSI{62.26}{\tera\flops}              \\
+\texttt{Rmax}      & \NSI{5168.1}{\tera\flops} & 5,884.6 & 24.55              \\
+$N$         & \Num{3875000}                & \Num{8360352}                & \Num{500000}            \\
+\texttt{NB}        & \Num{1024}                    & 336                      & 128                \\
+$P\times Q$             & 77$\times$78                  & 32$\times$101                 & 32$\times$32            \\
+\texttt{RFACT}     & Crout                    & Left                     & Right              \\
+\texttt{SWAP}      & Binary-exch.             & Binary-exch.             & Binary-exch.       \\
+\texttt{BCAST}     & Long modified            & 2 Ring modified          & 2 Ring             \\
+\texttt{DEPTH}     & 0                        & 0                        & 1                  \\
+Duration   & 2 hours                  & 28 hours                 & 1 hour             \\
+Memory    & \NSI{120}{\tera\byte}     & \NSI{559}{\tera\byte}     & \NSI{2}{\tera\byte} \\
 MPI ranks & 1/node                & 1/node                   & 1/core             \\
-\end{tabular}
-\caption{Typical runs of HPL}
+\end{tabular}}\vspace{-1em}
+\caption{Typical runs of HPL}\vspace{-1em}
 \label{fig:typical_run}
 \end{figure}
 #+END_EXPORT
@@ -1728,41 +1731,40 @@ HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
 :END:
 #+LaTeX: \label{sec:con:diff}
 
-The performance typically achieved by supercomputers (e.g.,
-\SI{5168}{\tera\flops} for Stampede), needs to
-be compared to the peak performance (\ie
-\SI{8084}{\tera\flops} with 6,006 nodes for Stampede). This difference may be attributed to the node
+The performance typically achieved by supercomputers (=Rmax=) needs to
+be compared to the much larger peak performance (=Rpeak=). This difference may be attributed to the node
 usage (\eg the MKL), to the MPI library, to the network topology that
 may be unable to deal with the very intensive communication workload, to
 load imbalance among nodes because some node happens to be slower for some
 reason (defect, system noise, \ldots), to the algorithmic structure of
 HPL, etc. All these factors make it difficult to know precisely what
-performance to expect
-without running the application at scale.
-
+performance to expect without running the application at scale.
 It is clear that due to the level of complexity of both HPL and
 the underlying hardware, simple performance models (analytic expressions based
 on $N, P, Q$ and estimations of platform characteristics as presented in
 Section\ref{sec:hpl}) may be able to provide trends but can by no means
-predict the performance for each configuration (\ie consider the
+accurately predict the performance for each configuration (\ie consider the
 exact effect of HPL's 6 different broadcast algorithms on network
 contention). Additionally, these expressions do not allow
 engineers to improve the performance through actively identifying performance bottlenecks.
 For complex optimizations such as partially non-blocking
 collective communication algorithms intertwined with computations,
 very faithful modeling of both the application and the platform is
-required. Given the scale of this scenario
+required. Our goal in this article is to simulate
+systems at the scale of Stampede. Given the scale of this scenario
 (3,785\nbsp{}steps on 6,006 nodes in two hours), detailed
 simulations quickly become intractable without significant effort.
 * Related Work
 #+LaTeX: \label{sec:relwork}
-
+# HPL may be a benchmark, it presents complex and optimized collective
+# communication patterns that are entangled with the computing logic of
+# the application to offer the best possible overlap of communications
+# with computations. Its adaptive behavior is thus particularly
+# challenging to simulate and representative of what can be found in
+# many MPI applications.
 Performance prediction of MPI application through simulation has been
 widely studied over the last decades, with today's literature distinguishing mainly
 between two approaches: offline and online simulation.
-#+BEGIN_EXPORT latex
-\AL{HPL may be a benchmark, it presents very complex collective communication patterns that are entangled with the computing logic of the application to offer the best possible overlap of communications with computations. Its adaptive behavior is thus particularly challenging to simulate and representative of what can be found in many MPI applications.}
-#+END_EXPORT
 
 With the most common approach, /offline simulation/, a time-independent
 trace of the application is first obtained on a real platform. This
@@ -1774,9 +1776,10 @@ the underlying platform can replay the trace on commodity hardware at
 will with different platform models.
 Most HPC simulators available today, notably BigSim\cite{bigsim_04},
 Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
-
 The main limitation of this approach comes from the trace
-acquisition requirement.
+acquisition requirement. Not only a large machine is required but the
+compressed trace of a few iterations (out of several thousands)
+iteration of HPL typically weights a few hundreds of MB.
 Additionally, tracing an application provides only information about
 its behavior at the time of the run. Even light modifications 
 (\eg to communication patterns) may make the trace inaccurate. For
@@ -1786,7 +1789,6 @@ traces\cite{scalaextrap,pmac_lspp13} but the execution is
 non-deterministic whenever the application relies on
 non-blocking communication patterns, which is unfortunately the
 case for HPL.
-\AL{Add info about trace size for 1 iteration}
 
 The second approach discussed in literature is /online simulation/.
 Here, the application is executed (emulated) on top of a simulator
@@ -1800,18 +1802,19 @@ it. To the best of our knowledge, only SST Macro and
 SimGrid/SMPI are mature enough to faithfully emulate 
 HPL. For our work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
-the developments we propose would a priori also be possible with SST Macro. Emulation of
-HPL comes with at least two challenges:
+the developments we propose would a priori also be possible with SST.
+
+Emulation of HPL comes with at least two challenges:
 - Firstly, the time-complexity of the
-  algorithm is $\Theta(N^3)$. Furthermore, 
-  $\Theta(N^2)$ communications are performed, with $N$ being very
+  algorithm is $\Theta(N^3)$ and $\Theta(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
   on 6,006\nbsp{}compute nodes. Using only a single node, a naive
   emulation of HPL at the scale of the Stampede run would take about
-  500\nbsp{}days if perfect scaling is reached. Although the emulation could
-  be done in parallel, we want to use as little computing resources as possible.
-- Secondly, the tremendous memory consumption and consequent high
-  number of RAM accesses for read/write operations need to be dealt with.
+  500 days if perfect scaling is reached. 
+  # Although the emulation could
+  # be done in parallel, we want to use as little computing resources as possible.
+- Secondly, the tremendous memory consumption and 
+  number of memory accesses need to be dealt with.
 
 # Real execution:
 # - Matrix of order 3,875,000
@@ -1832,17 +1835,16 @@ peer-to-peer systems with up to two million
 peers\cite{simgrid_simix2_12} just as cloud and HPC infrastructures.
 To this end, SMPI, a simulator based on SimGrid, has been developed
 and used to faithfully simulate unmodified MPI applications written in
-C/C++ or FORTRAN\cite{smpi}.  A main development goal for SimGrid has
+C/C++ or FORTRAN\cite{smpi}.  main development goal for SimGrid has
 been to provide validated performance models particularly for
 scenarios leveraging the network.  Such a validation normally consists
 of comparing simulation predictions with results from real experiments
-to confirm or debunk network and application models.
-In\cite{heinrich:hal-01523608}, a validation of SimGrid's energy
-module was provided by accurately and consistently predicting within a
-few percent the performance and the energy consumption of HPL and some
-other benchmarks on small-scale clusters (up to $12\times12$ cores
+to confirm or debunk network and application models. Recent
+results report consistent predictions within a
+few percent of both performance and energy consumption for standard
+benchmarks on small-scale clusters (up to $12\times12$ cores
 in\cite{heinrich:hal-01523608} and up to $128\times1$ cores
-in\cite{smpi}). In this article, validate this approach at a much
+in\cite{smpi}). In this article, we validate this approach at a much
 larger scale.
 # This scale, however, comes at the cost of a much less controlled
 # scenario for real-life experiments since the Stampede run of HPL was done
@@ -1988,7 +1990,7 @@ To deal with this, SMPI provides two simple annotation mechanisms:
      shared between processes and that the data they contain is not
      critical for the execution (\eg an input matrix) and that it may
      even be overwritten. 
-     =SMPI_SHARED_MALLOC= works as follows (see Figure\ref{fig:global_shared_malloc}) : a single block of physical memory (of default size \SI{1}{\mega\byte}) for the whole
+     =SMPI_SHARED_MALLOC= works as follows (see Figure\ref{fig:global_shared_malloc}) : a single block of physical memory (of default size \NSI{1}{\mega\byte}) for the whole
      execution is allocated and shared by all MPI processes.
      A range of virtual addresses corresponding to a specified size is reserved and cyclically mapped onto the previously obtained
      physical address.
@@ -2017,16 +2019,16 @@ reader interested in details to\cite{cornebize:hal-01544827} and our laboratory
 #+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}\AL{Anonymize}}.
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
-\SI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
-CPUs processors with \SI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
-
-** Kernel modeling
+\NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
+CPUs processors with \NSI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
+** Speeding up the emulation
+*** Kernel modeling
 Given its complexity, a faithful prediction of HPL requires emulation,
 \ie to execute the code.  HPL relies heavily
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
 =dtrsm= (for solving an equation of the form $Ax=b$). An analysis of an
 HPL simulation with $64$ processes and a very small matrix of order
-$30,000$ showed that roughly \SI{96}{\percent} of the time is spent in
+$30,000$ showed that roughly \NSI{96}{\percent} of the time is spent in
 these two very regular kernels.  For larger matrices, these kernels
 will consume an even bigger percentage of the computation time. Since
 these kernels do not influence the control flow, simulation time can
@@ -2072,7 +2074,7 @@ compared to a real execution.
 \end{figure}
 #+END_EXPORT
 
-*** Hidden section with estimation of the quality/speed of the simulation :noexport:
+**** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of [[file:~/Work/Journals/tom_cornebize/m2_internship_journal/journal.org::*2017-11-15%20Wednesday][Tom's journal]] ([[https://github.com/Ezibenroc/m2_internship_journal/tree/master/journal.org][Github version]]) "2017-11-15 Wednesday":
 Regenerating the validation plot for smpi_execute".
 
@@ -2159,7 +2161,7 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 [[file:figures/validation_kernel_modeling.pdf]]
 
 
-*** Hidden section with macro code                               :noexport:
+**** Hidden section with macro code                             :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({ \
     double expected_time;                                                           \
@@ -2201,14 +2203,14 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 #+END_SRC
 
 #+BEGIN_SRC C :exports none :tangle HPL_dgemm_macro_simple.c
-#define |\color{colorfuncall}HPL\_dgemm|(layout, TransA, TransB,                \
+#define |\color{colorfuncall}HPL\_dgemm|(layout, TransA, TransB,                       \
         M, N, K, alpha, A, lda, B, ldb, beta, C, ldc) ({        \
     double expected_time = (1.029e-11)*((double)M)*             \
                    ((double)N)*((double)K) + 1.981e-12;         \
     if(expected_time > 0)  |\color{colorfuncall}smpi\_execute\_benched|(expected_time); \
 })
 #+END_SRC
-** Adjusting the behavior of HPL
+*** Adjusting the behavior of HPL
 #+LaTeX: \label{sec:hplchanges}
 
 HPL uses pseudo-randomly generated
@@ -2248,17 +2250,17 @@ value to make the simulation unbiased (but fully deterministic).
 We confirmed that this modification is harmless in terms of performance prediction while it
 speeds up the simulation by an additional factor of $\approx3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
-** Memory folding
+** Memory Optimizations
+*** Matrix and Panel folding
 As explained in Section\ref{sec:smpi}, when emulating an application
 with SMPI, all MPI processes are run within the same simulation process on a single
 node. The memory consumption of the simulation can therefore quickly reach
 several \si{\tera\byte} of RAM. 
-
 Yet, as we no longer operate on real data, storing the whole
 input matrix $A$ is needless. However, since only a minimal portion of the code was
 modified, some functions may still read or write some parts of the matrix.
 It is thus not possible to simply remove the memory allocations of
-large data structures altogether. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
+large data structures. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
 to share unimportant data structures between all ranks, minimizing the memory footprint.
 
 #+BEGIN_EXPORT latex
@@ -2326,131 +2328,79 @@ deadlocks, as processes may not send to or receive from the correct
 process. Since \texttt{int}s and \texttt{double}s are stored in
 non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism that preserves the process-specific
-content. We have thus introduced the macro
-=SMPI_PARTIAL_SHARED_MALLOC= that works as follows: 
-~mem = SMPI_PARTIAL_SHARED_MALLOC(500, {27,42 , 100,200}, 2)~.
-In this example, 500 bytes are allocated in =mem= with the elements
-=mem[27]=, ..., =mem[41]= and =mem[100]=, ..., =mem[199]= being shared between
-processes (they are therefore generally completely corrupted) while all other
-elements remain private. To apply this to HPL's =panel= data\-structure
+content. We have thus introduced the 
+=SMPI_PARTIAL_SHARED_MALLOC= macro that allows to specify which ranges of the
+allocation should be preserved (i.e., private to each process) and
+which ones may be corrupted (i.e., shared between process). 
+To apply this to HPL's =panel= data\-structure
 and partially share it between processes, we only had to modify a few lines. 
 
-Designating memory explicitly as private, shared or partially shared
-helps with both memory management and overall performance. 
-As SMPI is internally aware of the memory's
-visibility, it can avoid calling =memcopy= when large messages
+We also leveraged the information on which memory area is private, shared or
+partially shared to improve the and overall performance. 
+By making SMPI internally aware of the memory's
+visibility, it can now avoid calling =memcopy= when large messages
 containing shared segments are sent from one MPI rank to another.
 For fully private or partially shared segments, SMPI
 identifies and copies only those parts that are process-dependent
 (private) into the corresponding buffers on the receiver side.
 
-HPL simulation times were considerably improved in our experiments because
-the =panel= as the most frequently transferred datastructure 
-is partially shared with only a small part being private.
-The additional error introduced by this technique was negligible (below \SI{1}{\percent}) while the
-memory consumption was lowered significantly: for a matrix of order $40,000$ and $64$ MPI processes, the memory consumption
-decreased from about \SI{13.5}{\giga\byte} to less than \SI{40}{\mega\byte}.
-** Panel reuse
-HPL \texttt{malloc}s/\texttt{free}s panels in each
-iteration, with the size of the panel strictly decreasing from
-iteration to iteration. As we explained above, the partial sharing of panels requires
-many calls to =mmap= and introduces an overhead that makes these repeated
-allocations / frees become a bottleneck. Since
-the very first allocation can fit all subsequent panels, we modified
-HPL to allocate only the first panel and reuse it for subsequent
-iterations (see Figure\ref{fig:panel_reuse}).
-#+LaTeX: \AL{Mention extra work for \texttt{DEPTH}?}
+HPL simulation times and memory consumption were considerably improved
+in our experiments because the =panel= as the most frequently
+transferred datastructure is partially shared with only a small part
+being private. For a matrix of order $40,000$ and $64$ MPI processes,
+the memory consumption decreased from about \NSI{13.5}{\giga\byte} to
+less than \NSI{40}{\mega\byte}.
 
-We consider this optimization harmless with respect to simulation
-accuracy as the maximum additional error that we observed was always less than \SI{1}{\percent}. Simulation
-time is reduced significantly, albeit the reached speed-up is less impressive than for previous
-optimizations: For a very small matrix of order $40,000$ and $64$ MPI processes,
-the simulation time decreases by four seconds, from \SI{20.5}{\sec} to
-\SI{16.5}{\sec}. Responsible for this is a reduction of system time,
-namely from \SI{5.9}{\sec} to \SI{1.7}{\sec}. The number of page faults decreased from $2$ million to
-$0.2$ million, confirming the devastating effect these allocations/deallocations would have at scale.
-** MPI memory virtualization
-#+LaTeX: \AL{This needs to be shrinked and probably merged with the Huge pages section}
+Last, HPL \texttt{malloc}s/\texttt{free}s panels in each
+iteration, with the size of the panel strictly decreasing from
+iteration to iteration. As we explained above, the partial sharing of
+panels requires many calls to =mmap= and introduces an overhead that
+makes these repeated allocations / frees become a bottleneck. Since
+the very first allocation can fit all subsequent panels, we modified
+this allocation mechanism to allocate only the first panels and reuse
+them as much as possible for subsequent iterations (see
+Figure\ref{fig:panel_reuse}). For a very small matrix of order
+$40,000$ and $64$ MPI processes, the simulation time decreases by four
+seconds, from \NSI{20.5}{\sec} to \NSI{16.5}{\sec}. Responsible for this
+is a reduction of system time, namely from \NSI{5.9}{\sec} to
+\NSI{1.7}{\sec}. The number of page faults decreased from $2$ million
+to $0.2$ million, confirming the devastating effect these
+allocations/deallocations would have at scale.
+*** Memory virtualization
 We already explained in Section\ref{sec:appmodeling} that SMPI
 supports two mechanisms to keep local static and global variables
-private to each rank, even though they run in the same process. In
-this section, we discuss the impact of the choice.
-
-- *mmap* When =mmap= is used, SMPI copies the =data= segment on startup for
-  each rank into the heap. When control is transferred from one rank
-  to another, the =data= segment is =mmap='ed to the location of the other
-  rank's copy on the heap. All ranks have hence the same addresses in
-  the virtual address space at their disposition although =mmap= ensures
-  they point to different physical addresses. This also means
-  inevitably that caches must be flushed to ensure that no data of one
-  rank leaks into the other rank, making =mmap= a rather expensive
-  operation.
-
-# \TOM{Can you tell me how often these operations were executed, as
-# you've already done in your journal on 2017-04-11 ("Looking at the
-# syscalls")?}
-- *dlopen* With =dlopen=, copies of the global variables are still made
-  but they are stored inside the =data= segment as opposed to the
-  heap. When switching from one rank to another, the starting virtual
-  address for the storage is readjusted rather than the target of the
-  addresses.  This means that each rank has distinct addresses for
-  global variables. The main advantage of this approach is that caches
-  do not need to be flushed as is the case for the =mmap= approach,
-  because data consistency can always be guaranteed.
-\noindent
-*Impact of choice of mmap/dlopen*
+private to each rank, even though they run in the same process. 
 The choice of =mmap= or =dlopen= influences the simulation time indirectly
 through its impact on system/user time and page faults, \eg for a
 matrix of order $80,000$ and $32$ MPI processes, the number
-of minor page faults drops from \num{4412047} (with =mmap=) to
-\num{6880} (with =dlopen=). This results in a reduction of system time from 
-\SI{10.64}{\sec} (out of \SI{51.47}{\sec} in total) to
-\SI{2.12}{\sec}. Obviously, the larger the matrix and the number of
+of minor page faults drops from \Num{4412047} (with =mmap=) to
+\Num{6880} (with =dlopen=). This results in a reduction of system time from 
+\NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
+\NSI{2.12}{\sec}. Obviously, the larger the matrix and the number of
 processes, the larger the number of context switch during the
 simulation, and thus the higher the gain.
 
-# See Tom's journal (Performance evaluation of the privatization
-# mechanism: =dlopen= vs =mmap= ) ; there are some graphs that we might be
-# able to use, such as in
-# https://github.com/Ezibenroc/m2_internship_journal/blob/master/simgrid_privatization/
-
-** Huge pages    
-For larger matrix orders (\ie $N$ larger than a few hundred thousand), the performance of the simulation quickly
-deteriorates as the memory consumption rises rapidly.
-
-We explained already how we fold the memory in order to reduce the /physical/
-memory usage. The /virtual/ memory, on the other hand, is still
-allocated for every process since the allocation calls are still executed.
-Without a reduction of allocated virtual addresses, the page table
-rapidly becomes too large to fit in a single node. More
-precisely, the size of the page table containing pages of size \SI{4}{\kibi\byte} can be computed as:
-
-    #+LATEX: \[ PT_{size}(N) = \frac{N^2 \cdot \texttt{sizeof(double)}}{4,096} \cdot \texttt{sizeof(pointer)} \]
-
-This means that the addresses in the page table for a matrix of order $N=4,000,000$
-consume $PT_{size}(4,000,000) = \num{2.5e11}$ bytes, \ie
-\SI{250}{\giga\byte} on a system where double-precision floating-point numbers
-and addresses take 8 bytes. Thankfully, the x86-64 architecture supports several page
-sizes, known as ``huge pages'' in Linux. Typically, these pages are
-around \SI{2}{\mebi\byte} (instead of \SI{4}{\kibi\byte}), although other sizes
-(\SIrange{2}{256}{\mebi\byte}) are possible as well. 
-Changing the page size requires administrator (root) privileges as the
-Linux kernel support for /hugepages/ needs to be activated and a
-=hugetlbfs= file system must be mounted. After at least one huge
-page has been allocated, the path of the allocated file system can then be
-passed on to SimGrid.
-Setting the page size to \SI{2}{\mebi\byte} reduces drastically the page table size.
-For example, for a matrix of order $N=4,000,000$, it shrinks from \SI{250}{\giga\byte}
-to \SI{0.488}{\giga\byte}.
-
-# Unfortunately, changing the page size requires administrator (root) privileges as the
+Finally, for larger matrix orders (\ie $N$ larger than a few hundred
+thousand), the performance of the simulation quickly deteriorates as
+the memory consumption rises rapidly. Indeed, folding the memory
+allows to reduce the /physical/ memory usage. The /virtual/ memory, on the
+other hand, is still allocated for every process since the allocation
+calls are still executed.  Without a reduction of allocated virtual
+addresses, the page table rapidly becomes too large to fit in a single
+node. The page table for a matrix of order $N=4,000,000$ consume
+\NSI{250}{\giga\byte} on
+a system where double-precision floating-point numbers and addresses
+ftake 8 bytes. Thankfully, the x86-64 architecture supports several
+page sizes, known as ``huge pages'' in Linux. Typically, these pages
+are around \NSI{2}{\mebi\byte} (instead of \NSI{4}{\kibi\byte}), which
+reduces drastically the page table size. For example, for a matrix of
+order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
+\NSI{0.488}{\giga\byte}.
+# Changing the page size requires administrator (root) privileges as the
 # Linux kernel support for /hugepages/ needs to be activated and a
 # =hugetlbfs= file system must be mounted. After at least one huge
-# page was allocated, the path of the allocated file system can then be
-# passed on to SimGrid that will then pass the flag =MAP_HUGETLB=
-# to =mmap= in =SMPI_SHARED_MALLOC= and replace the file given to =mmap= by
-# a file opened in the =hugetlbfs= file system.
-# #+LATEX: \CH{I think this is too detailed. Who cares if we pass MAP\_HUGETLB?}
+# page has been allocated, the path of the allocated file system can then be
+# passed on to SimGrid.
 * Scalability Evaluation
 \TC{TODO: these plots have changed, scalability is less good}
 \AL{Clarify that we use a configuration similar to the Stampede but that algorithm parameters (bcast, depth,...) obviously influence simulation time as they may induce more complex behaviors.}
@@ -2488,18 +2438,18 @@ platform, we decided to conduct a first evaluation on a
 similar, albeit non-existing, platform comprising 4,096 8-core nodes
 interconnected through a $\langle2;16,32;1,16;1,1\rangle$ fat-tree topology
 built on ideal network links with a bandwidth of
-\SI{50}{\giga\byte\per\sec} and a latency of \SI{5}{\micro\sec}. We ran
+\NSI{50}{\giga\byte\per\sec} and a latency of \NSI{5}{\micro\sec}. We ran
 simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
-with matrices of orders \num{5e5}, \num{1e6}, \num{2e6} or \num{4e6}.
+with matrices of orders \Num{5e5}, \Num{1e6}, \Num{2e6} or \Num{4e6}.
 The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
 With all previously described
 optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
-\SI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \SI{282}{\mega\byte} of memory.
+\NSI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \NSI{282}{\mega\byte} of memory.
 One can also see that, when the matrix order ($N$) is increased, memory consumption and
 simulation time both grow slightly quadratic as the amount of matrix
 elements is $N^{2}$ and the number of steps of the algorithm also linearly.
 
-Moreover, all the simulations spend less than \SI{10}{\percent} of their execution time in kernel
+Moreover, all the simulations spend less than \NSI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
 ** Hidden section                                                 :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
@@ -3269,8 +3219,8 @@ simulation only overestimates it by 8.4%.
 #     & \multicolumn{2}{c|}{CPU (\texttt{CPU})} & \multicolumn{2}{c}{KNC (\texttt{PHI}) }\\
 #     & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ & Coefficient $[\si{\sec\per\flop}]$& Intercept $[\sec]$ \\
 #     \hline
-#     \texttt{DGEMM} & \num{1.029e-11} & \num{2.737e-02} & \num{1.981e-12} & \num{6.316e-01} \\
-#     \texttt{DTRSM} & \num{9.882e-12} & \num{4.329e-02} & \num{1.954e-12} & \num{5.222e-01}
+#     \texttt{DGEMM} & \Num{1.029e-11} & \Num{2.737e-02} & \Num{1.981e-12} & \Num{6.316e-01} \\
+#     \texttt{DTRSM} & \Num{9.882e-12} & \Num{4.329e-02} & \Num{1.954e-12} & \Num{5.222e-01}
 #     \end{tabular}}\medskip\\
 #     \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dtrsm_macro_real.c}
 #     \caption{Modeling automatic offloading on KNC in MKL BLAS kernels.}
@@ -3294,13 +3244,13 @@ simulation only overestimates it by 8.4%.
 ** Modeling Stampede
 *** Computations
 Each node of the Stampede cluster comprises two 8-core Intel Xeon
-E5-2680 8C \SI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
-(KNC) \SI{1.1}{\GHz} accelerator that is roughly three times more
+E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
+(KNC) \NSI{1.1}{\GHz} accelerator that is roughly three times more
 powerful than the two CPUs and can be used in two ways:
 either as a classical accelerator, \ie for offloading expensive
 computations from the CPU, or by compiling
 binaries specifically for and executing them directly on the Xeon Phi.
-While the accelerator's \SI{8}{\gibi\byte} of RAM are rather
+While the accelerator's \NSI{8}{\gibi\byte} of RAM are rather
 small, the main advantage of the second approach is that data does not
 need to be transferred back and forth between the node's CPUs and the
 accelerator via the x16 PCIe bus.
@@ -3328,15 +3278,15 @@ matrices. The table in Figure\ref{fig:macro_real} indicates the
 parameters of the linear regression for the four scenarios (=DGEMM=
 or =DTRSM= and CPU or Phi). The measured performance was close to the
 peak performance: \eg for =DGEMM= on the Phi reached
-$2/\num{1.981e-12} = \SI{1.009}{\tera\flops}$. Since the granularity
+$2/\Num{1.981e-12} = \NSI{1.009}{\tera\flops}$. Since the granularity
 used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (except
 for maybe the very last iteration) are offloaded to the KNC. 
 In any case, this behavior can easily be accounted for by replacing the
 macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
 
 # The accelerators are essential to the performance of the cluster,
-# delivering \SI{7}{\peta\flops} of sustainable performance whereas
-# the CPUs are only capable of delivering \SI{2}{\peta\flops}. On
+# delivering \NSI{7}{\peta\flops} of sustainable performance whereas
+# the CPUs are only capable of delivering \NSI{2}{\peta\flops}. On
 # matrices of the size used for this work, however, CPUs are barely
 # used.
 
@@ -3480,7 +3430,7 @@ Figure\ref{fig:stampede_calibration}. For a thorough discussion of
 the calibration techniques used to obtain this model,
 see\cite{smpi}. As illustrated, the results for
 =MPI_Send= are quite stable and piece-wise regular, but the behavior of
-=MPI_Recv= is surprising: for small messages with a size of less than \SI{17420}{\byte}
+=MPI_Recv= is surprising: for small messages with a size of less than \NSI{17420}{\byte}
 (represented by purple, blue and red dots), one can observe two modes,
 namely ``slow'' and ``fast'' communications. ``Slow''
 operations take twice longer and are much more common than the 
@@ -3495,7 +3445,7 @@ our choice on the simulation accuracy is minimal as primarily large,
 bulk messages are sent that make use of the /rendez-vous/ mode (depicted in dark green).
 
 Furthermore, we configured SMPI to use Stampede's network topology,
-\ie Mellanox FDR InfiniBand technology with \SI{56}{\giga\bit\per\second}, setup in
+\ie Mellanox FDR InfiniBand technology with \NSI{56}{\giga\bit\per\second}, setup in
 a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
 assumed the routing was done through D-mod-K\cite{dmodk} as it is
 commonly used on this topology.
@@ -3590,7 +3540,7 @@ results in minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
 either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
-single \SI{1.2}{\tera\flops} node does not sufficiently explain the
+single \NSI{1.2}{\tera\flops} node does not sufficiently explain the
 divide between our results and reality.
 
 #+BEGIN_EXPORT latex
@@ -3696,7 +3646,7 @@ the aforementioned mismatch (apparent in Figure\ref{fig:stampede_prediction}). W
 the first iterations of HPL to get an idea of what could be
 improved (the trace for the first five iterations can be obtained in
 about 609 seconds on a commodity computer and is compressed about
-\SI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the
+\NSI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the
 very synchronous and iterative nature of the first iterations: One can identify first a factorization of the panel, then a broadcast to all the
 nodes, and finally an update of trailing matrix.
 More than one fifth of each iteration is spent communicating (although the first
@@ -3719,8 +3669,8 @@ Figure\ref{fig:hpl_output} provides information about the progress of
 HPL throughout iterations and statistics for the panel-owning process
 about the time spent in the most important parts. 
 According to these statistics, the total time
-spent in the =Update= section was \SI{9390}{\sec} whereas the total
-execution time was \SI{7505}{\sec}, which is impossible unless iterations have overlapped.
+spent in the =Update= section was \NSI{9390}{\sec} whereas the total
+execution time was \NSI{7505}{\sec}, which is impossible unless iterations have overlapped.
 
 The broadcast and swapping algorithms use very heavy
 communication patterns. This is not at all surprising since for a matrix of
@@ -3776,9 +3726,9 @@ that rely on =MPI_Iprobe= in order to facilitate overlapping with computations.
 
 More specifically, we tried to reproduce the execution of HPL on the
 Stampede supercomputer conducted in $2013$ for the TOP500, which
-involved a \SI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
+involved a \NSI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
 Our emulation of a similar configuration ran on a single machine for
-about $62$ hours and required less than \SI{19}{\giga\byte} of RAM. This emulation
+about $62$ hours and required less than \NSI{19}{\giga\byte} of RAM. This emulation
 employed several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have since been
 integrated into the last version of SimGrid/SMPI.
