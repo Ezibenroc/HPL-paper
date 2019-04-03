@@ -1851,8 +1851,8 @@ illustrated on HPL as a whole in Section\ref{sec::validation}.
 #+BEGIN_EXPORT latex
 \begin{figure}
   \centering \subfigure[Stampede]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
-  \subfigure[Dahu\AL{FIXME}]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
+  \subfigure[Dahu]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems. \AL{$\to$ Tom: We need the plots for both Dahu and Stampede}}
   \label{fig:nw_var}
 \end{figure}
 #+END_EXPORT
@@ -1861,15 +1861,16 @@ illustrated on HPL as a whole in Section\ref{sec::validation}.
   \begin{minipage}{.5\linewidth}
     \centering \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
     \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
-    \caption{Illustrating the realism of modeling for BLAS functions}
+    \caption{Illustrating the realism of modeling for BLAS functions.}
     \label{fig:blas_var}
   \end{minipage}%
   \begin{minipage}{.5\linewidth}
     \centering \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
     \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
-    \caption{Illustrating the realism of modeling for HPL functions}
+    \caption{Illustrating the realism of modeling for HPL functions.}
     \label{fig:HPL_var}
   \end{minipage}
+  \AL{$\to$ Tom. Left: Duration ~ Size with a regression line for each host; Right: Duration ~ Size for a particular host + polynomial prediction to get a feeling of the remaining noise. Illustrates heterogeneity and heteroscedasticity. Same thing for dgemm.}
 \end{figure*}
 #+END_EXPORT
 ** Modeling Notations
@@ -2074,6 +2075,7 @@ and an overall slightly longer execution.
     \centering
     \includegraphics[width=0.6\linewidth]{./figures/gantt_charts/gantt_reality.png}
     \caption{Gantt chart of HPL first iterations in reality}
+    \AL{$\to$ Tom. Give access to this data in this repos. Allow to regenerate with a differente palette (where dgemm would be much lighter to be more printer friendly).}
     \label{fig:gantt_reality}
     \labspace
 \end{figure}
