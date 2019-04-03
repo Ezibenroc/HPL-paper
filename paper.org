@@ -960,7 +960,7 @@ generic_do_plot <- function(plot, fixed_shape=TRUE) {
 #   old version for xrange (broken)
 #   xrange = ggplot_build(plot)$panel$ranges[[1]]$x.range
 #   new version for xrange (may break in the next ggplot update...)
-    xrange = ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+    xrange = p$layout$panel_scales_x[[1]]$range$range # ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
     xwidth = xrange[2] - xrange[1]
     if(fixed_shape) {
         point = stat_summary(fun.y = mean, geom="point", shape=21)
