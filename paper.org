@@ -2979,7 +2979,7 @@ considered:
   the same tool can be used.
 - The behavior of the operation may be mosly linear but solely on
   particular parameter ranges. This is for example the case for
-  networking operations or for computing nodes on Stamped where the
+  networking operations or for computing nodes on Stampede where the
   MKL will use the Xeon Phi accelerator only when the input is large
   enough to compensate for the data transfer. In such situations, the
   models considered will be piece-wise linear, e.g.,
@@ -3240,7 +3240,7 @@ simulation. The largest error is done for the matrix of size 450,000. Here, the
 simple simulation overestimates the performance by 20.6% whereas the complex
 simulation only overestimates it by 8.4%.
 
-* Comparing with the Stamped qualification run
+* Comparing with the Stampede qualification run
 #+LaTeX: \label{sec:science}
 # #+BEGIN_EXPORT latex
 # \begin{figure*}%[!htb]
