@@ -1805,74 +1805,35 @@ SimGrid/SMPI are mature enough to faithfully emulate
 HPL. For our work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
-
-Emulation of HPL comes with at least two challenges:
-- Firstly, the time-complexity of the
-  algorithm is $\Theta(N^3)$ and $\Theta(N^2)$ communications are performed, with $N$ being very
-  large. The execution on the Stampede cluster took roughly two hours
-  on 6,006\nbsp{}compute nodes. Using only a single node, a naive
-  emulation of HPL at the scale of the Stampede run would take about
-  500 days if perfect scaling is reached. 
-  # Although the emulation could
-  # be done in parallel, we want to use as little computing resources as possible.
-- Secondly, the tremendous memory consumption and 
-  number of memory accesses need to be dealt with.
-
-# Real execution:
-# - Matrix of order 3,875,000
-# - Using 6,006 MPI processes
-# - About 2 hours
-# Requirement for the emulation of Stampede's execution:
-# - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
-# - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
   
 * SimGrid/SMPI in a nutshell
 #+LATEX: \label{sec:smpi}
 
 SimGrid\cite{simgrid} is a flexible and open-source simulation
 framework that was originally designed in 2000 to study scheduling
-heuristics tailored to heterogeneous grid computing
-environments. Since then, SimGrid has also been used to study
-peer-to-peer systems with up to two million
-peers\cite{simgrid_simix2_12} just as cloud and HPC infrastructures.
-To this end, SMPI, a simulator based on SimGrid, has been developed
-and used to faithfully simulate unmodified MPI applications written in
-C/C++ or FORTRAN\cite{smpi}.  main development goal for SimGrid has
-been to provide validated performance models particularly for
-scenarios leveraging the network.  Such a validation normally consists
-of comparing simulation predictions with results from real experiments
-to confirm or debunk network and application models. Recent
-results report consistent predictions within a
-few percent of both performance and energy consumption for standard
-benchmarks on small-scale clusters (up to $12\times12$ cores
-in\cite{heinrich:hal-01523608} and up to $128\times1$ cores
-in\cite{smpi}). In this article, we validate this approach at a much
-larger scale.
-# This scale, however, comes at the cost of a much less controlled
-# scenario for real-life experiments since the Stampede run of HPL was done
-# in 2013 and we only have very limited information about the
-# setup (\eg software versions).
+heuristics tailored to heterogeneous grid computing environments but
+has later been extended to study cloud and HPC infrastructures. The
+main development goal for SimGrid has been to provide validated
+performance models particularly for scenarios leveraging the network.
+Such a validation usually consists in comparing simulation
+predictions with results from real experiments to confirm or debunk
+network and application models.
 
-** MPI Communication Modeling
+SMPI, a simulator based on SimGrid, has been developed
+and used to faithfully simulate unmodified MPI applications written in
+C/C++ or FORTRAN\cite{smpi}. 
 The complex network optimizations done in real MPI implementations
 need to be considered when predicting performance of MPI applications.
 For instance, the protocol used, such as ``eager'' or ``rendez-vous''
 are selected based on the message size, with each protocol having its
-own synchronization semantics, which results in different effective
-network's latency and bandwidth. 
+own synchronization semantics, which stronly impact performance.
 To deal with this, SMPI relies on a generalization of the LogGPS
-# model\cite{smpi} and supports specifying synchronization and performance modes. This model
-# needs to be instantiated once per platform through a carefully controlled series of messages
-# (=MPI_Send= and =MPI_Recv=) between two nodes and through a set of
-# piece-wise linear regressions.
-#+LABEL: \CH{This last sentence may be too long.}
 Modeling network topologies and contention is also difficult.  SMPI
 relies on SimGrid's communication models where each ongoing
 communication is represented as a whole (as opposed to single packets)
 by a /flow/. Assuming steady-state, contention between active
 communications can be modeled as a bandwidth sharing problem that
-accounts for non-trivial phenomena (\eg RTT-unfairness of TCP,
-cross-traffic interference or network
+accounts for non-trivial phenomena (\eg cross-traffic interference or network
 heterogeneity\cite{Velho_TOMACS13}). Communications that start or end
 trigger re-computation of the bandwidth sharing if needed.  In this
 model, the time to simulate a message passing through the network is
@@ -1884,147 +1845,52 @@ the modeling of collective communication algorithms has also been
 taken in SMPI this is of little significance in this article as HPL
 ships with its own implementation of collective operations.
 
-# Finally, collective operations are also challenging, particularly since
-# these operations often play a key factor to an application's performance. Consequently, performance optimization
-# of these operations has been studied intensively. As a result, MPI
-# implementations now commonly have several alternatives for each
-# collective operation and select one at runtime, depending on message size and communicator
-# geometry. SMPI implements collective
-# communication algorithms and the selection logic from several MPI implementations (\eg
-# Open MPI, MPICH), which helps to ensure that
-# simulations are as close as possible to real
-# executions. 
-# Although SMPI supports these facilities, they are not required in the
-# case of HPL as it ships with its own implementation of collective
-# operations.
-    #+BEGIN_EXPORT latex
-    \tikzset{draw half paths/.style 2 args={%
-      % From https://tex.stackexchange.com/a/292108/71579
-      decoration={show path construction,
-        lineto code={
-          \draw [#1] (\tikzinputsegmentfirst) --
-             ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$);
-          \draw [#2] ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$)
-            -- (\tikzinputsegmentlast);
-        }
-      }, decorate
-    }}
-    \begin{figure}[b]%[htbp]
-      \centering
-      \begin{tikzpicture}[yscale=0.7, scale=0.7]
-        \pgfmathtruncatemacro{\size}{4}
-        \pgfmathtruncatemacro{\width}{2}
-        \pgfmathtruncatemacro{\sizem}{\size-1}
-        \pgfmathtruncatemacro{\smallbasex}{4}
-        \pgfmathtruncatemacro{\smallbasey}{\size/2}
-        \pgfmathtruncatemacro{\smallstopx}{\smallbasex+\width}
-        \pgfmathtruncatemacro{\smallstopy}{\smallbasey+1}
-        \foreach \i in {0,\sizem}{
-	    \pgfmathtruncatemacro{\j}{\i+1}
-	    \draw (0, \i) -- (0, \j);
-	    \draw (\width, \i) -- (\width, \j);
-	    \draw[dotted] (0, \i) -- (\width, \i);
-	    \draw[dotted] (0, \j) -- (\width, \j);
-	}
-	\draw[dashed] (0, 1) -- (0, \sizem);
-	\draw[dashed] (\width, 1) -- (\width, \sizem);
-	\draw (0, 0)     -- (\width, 0);
-	\draw (0, \size) -- (\width, \size);
-        \draw (\smallbasex,\smallbasey) -- (\smallstopx,\smallbasey) -- (\smallstopx,\smallstopy) -- (\smallbasex,\smallstopy) -- cycle;
-        \foreach \i in {0,\sizem}{
-	    \pgfmathtruncatemacro{\j}{\i+1}
-	    \draw[dotted] (\width, \i) -- (\smallbasex, \smallbasey);
-	    \draw[dotted] (\width, \j) -- (\smallbasex, \smallstopy);
-	    \pgfmathsetmacro{\xleft}{\width}
-	    \pgfmathsetmacro{\xright}{\smallbasex}%{\width/2.0+\smallbasex/2.0}
-	    \pgfmathsetmacro{\yleft}{\i + 0.5}
-	    \pgfmathsetmacro{\yright}{\smallbasey + 0.5}
-	    \path [draw half paths={solid, -latex}{draw=none}]  (\xleft, \yleft) -- (\xright, \yright);
-	}
-	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
-	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
-      \end{tikzpicture}
-      \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical pages.}\vspace{-1em}
-    \end{figure}
-    #+END_EXPORT
-** Application Behavior Modeling
-#+LATEX: \label{sec:appmodeling}
-In Section\ref{sec:relwork} we explained that SMPI relies on the /online/ simulation approach.
-Since SimGrid is a sequential simulator, SMPI maps every MPI process of the application onto a
-lightweight simulation thread. These threads are then run one at a
-time, \ie in mutual exclusion.
-Every time a thread enters an MPI call, 
-SMPI takes control and the time that was spent
-computing (isolated from the other threads) since the previous
-MPI call can be injected into the simulator as a virtual delay.  
-This time can be scaled up or down depending on the simulated machine
-with respect to the simulation machine.
+SMPI maps every MPI process
+of the application onto a lightweight simulation thread, which
+are then run one at a time, \ie in mutual exclusion.  Every time a
+thread enters an MPI call, SMPI takes control and the time that was
+spent computing (isolated from the other threads) since the previous
+MPI call is injected into the simulator as a virtual delay.  This
+time may be scaled up or down depending on the simulated machine with
+respect to the simulation machine.
+Recent results report consistent predictions within a
+few percent of both performance and energy consumption for standard
+benchmarks on small-scale clusters (up to $12\times12$ cores
+in\cite{heinrich:hal-01523608} and up to $128\times1$ cores
+in\cite{smpi}). In this article, we validate this approach at a much
+larger scale with HPL, whose emulation comes with at least two challenges:
+- The time-complexity of the
+  algorithm is $\Theta(N^3)$ and $\Theta(N^2)$ communications are performed, with $N$ being very
+  large. The execution on the Stampede cluster took roughly two hours
+  on 6,006\nbsp{}compute nodes. Using only a single node, a naive
+  emulation of HPL at the scale of the Stampede run would take about
+  500 days if perfect scaling was reached. 
+  # Although the emulation could
+  # be done in parallel, we want to use as little computing resources as possible.
+- The tremendous memory consumption and amount of memory accesses need to be dealt with.
 
-Mapping MPI processes to threads of a single
-process effectively folds them into the same address space.
-Consequently, global variables in the MPI application are shared
-between threads unless these variables are /privatized/ and the
-simulated MPI ranks thus isolated from each other. Several
-technical solutions are possible to handle this issue\cite{smpi}. The
-default strategy in SMPI consists of making a copy of the =data=
-segment (containing all global variables) per MPI rank at startup and,
-when context switching to another rank, to remap the =data= segment via =mmap= to the private copy of that rank.
-SMPI also implements another mechanism relying on the =dlopen=
-function that allows to project several times the global variables in the =data= segment and to significantly save calls to =mmap= when context switching. The main advantage of this second approach is that caches do not need to be flushed as is the case for the =mmap= approach, because data consistency can always be guaranteed.
+# Real execution:
+# - Matrix of order 3,875,000
+# - Using 6,006 MPI processes
+# - About 2 hours
+# Requirement for the emulation of Stampede's execution:
+# - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
+# - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
 
-This causes online simulation to be expensive in terms of both simulation time and memory
-since the whole parallel application is executed on a single node.
-To deal with this, SMPI provides two simple annotation mechanisms:
-- *Kernel sampling*: Control flow is in many cases
-     independent of the computation results. This allows
-     computation-intensive kernels (\eg BLAS kernels for HPL) 
-     to be skipped during the simulation. For this purpose, SMPI
-     supports annotation of regular kernels through several macros
-     such as =SMPI_SAMPLE_LOCAL= and =SMPI_SAMPLE_GLOBAL=. The regularity allows SMPI to execute these
-     kernels a few times, estimate their cost and skip the kernel in
-     the future by deriving its cost from these samples, hence cutting
-     simulation time significantly. Skipping kernels renders the
-     content of some variables invalid but in simulation, only the
-     behavior of the application and not the correctness of computation
-     results are of concern.
-- *Memory folding*: SMPI provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE=) macro to
-     replace calls to =malloc= (=free=). They indicate that some data structures can safely be
-     shared between processes and that the data they contain is not
-     critical for the execution (\eg an input matrix) and that it may
-     even be overwritten. 
-     =SMPI_SHARED_MALLOC= works as follows (see Figure\ref{fig:global_shared_malloc}) : a single block of physical memory (of default size \NSI{1}{\mega\byte}) for the whole
-     execution is allocated and shared by all MPI processes.
-     A range of virtual addresses corresponding to a specified size is reserved and cyclically mapped onto the previously obtained
-     physical address.
-     This mechanism allows most applications to obtain a nearly constant memory
-     footprint, regardless of the size of the actual allocations.
-
-    # At the first call to =SMPI_SHARED_MALLOC=, a temporary file is created. The file descriptor is a global variable,
-    # accessible by all the MPI processes, since they are implemented by POSIX threads.
-
-    # At every call to =SMPI_SHARED_MALLOC=, a first call to =mmap= is done with the required size and the flag =MAP_ANONYMOUS=
-    # (thus without any file descriptor). The effect of this call is to reserve the whole interval of virtual
-    # addresses. Then, for each sub-interval, a new call to =mmap= is done with the temporary file. The address of the
-    # sub-interval itself is passed with the flag =MAP_FIXED=, which forces the mapping to keep the same virtual address.
-    # As a result, each of these sub-intervals of virtual addresses are mapped onto a same interval of physical
-    # addresses. We therefore have a block of virtual addresses of arbitrary size backed by a constant amount of physical
-    # memory. Since there are almost no computations left, this is harmless with respect to the simulation. Note that such
-    # allocations cannot be fully removed as many parts of the code
-    # still access it from time to time.
 * Emulating HPL
 #+LaTeX: \label{sec:em}
 
 We now present our changes to SimGrid and HPL that were
 required for a scalable and faithful simulation. We provide
 only a brief evaluation of our modifications and refer the 
-reader interested in details to\cite{cornebize:hal-01544827} and our laboratory 
-#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}\AL{Anonymize}}.
+reader interested in details to\cite{cornebize:hal-01544827}\AL[]{Anonymize} and our laboratory 
+#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}}.
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
 CPUs processors with \NSI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
-** Speeding up the emulation
-*** Kernel modeling
+** Speeding Up the Emulation
+*** Kernel Modeling
 Given its complexity, a faithful prediction of HPL requires emulation,
 \ie to execute the code.  HPL relies heavily
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
@@ -2035,12 +1901,10 @@ these two very regular kernels.  For larger matrices, these kernels
 will consume an even bigger percentage of the computation time. Since
 these kernels do not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
-performance model for the respective kernel. Unfortunately despite 
-this regularity, SimGrid's kernel sampling mechanism is completely ineffective
-with HPL because the geometry the matrices passed to these kernels 
-evolves in a very specific way during the execution. Furthermore, the 
-performance is very dependent on the target machine BLAS library and 
-would hardly be inferred from an online estimation on the simulation machine.
+performance model for the respective kernel. 
+Skipping kernels renders the content of some variables invalid but in
+simulation, only the behavior of the application and not the
+correctness of computation results are of concern.
 Figure\ref{fig:macro_simple} shows an example of this macro-based
 mechanism that allows us to keep HPL code modifications to an absolute
 minimum. The =(1.029e-11)= value represents the inverse of the flop rate
@@ -2162,7 +2026,6 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 #+RESULTS:
 [[file:figures/validation_kernel_modeling.pdf]]
 
-
 **** Hidden section with macro code                             :noexport:
 #+BEGIN_SRC C :exports none :tangle HPL_dtrsm_macro_real.c
 #define |\color{colorfuncall}HPL\_dtrsm|(layout, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb) ({ \
@@ -2212,7 +2075,7 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
     if(expected_time > 0)  |\color{colorfuncall}smpi\_execute\_benched|(expected_time); \
 })
 #+END_SRC
-*** Adjusting the behavior of HPL
+*** Specific Adjustments of HPL
 #+LaTeX: \label{sec:hplchanges}
 
 HPL uses pseudo-randomly generated
@@ -2224,7 +2087,6 @@ computations since we replaced them by a kernel model and therefore,
 result validation is meaningless. Since both 
 phases do not have an impact on the reported performance, we can safely
 skip them.
-
 In addition to the main computation kernels =dgemm= and =dtrsm=, 
 we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
@@ -2232,18 +2094,14 @@ handling: =dgemv=, =dswap=, =daxpy=,
 =dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
 spent in fifteen functions implemented in HPL: 
 =HPL_dlaswp*N=, =HPL_dlaswp*T=, =HPL_dlacpy= and =HPL_dlatcpy=.
-# =HPL_dlaswp00N=, =HPL_dlaswp01N=, =HPL_dlaswp01T=, =HPL_dlaswp02N=, =HPL_dlaswp03N=,
-# =HPL_dlaswp03T=, =HPL_dlaswp04N=, =HPL_dlaswp04T=, =HPL_dlaswp05N=, =HPL_dlaswp05T=,
-# =HPL_dlaswp06N=, =HPL_dlaswp06T=, =HPL_dlaswp10N=, =HPL_dlacpy= and =HPL_dlatcpy=.
-
 All of these functions are called during the
 LU factorization and hence impact the performance measured by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations, they all operate on
-bogus data and hence also produce bogus data. We also determined
-through experiments that their impact on the performance prediction is
-minimal and hence modeled them for the sake of simplicity as being instantaneous.
+bogus data and hence also produce bogus data. To study their impact on
+overal performance, we handled them in the same was as =dgemm= and
+=dtrsm= through performance models and macro substitution.
 
-Note that HPL
+Last, note that HPL
 implements an LU factorization with partial pivoting and a special
 treatment of the =idamax= function that returns the index of the first
 element equaling the maximum absolute value. Although we ignored the
@@ -2252,26 +2110,65 @@ value to make the simulation unbiased (but fully deterministic).
 We confirmed that this modification is harmless in terms of performance prediction while it
 speeds up the simulation by an additional factor of $\approx3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
-** Memory Optimizations
-*** Matrix and Panel folding
-As explained in Section\ref{sec:smpi}, when emulating an application
-with SMPI, all MPI processes are run within the same simulation process on a single
-node. The memory consumption of the simulation can therefore quickly reach
-several \si{\tera\byte} of RAM. 
-Yet, as we no longer operate on real data, storing the whole
-input matrix $A$ is needless. However, since only a minimal portion of the code was
-modified, some functions may still read or write some parts of the matrix.
-It is thus not possible to simply remove the memory allocations of
-large data structures. Instead, SMPI's =SHARED_MALLOC= mechanism can be used
-to share unimportant data structures between all ranks, minimizing the memory footprint.
-
+** Scaling Down Memory Consumption
+*** Matrix and Panel Folding
+**** Figure                                                       :ignore:
 #+BEGIN_EXPORT latex
+\tikzset{draw half paths/.style 2 args={%
+  % From https://tex.stackexchange.com/a/292108/71579
+  decoration={show path construction,
+    lineto code={
+      \draw [#1] (\tikzinputsegmentfirst) --
+         ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$);
+      \draw [#2] ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$)
+        -- (\tikzinputsegmentlast);
+    }
+  }, decorate
+}}
 \tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
 \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
 \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
 \tikzstyle{bigswitch}=[base, draw]
-\begin{figure}%[htbp]
+\begin{figure}%[b]%[htbp]
   \centering
+  \begin{tikzpicture}[yscale=0.7, scale=0.7]
+    \pgfmathtruncatemacro{\size}{4}
+    \pgfmathtruncatemacro{\width}{2}
+    \pgfmathtruncatemacro{\sizem}{\size-1}
+    \pgfmathtruncatemacro{\smallbasex}{4}
+    \pgfmathtruncatemacro{\smallbasey}{\size/2}
+    \pgfmathtruncatemacro{\smallstopx}{\smallbasex+\width}
+    \pgfmathtruncatemacro{\smallstopy}{\smallbasey+1}
+    \foreach \i in {0,\sizem}{
+	    \pgfmathtruncatemacro{\j}{\i+1}
+	    \draw (0, \i) -- (0, \j);
+	    \draw (\width, \i) -- (\width, \j);
+	    \draw[dotted] (0, \i) -- (\width, \i);
+	    \draw[dotted] (0, \j) -- (\width, \j);
+	}
+	\draw[dashed] (0, 1) -- (0, \sizem);
+	\draw[dashed] (\width, 1) -- (\width, \sizem);
+	\draw (0, 0)     -- (\width, 0);
+	\draw (0, \size) -- (\width, \size);
+    \draw (\smallbasex,\smallbasey) -- (\smallstopx,\smallbasey) -- (\smallstopx,\smallstopy) -- (\smallbasex,\smallstopy) -- cycle;
+    \foreach \i in {0,\sizem}{
+	    \pgfmathtruncatemacro{\j}{\i+1}
+	    \draw[dotted] (\width, \i) -- (\smallbasex, \smallbasey);
+	    \draw[dotted] (\width, \j) -- (\smallbasex, \smallstopy);
+	    \pgfmathsetmacro{\xleft}{\width}
+	    \pgfmathsetmacro{\xright}{\smallbasex}%{\width/2.0+\smallbasex/2.0}
+	    \pgfmathsetmacro{\yleft}{\i + 0.5}
+	    \pgfmathsetmacro{\yright}{\smallbasey + 0.5}
+	    \path [draw half paths={solid, -latex}{draw=none}]  (\xleft, \yleft) -- (\xright, \yright);
+	}
+	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
+	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
+  \end{tikzpicture}
+  \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical pages.}\vspace{-1em}
+% \end{figure}
+% \begin{figure}%[htbp]
+%  \centering
+
   {\begin{minipage}{1.0\linewidth}
   \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
     \begin{minipage}[b]{\linewidth}\centering
@@ -2312,10 +2209,34 @@ to share unimportant data structures between all ranks, minimizing the memory fo
 \end{figure}
 #+END_EXPORT
 
+**** Text                                                         :ignore:
 The largest two allocated data structures in HPL are the input matrix =A=
 (with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
 information about the sub-matrix currently being factorized. This sub-matrix 
 typically occupies a few hundred \si{\mega\byte} per process.
+Unfortunately, when emulating an application with SMPI, all MPI processes are run
+within the same simulation process on a single node and the memory
+consumption of the simulation can therefore quickly reach several
+\si{\tera\byte} of RAM.  Yet, as we no longer operate on real data,
+storing the whole input matrix $A$ is needless. However, since only a
+minimal portion of the code was modified, some functions may still
+read or write some parts of the matrix.  It is thus not possible to
+simply remove the memory allocations of large data structures. SMPI
+provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE=) macro to replace
+calls to =malloc= (=free=). They indicate that some data structures can
+safely be shared between processes and that the data they contain is
+not critical for the execution (\eg an input matrix) and that it may
+even be overwritten. =SMPI_SHARED_MALLOC= works as follows (see
+Figure\ref{fig:global_shared_malloc}): a single block of physical
+memory (of default size \NSI{1}{\mega\byte}) for the whole execution
+is allocated and shared by all MPI processes.  A range of virtual
+addresses corresponding to a specified size is reserved and cyclically
+mapped onto the previously obtained physical address.  This mechanism
+allows most applications to obtain a nearly constant memory footprint,
+regardless of the size of the actual allocations.
+# Instead, SMPI's =SHARED_MALLOC= mechanism can be used
+# to share unimportant data structures between all ranks, minimizing the memory footprint.
+
 Although using the default =SHARED_MALLOC= mechanism works flawlessly
 for =A=, a more careful strategy needs to be used for the
 =panel=. Indeed, the =panel= is an intricate data structure with both \texttt{int}s
@@ -2345,7 +2266,6 @@ containing shared segments are sent from one MPI rank to another.
 For fully private or partially shared segments, SMPI
 identifies and copies only those parts that are process-dependent
 (private) into the corresponding buffers on the receiver side.
-
 HPL simulation times and memory consumption were considerably improved
 in our experiments because the =panel= as the most frequently
 transferred datastructure is partially shared with only a small part
@@ -2369,14 +2289,26 @@ is a reduction of system time, namely from \NSI{5.9}{\sec} to
 to $0.2$ million, confirming the devastating effect these
 allocations/deallocations would have at scale.
 *** Memory virtualization
-We already explained in Section\ref{sec:appmodeling} that SMPI
-supports two mechanisms to keep local static and global variables
-private to each rank, even though they run in the same process. 
-The choice of =mmap= or =dlopen= influences the simulation time indirectly
-through its impact on system/user time and page faults, \eg for a
+
+Mapping MPI processes to threads of a single process effectively folds
+them into the same address space.  Consequently, global variables in
+the MPI application are shared between threads unless these variables
+are /privatized/ and the simulated MPI ranks thus isolated from each
+other. Several technical solutions are possible to handle this
+issue\cite{smpi}. The default strategy in SMPI consists of making a
+copy of the =data= segment (containing all global variables) per MPI
+rank at startup and, when context switching to another rank, to remap
+the =data= segment via =mmap= to the private copy of that rank.  SMPI also
+implements another mechanism relying on the =dlopen= function that
+allows to project several times the global variables in the =data=
+segment and to significantly save calls to =mmap= when context
+switching. The main advantage of this second approach is that caches
+do not need to be flushed as is the case for the =mmap= approach,
+because data consistency can always be guaranteed. 
+For a
 matrix of order $80,000$ and $32$ MPI processes, the number
 of minor page faults drops from \Num{4412047} (with =mmap=) to
-\Num{6880} (with =dlopen=). This results in a reduction of system time from 
+\Num{6880} (with =dlopen=), which results in a reduction of system time from 
 \NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
 \NSI{2.12}{\sec}. Obviously, the larger the matrix and the number of
 processes, the larger the number of context switch during the
