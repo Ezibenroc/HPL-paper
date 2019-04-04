@@ -5,3 +5,11 @@ refs.bib
 fullrun_hpl.txt
 *~
 paper.bbl
+*.aux
+*.blg
+*.log
+*.out
+*.ps
+\#*\#
+.\#*
+data/

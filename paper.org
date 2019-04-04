@@ -2964,14 +2964,13 @@ were sufficient for our needs.
 
 \begin{figure}
 %  \begin{minipage}{.5\linewidth}
-    \centering \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
-    \subfigure[\texttt{dgemm}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \subfigure[\texttt{dgemm} heterogeneity]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity.pdf}}%
+    \subfigure[\texttt{dgemm} model]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model.png}}
     \caption{Illustrating the realism of modeling for BLAS functions.}
     \label{fig:blas_var}
 %  \end{minipage}%
 %  \begin{minipage}{.5\linewidth}
-    \centering \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
-    \subfigure[\texttt{dtacpy}]{\parbox{.45\linewidth}{\vspace{3cm}}}
+    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=.8\linewidth]{figures/kernels/dlatcpy_model.png}}
     \caption{Illustrating the realism of modeling for HPL functions.}
     \label{fig:HPL_var}
 %  \end{minipage}
@@ -3034,6 +3033,111 @@ Figure\ref{fig:HPL_var}. Again, only models
 observations called for further complexity.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
+** Kernels plots                                                  :noexport:
+*** Downloading the CSV
+These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to the CSV files
+happens in cells 25-26). The notebook uses this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/smpi_hpl/grenoble_2019-04-03_1858209.zip][ZIP archive]].
+
+#+begin_src sh :results output :exports both
+mkdir -p data/kernel_durations/
+cd data/kernel_durations/
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_functions.csv
+sed 's/function/func/g' -i trace_functions.csv  # cannot have a column named "function" in R...
+#+end_src
+
+*** Drawing the regression plots
+There are several interesting functions in the CSV file. For each function,
+there are real observations *and* predictions, the column "mode" can be used to
+distinguish them.
+
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+df = read.csv('data/kernel_durations/trace_functions.csv')
+print(unique(df$func))
+# in this experiment, we got the nodes dahu-{1,...,8} and the ranks were mapped in the right order
+df$node = 1 + df$rank %/% 32
+df$cpu = 2*df$node + df$rank %% 2
+df$mnk = df$m * df$n * df$k
+df$mn = df$m * df$n
+df$mk = df$m * df$k
+df$nk = df$n * df$k
+head(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] dtrsm         dgemm         HPL_dlatcpy   HPL_dlaswp03T HPL_dlaswp02N
+Levels: dgemm dtrsm HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy
+         func     m n  k   start        end    duration rank    mode node cpu
+1       dtrsm     2 2 NA 0.01674 0.01678434 0.000044337    0 reality    1   2
+2       dgemm 50046 2  2 0.01678 0.01698043 0.000200426    0 reality    1   2
+3 HPL_dlatcpy     2 2 NA 0.01726 0.01726033 0.000000326    0 reality    1   2
+4       dtrsm     4 4 NA 0.01726 0.01726144 0.000001438    0 reality    1   2
+5       dgemm 50044 4  4 0.01727 0.01764994 0.000379944    0 reality    1   2
+6       dtrsm     2 2 NA 0.01790 0.01790106 0.000001056    0 reality    1   2
+     mnk     mn     mk nk
+1     NA      4     NA NA
+2 200184 100092 100092  4
+3     NA      4     NA NA
+4     NA     16     NA NA
+5 800704 200176 200176 16
+6     NA      4     NA NA
+#+end_example
+**** DGEMM
+Regression lines, to show the heterogeneity.
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),]
+plot = ggplot(dgemm, aes(x=m*n*k, y=duration, color=factor(cpu))) + geom_smooth(method='lm')
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N×K') + labs(color='CPU')
+ggsave(filename="figures/kernels/dgemm_heterogeneity.pdf", plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figureV4WSB1.png]]
+
+Scatter plot for one CPU, to show the time variability.
+
+For the model, we use the coefficients currently used for [[https://github.com/Ezibenroc/hpl/blob/1425f27cd3c7bce472fff5455a15e807ed3b637b/src/blas/HPL_dgemm.c#L235-L238][CPU 4]] that were
+computed in [[https://github.com/Ezibenroc/mpi_calibration/blob/6ecf77050064dcc790b96891fe1ff55a60022d3d/dahu/blas/dgemm_heterogeneous_model.ipynb][this notebook]] (see cell 35).
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+dgemm = df[(df$func == 'dgemm') & (df$cpu == 4) & (df$mode == 'reality'),]
+dgemm$pred = 5.329919e-07 + 7.018230e-11*dgemm$mnk + -4.171307e-10*dgemm$mn + 1.428695e-09*dgemm$mk + 2.710319e-09*dgemm$nk
+plot = ggplot(dgemm, aes(x=m*n*k, y=duration)) + geom_point(alpha=0.3) + geom_point(aes(y=pred), alpha=0.3, color='red')
+plot = plot + theme_bw()
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figurepXHcAJ.png]]
+
+Scatter plot to show our model.
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+dgemm = df[(df$func == 'dgemm'),]
+plot = ggplot(dgemm, aes(x=m*n*k, y=duration, color=mode)) + geom_point(alpha=0.3)
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N×K') + labs(color='Mode')
+ggsave(filename="figures/kernels/dgemm_model.png", plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figure9TYKZu.png]]
+
+**** HPL_dlatcpy
+Scatter plot to show the time variability and how we model it.
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+func = df[(df$func == 'HPL_dlatcpy'),]
+plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) + geom_point()
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N') + labs(color='Mode')
+ggsave(filename="figures/kernels/dlatcpy_model.png", plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figureJC3XvE.png]]
+
 * Validation at Scale
 #+LaTeX: \label{sec:validation}
 To evaluate the soundness of our approach, we compare several real
