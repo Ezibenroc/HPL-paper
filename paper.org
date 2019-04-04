@@ -3164,7 +3164,7 @@ is as challenging as a typical Top500 qualification run.
 - We simulated one rank per core to obtain a higher number
   (\Num{1024}) of MPI process. This is more difficult than simulating
   one rank per node, as the performance is more subject to network
-  heterogeneity (, which we model by having a different model for
+  heterogeneity (which we model by having a different model for
   local and remote communications) and memory interference.
 - We used a smaller block size than what is usually done, which leads
   to a higher number of iterations and increases complexity.
