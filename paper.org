@@ -3033,14 +3033,15 @@ Figure\ref{fig:HPL_var}. Again, only models
 observations called for further complexity.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
+
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
 These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to the CSV files
 happens in cells 25-26). The notebook uses this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/smpi_hpl/grenoble_2019-04-03_1858209.zip][ZIP archive]].
 
 #+begin_src sh :results output :exports both
-mkdir -p data/kernel_durations/
-cd data/kernel_durations/
+mkdir -p data/kernel_calibration/
+cd data/kernel_calibration/
 wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_functions.csv
 sed 's/function/func/g' -i trace_functions.csv  # cannot have a column named "function" in R...
 #+end_src
@@ -3052,7 +3053,7 @@ distinguish them.
 
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
-df = read.csv('data/kernel_durations/trace_functions.csv')
+df = read.csv('data/kernel_calibration/trace_functions.csv')
 print(unique(df$func))
 # in this experiment, we got the nodes dahu-{1,...,8} and the ranks were mapped in the right order
 df$node = 1 + df$rank %/% 32
