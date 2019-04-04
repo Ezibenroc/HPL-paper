@@ -3034,6 +3034,22 @@ observations called for further complexity.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
 
+** Network plots                                                  :noexport:
+*** Downloading the CSV
+#+begin_src sh :results output :exports both
+mkdir -p data/network_calibration/
+cd data/network_calibration/
+mkdir -p stampede && cd stampede
+wget -c https://gitlab.inria.fr/simgrid/platform-calibration/raw/master/data/stampede_17_06_01-17:14/calibration/testplatform_PingPong.csv -O pingpong.csv
+wget -c https://gitlab.inria.fr/simgrid/platform-calibration/raw/master/data/stampede_17_06_01-17:14/calibration/testplatform_Recv.csv -O recv.csv
+cd ..
+mkdir -p dahu && cd dahu
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/mpi/grenoble_2018-08-29_1808878.zip -O archive.zip
+unzip -p archive.zip exp/exp_PingPong.csv > pingpong.csv
+unzip -p archive.zip exp/exp_Recv.csv > recv.csv
+#+end_src
+*** Drawing the regression plots
+TODO
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
 These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to the CSV files
