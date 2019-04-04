@@ -1788,7 +1788,7 @@ its behavior at the time of the run. Even light modifications
 simple applications (\eg =stencil=) it is
 possible to extrapolate behavior from small-scale
 traces\cite{scalaextrap,pmac_lspp13} but this fails if the execution is
-non-deterministic, i.e., whenever the application relies on
+non-deterministic, \ie whenever the application relies on
 non-blocking communication patterns, which is unfortunately the
 case for HPL.
 
@@ -2253,8 +2253,8 @@ non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism that preserves the process-specific
 content. We have thus introduced the 
 =SMPI_PARTIAL_SHARED_MALLOC= macro that allows to specify which ranges of the
-allocation should be preserved (i.e., private to each process) and
-which ones may be corrupted (i.e., shared between process). 
+allocation should be preserved (\ie private to each process) and
+which ones may be corrupted (\ie shared between process). 
 To apply this to HPL's =panel= data\-structure
 and partially share it between processes, we only had to modify a few lines. 
 
