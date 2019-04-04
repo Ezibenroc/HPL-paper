@@ -2956,8 +2956,8 @@ STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
 #+BEGIN_EXPORT latex
 \begin{figure}
-  \centering \subfigure[Stampede]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
-  \subfigure[Dahu]{\includegraphics[width=.45\linewidth,page=1]{./figures/stampede_calibration_send.png}}
+  \centering \subfigure[Stampede]{\includegraphics[width=.45\linewidth,page=1]{./figures/network/stampede.png}}
+  \subfigure[Dahu]{\includegraphics[width=.45\linewidth,page=1]{./figures/network/dahu.png}}
   \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
   \label{fig:nw_var}
 \end{figure}
@@ -3049,7 +3049,73 @@ unzip -p archive.zip exp/exp_PingPong.csv > pingpong.csv
 unzip -p archive.zip exp/exp_Recv.csv > recv.csv
 #+end_src
 *** Drawing the regression plots
-TODO
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+
+read_csv <- function(filename) {
+    df = read.csv(filename, header=F)
+    colnames(df) = c('func', 'msg_size', 'start', 'duration')
+#    df = df[sample(nrow(df), 1000), ]  # take only some points, for quick prototyping of the plot
+    return(df)
+}
+
+draw_reg <- function(df, breakpoints) {
+    i = 1
+    df$group = 0
+    for(bp in breakpoints) {
+        df[df$msg_size > bp,]$group = i
+        i = i+1
+    }
+    df$group = as.factor(df$group)
+    plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(alpha=0.1)
+    plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
+    plot = plot + xlab('Message size (bytes)') + ylab(paste(unique(df$func), 'duration (seconds)'))
+    plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
+    plot = plot + expand_limits(y=1e-07)
+    for(grp in unique(df$group)) {
+        tmp = df[df$group == grp,]
+        reg = lm(duration~msg_size, tmp)
+        tmp$pred = predict(reg, tmp)
+        plot = plot + geom_line(aes(y=pred), data=tmp, color='black')
+    }
+    for(bp in breakpoints) {
+        plot = plot + geom_vline(xintercept=bp, linetype='dashed')
+    }
+    return(plot)
+}
+
+draw_mpi_reg <- function(platform, breakpoints) {
+    pingpong_file = paste('data/network_calibration', platform, 'pingpong.csv', sep='/')
+    recv_file     = paste('data/network_calibration', platform, 'recv.csv',     sep='/')
+    df_pingpong = read_csv(pingpong_file)
+    df_send = df_pingpong %>% filter(func == 'MPI_Send')
+    df_recv = read_csv(recv_file)
+    plot_send = draw_reg(df_send, breakpoints)
+    plot_recv = draw_reg(df_recv, breakpoints)
+    return(grid.arrange(plot_send, plot_recv, nrow=2))
+}
+#+end_src
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
+plot = draw_mpi_reg('dahu', c(8133, 15831, 33956, 64000))
+ggsave(filename='figures/network/dahu.png', plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figureXQawW8.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
+plot = draw_mpi_reg('stampede', c(150, 5000, 17420, 110000))
+ggsave(filename='figures/network/stampede.png', plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-R1JxhR/figurey3kWXd.png]]
+
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
 These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to the CSV files
