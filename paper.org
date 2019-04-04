@@ -3075,12 +3075,13 @@ happens in the function paper_plot, cell 14, that is called in cells 15 and 16).
 The notebook uses the ZIP archives from this [[https://github.com/Ezibenroc/mpi_calibration/tree/0d4f39b8391597c93861482621b98f814272bdb4/dahu/smpi_hpl/paper_sc19/traces/2][directory]].
 
 #+begin_src sh :results output :exports both
-cd /tmp
-wget https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_reality.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.csv
+mkdir -p data/validation_traces/
+cd data/validation_traces/
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_reality.csv
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.csv
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.csv
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.csv
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.csv
 #+end_src
 
 #+RESULTS:
@@ -3088,23 +3089,46 @@ wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/pape
 *** Drawing the Gantt charts
 TODO: improve the plots.
 
+#+NAME: init_gantt
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
-draw_gantt <- function(csv_name) {
+# Levels: MPI_Recv MPI_Send dgemm dtrsm other
+colours <- c("#5050AA", "#AA2020", "#FFFF88", "#FF00FF", "#FF0000")
+
+draw_gantt <- function(csv_name, xmax= 10, xstep = 2) {
     df = read.csv(csv_name)
-    gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw()
-    gc = gc + scale_fill_brewer(type='qualitative', palette='Dark2', guide=F)
+    gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw() +
+        scale_fill_manual(values=colours,  guide=F) +  # scale_fill_brewer(type='qualitative', palette='Set1',) 
+        geom_vline(data=data.frame(x=seq(from=0, to=xmax, by=xstep)),aes(xintercept=x), linetype=2) +
+        xlim(0,xmax) 
     return(gc)
 }
 #+end_src
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
-plot = draw_gantt('/tmp/trace_reality.csv')
-plot
+#+RESULTS:
+
+#+begin_src R :results output graphics :file figures/gantt_charts/gantt_reality.png :exports both :width 600 :height 400 :session *R* 
+draw_gantt("data/validation_traces/trace_reality.csv")
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-Imi5Be/figureSNKqXZ.png]]
+[[file:figures/gantt_charts/gantt_reality.png]]
+
+#+begin_src R :results output :session *R* :exports both
+file_list=c("trace_reality", 
+            "trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network", 
+            "trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network",
+            "trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network",
+            "trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network",
+            "trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network");
+for(i in file_list) {
+    png(filename=paste0("figures/gantt_charts/",gsub("^trace_","gantt_",i),".png"),width=800,height=400); 
+    plot(draw_gantt(paste0("data/validation_traces/",i,".csv")));
+    dev.off();
+}
+#+end_src
+
+#+RESULTS:
 
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
@@ -3128,29 +3152,14 @@ translates in late senders and receivers that destroy the efficiency
 of collective operations.
 
 #+BEGIN_EXPORT latex
+\newcommand{\ganttcaption}[2]{\rotatebox{90}{\hspace{1cm}$\text{#1}\atop \text{#2}$\hspace{-1cm}}}
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.6\linewidth]{./figures/gantt_charts/gantt_reality.png}
-    \caption{Gantt chart of HPL first iterations in reality}
-    \AL{$\to$ Tom. Give access to this data in this repos. Allow to regenerate with a differente palette (where dgemm would be much lighter to be more printer friendly).}
-    \label{fig:gantt_reality}
-    \labspace
-
-    \centering
-    \begin{tabular}{|c|c|c|}
-    \cline{2-3}
-    \multicolumn{1}{c|}{} & Simple kernels & Complex kernels\\
-    \hline
-    \rotatebox{90}{Simple network}
-        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}
-        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}
-        \\
-    \hline
-    \rotatebox{90}{Complex network}
-        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.png}
-        & \includegraphics[width=0.4\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png}
-        \\
-    \hline
+    \begin{tabular}{c@{}c}
+    \ganttcaption{\hspace{.3cm}Reality}{}                        & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_reality.png} \\
+    \ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\
+    \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
+    \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
     \end{tabular}
     \caption{Gantt charts of HPL first iterations in simulation}
     \label{fig:gantt_simulation}
