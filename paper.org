@@ -2335,9 +2335,7 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
 # =hugetlbfs= file system must be mounted. After at least one huge
 # page has been allocated, the path of the allocated file system can then be
 # passed on to SimGrid.
-* Scalability Evaluation
-\TC{TODO: these plots have changed, scalability is less good}
-\AL{Clarify that we use a configuration similar to the Stampede but that algorithm parameters (bcast, depth,...) obviously influence simulation time as they may induce more complex behaviors.}
+** Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
 
 #+BEGIN_EXPORT latex
@@ -2351,13 +2349,9 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
 \end{figure}
 #+END_EXPORT
 
-In Section\ref{sec:em} we explained the problems we encountered when trying
-to run a large-scale simulation on a single node and how we solved them. 
-For the most part, we identified and eliminated bottlenecks one after
-another while simultaneously making sure that the accuracy of our performance prediction was
-not impacted. Certainly, the main goal was to reduce the
-complexity from $\O(N^3) + \O(N^2\cdot{}P\cdot{}Q)$ to something more reasonable.
-The $\O(N^3)$ was removed through skipping most computations. 
+The main goal of the previous optimizations is to reduce the
+complexity from $\Theta(N^3) + \Theta(N^2\cdot{}P\cdot{}Q)$ to something more reasonable.
+The $\Theta(N^3)$ was removed through skipping most computations. 
 Ideally, since there are $N/NB$ iterations (steps), 
 the complexity of simulating one step should be decreased to something independent of
 $N$. SimGrid's fluid models, used to simulate communications, do not
@@ -2365,27 +2359,30 @@ depend on $N$. Therefore, the time to simulate a step of HPL should mostly depen
 $Q$. Yet, some memory operations on the panel that are related to pivoting
 are intertwined in HPL with collective communications, meaning that it
 is impossible to completely get rid of the $\O(N)$ complexity without
-modifying HPL more profoundly.
+modifying HPL more profoundly. 
 
-Although our goal was to model and simulate HPL on the Stampede
-platform, we decided to conduct a first evaluation on a
-similar, albeit non-existing, platform comprising 4,096 8-core nodes
-interconnected through a $\langle2;16,32;1,16;1,1\rangle$ fat-tree topology
-built on ideal network links with a bandwidth of
-\NSI{50}{\giga\byte\per\sec} and a latency of \NSI{5}{\micro\sec}. We ran
-simulations with $512$; $1,024$; $2,048$ or $4,096$ MPI processes and
-with matrices of orders \Num{5e5}, \Num{1e6}, \Num{2e6} or \Num{4e6}.
-The impact of the matrix order on total makespan and memory is illustrated in Figure\ref{fig:hpl_scalability}. 
-With all previously described
-optimizations enabled, the simulation with the largest matrix took close to $47$ hours and consumed
-\NSI{16}{\giga\byte} of memory whereas the smallest one took $20$ minutes and \NSI{282}{\mega\byte} of memory.
-One can also see that, when the matrix order ($N$) is increased, memory consumption and
-simulation time both grow slightly quadratic as the amount of matrix
-elements is $N^{2}$ and the number of steps of the algorithm also linearly.
-
-Moreover, all the simulations spend less than \NSI{10}{\percent} of their execution time in kernel
+To evaluate the efficiency of our proposal, we conduct a first
+evaluation on a non-existing, albeit similar to Stampede, platform
+comprising 4,096 8-core nodes interconnected through a
+$\langle2;16,32;1,16;1,1\rangle$ fat-tree topology built on ideal network links
+with a bandwidth of \NSI{50}{\giga\byte\per\sec} and a latency of
+\NSI{5}{\micro\sec}. We run simulations with $512$; $1,024$; $2,048$ or
+$4,096$ MPI processes and with matrices of orders \Num{5e5},
+\Num{1e6}, \Num{2e6} or \Num{4e6}. All other HPL parameters are
+similar to the ones of the Stampede scenario.  The impact of the
+matrix order on total makespan and memory is illustrated in
+Figure\ref{fig:hpl_scalability}.  With all previously described
+optimizations enabled, the simulation with the largest matrix took
+close to $47$ hours and consumed \NSI{16}{\giga\byte} of memory
+whereas the smallest one took $20$ minutes and \NSI{282}{\mega\byte}
+of memory.  One can also see that, when the matrix order ($N$) is
+increased, memory consumption and simulation time both grow slightly
+quadratic as the amount of matrix elements is $N^{2}$ and the number of
+steps of the algorithm also linearly.  Moreover, all the simulations
+spend less than \NSI{10}{\percent} of their execution time in kernel
 mode, which means the number of system calls is reasonably low.
-** Hidden section                                                 :noexport:
+\AL[]{This section should end on page 5.}
+*** Hidden section                                               :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
 test" section of Tom's journal:
 
