@@ -3036,8 +3036,8 @@ observations called for further complexity.
 \clearpage\setcounter{page}{8}
 * Validation at Scale
 #+LaTeX: \label{sec:validation}
-To evaluate the soundness of our approach, we performed several real executions
-of HPL with different simulations using various models.
+To evaluate the soundness of our approach, we compare several real
+executions of HPL with simulations using the previous models.
 ** Experimental setup
 We used the /Dahu/ cluster from the /Grid5000/ testbed. It has 32 nodes connected
 through a single switch by 100 Gbps Omnipath links. Each node has two Intel Xeon
@@ -3045,39 +3045,87 @@ Gold 6130 CPU with 16 cores per CPU. We took care of disabling hyperthreading
 and fixing the core frequencies to 3.7 GHz. We used HPL version 2.2 compiled
 with GCC version 6.3.0. We also used the libraries OpenMPI version 2.0.2 and
 OpenBLAS version 0.3.1.
-
 HPL executions were done using a block size of 128 and a matrix of varying size
-(from 50,000 to 500,000). We used one single-threaded MPI rank per core and a
-look-ahead depth of 1. Finally, we used the increasing-2-ring broadcast with the
-Crout panel factorization algorithms.
+(from \num{50000} to \num{500000}). We used one single-threaded MPI rank per core and a
+look-ahead =depth= of 1. Finally, we used the =increasing-2-ring= broadcast with the
+=Crout= panel factorization algorithms.
 
 # |   | matrix_size | block_size | proc_p | proc_q | pfact | rfact | bcast | depth | swap | mem_align | process_per_node | thread_per_process |
 # |---+-------------+------------+--------+--------+-------+-------+-------+-------+------+-----------+------------------+--------------------|
 # | 1 |      175000 |        128 |     32 |     32 |     1 |     2 |     2 |     1 |    0 |         8 |               32 |                  1 |
 
-We believe that simulating faithfully an HPL execution with such settings is as
-challenging as a typical Top500 qualification run.
-- The matrix is smaller, there are less nodes, so the simulation time is lower.
-- The network is more stable due to its smaller size.
-- We simulated one rank per core. This is more difficult than simulating one
-  rank per node, as the overall performance was subject to different durations
-  for loopback vs remote communications as well as RAM and cache contention.
-- We used a smaller block size than what is usually done, this leads to a
-  higher number of iterations and therefore an increased complexity.
-** Trace
-A first evaluation consists in comparing the traces of the simulations with the
-reality. We instrumented HPL to collect the start and end timestamps of each
-kernel and MPI call. The execution was limited to 256 ranks and the first five
-iterations, to limit the size of the traces.
+Although this machine is much smaller than top supercomputers, we
+believe that faithfully simulating an HPL execution with such settings
+is as challenging as a typical Top500 qualification run.
+- We simulated one rank per core to obtain a higher number
+  (\Num{1024}) of MPI process. This is more difficult than simulating
+  one rank per node, as the performance is more subject to network
+  heterogeneity (, which we model by having a different model for
+  local and remote communications) and memory interference.
+- We used a smaller block size than what is usually done, which leads
+  to a higher number of iterations and increases complexity.
+- The matrix is smaller, hence a lower simulation time, which is
+  generally harder to predict with a good precision.
+# - The network is more stable due to its smaller size.
+#+LaTeX: \def\sectitle{}
+** Gantt Chart generation                                         :noexport:
+*** Downloading the CSV
+These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/3933006b4bfb9b3ce5a8d0758258f6b1fd7957c2/dahu/hpl/hpl_trace.ipynb][notebook]] (the dump to the CSV files
+happens in the function paper_plot, cell 14, that is called in cells 15 and 16).
+The notebook uses the ZIP archives from this [[https://github.com/Ezibenroc/mpi_calibration/tree/0d4f39b8391597c93861482621b98f814272bdb4/dahu/smpi_hpl/paper_sc19/traces/2][directory]].
 
-A first qualitative validation has been done by visually comparing the Gantt
-charts of the simulations with the reality (see figure\ref{fig:gantt_simulation}). In the charts, calls to \texttt{dgemm} are in
-purple, \texttt{MPI\_Send} in orange, \texttt{MPI\_Recv} in green. The charts
-show that using a deterministic or a stochastic model for the network has no
-noticeable impact on HPL simulation. On the other hand, having a more complex
-model for the kernels gives a more realistic trace. The variability in the
-computation durations leads to an increase of the time spent in communications
-and an overall slightly longer execution.
+#+begin_src sh :results output :exports both
+cd /tmp
+wget https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_reality.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.csv
+#+end_src
+
+#+RESULTS:
+
+*** Drawing the Gantt charts
+TODO: improve the plots.
+
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+draw_gantt <- function(csv_name) {
+    df = read.csv(csv_name)
+    gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw()
+    gc = gc + scale_fill_brewer(type='qualitative', palette='Dark2', guide=F)
+    return(gc)
+}
+#+end_src
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+plot = draw_gantt('/tmp/trace_reality.csv')
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-Imi5Be/figureSNKqXZ.png]]
+
+** \scalebox{.94}{Comparing Simulations with Real Executions}
+Our first evaluation consists in comparing the traces of the
+simulations with the reality. We instrumented HPL to collect the start
+and end timestamps of each kernel and MPI call. We limited the
+execution to 256 ranks and the first five iterations, to limit the
+trace sizes. A first qualitative validation can be done by visually
+comparing the Gantt charts of the simulations with the reality (see
+figure\ref{fig:gantt_simulation}). In the charts, calls to
+\texttt{dgemm} are in purple, \texttt{MPI\_Send} in orange,
+\texttt{MPI\_Recv} in green. Although the structure is similar in all
+charts, the shape and the duration of the communication phases can be
+way too optimistic in simulations compared to reality.  The charts
+show that, at this scale, using a deterministic or a stochastic model
+for the network has no noticeable impact on HPL simulation. However,
+having a more complex model for the kernels leads to much more
+realistic traces. The variability in the computation durations leads
+to an increase of the time spent in communications and an overall
+slightly longer execution. In HPL, computation variability directly
+translates in late senders and receivers that destroy the efficiency
+of collective operations.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -3087,9 +3135,7 @@ and an overall slightly longer execution.
     \AL{$\to$ Tom. Give access to this data in this repos. Allow to regenerate with a differente palette (where dgemm would be much lighter to be more printer friendly).}
     \label{fig:gantt_reality}
     \labspace
-\end{figure}
 
-\begin{figure}[t]
     \centering
     \begin{tabular}{|c|c|c|}
     \cline{2-3}
@@ -3112,72 +3158,35 @@ and an overall slightly longer execution.
 \end{figure}
 #+END_EXPORT
 
-A quantitative validation has also been conducted, by comparing the total time
-spent by each rank in each function.
-*** Plot generation                                              :noexport:
-**** Downloading the CSV
-These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/3933006b4bfb9b3ce5a8d0758258f6b1fd7957c2/dahu/hpl/hpl_trace.ipynb][notebook]] (the dump to the CSV files
-happens in the function paper_plot, cell 14, that is called in cells 15 and 16).
-The notebook uses the ZIP archives from this [[https://github.com/Ezibenroc/mpi_calibration/tree/0d4f39b8391597c93861482621b98f814272bdb4/dahu/smpi_hpl/paper_sc19/traces/2][directory]].
-
-#+begin_src sh :results output :exports both
-cd /tmp
-wget https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_reality.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.csv
-wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.csv
-#+end_src
-
-#+RESULTS:
-
-**** Drawing the Gantt charts
-TODO: improve the plots.
-
-#+begin_src R :results output :session *R* :exports both
-library(ggplot2)
-draw_gantt <- function(csv_name) {
-    df = read.csv(csv_name)
-    gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw()
-    gc = gc + scale_fill_brewer(type='qualitative', palette='Dark2', guide=F)
-    return(gc)
-}
-#+end_src
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
-plot = draw_gantt('/tmp/trace_reality.csv')
-plot
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-Imi5Be/figureSNKqXZ.png]]
-
-** Global performance
-Processing the trace of a full HPL execution on the whole cluster is not
-possible in a reasonable amount of time. Furthermore, in a capacity-planning
-scenario, one would be more interested in the final performance reported by HPL
-than by the details of the execution. We therefore compared the values taken by
-this metric in reality and in simulation in figure\ref{fig:validation_performance}.
-
 #+BEGIN_EXPORT latex
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\linewidth]{./figures/validation_performance.pdf}
-    \caption{Comparison of HPL performance in simulation with the reality}
+    \caption{Comparison of HPL performance prediction with the reality}
     \label{fig:validation_performance}
     \labspace
 \end{figure}
 #+END_EXPORT
 
+We now provide a more quantative comparison using the whole cluster
+and focusing on the \si{\giga\flops} rate reported by HPL when varying
+matrix size (see Figure\ref{fig:validation_performance}).
 The purple (resp. orange) line corresponds to simulations of HPL with simple
 (resp. complex) models, we inject deterministic (resp. stochastic) durations and
 the function \texttt{dgemm} is modeled as a linear (resp. polynomial) relation.
 This plot shows that the complex models enable a much more realistic
-simulation. The largest error is done for the matrix of size 450,000. Here, the
+simulation. The largest error is done for the matrix of size \num{450000}. Here, the
 simple simulation overestimates the performance by 20.6% whereas the complex
 simulation only overestimates it by 8.4%.
 
-* Comparing with the Stampede qualification run
+We have shown it is possible to consistently predict performance
+within a few percents of reality provided a faithful model of each
+individual resource is realized. Our prediction are always slightly
+optimistic compared to reality, which is expected as we skipped
+several small HPL operations during our emulation.
+
+** \scalebox{.92}{Comparing with the Stampede Qualification Run}
+*** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:science}
 # #+BEGIN_EXPORT latex
 # \begin{figure*}%[!htb]
@@ -3216,57 +3225,40 @@ simulation only overestimates it by 8.4%.
 # # SMPI_DGEMM_COEFFICIENT=1.029e-11 SMPI_DGEMM_INTERCEPT=2.737e-02 SMPI_DGEMM_PHI_COEFFICIENT=1.981e-12 SMPI_DGEMM_PHI_INTERCEPT=6.316e-01 \
 # # SMPI_DTRSM_COEFFICIENT=9.882e-12 SMPI_DTRSM_INTERCEPT=4.329e-02 SMPI_DTRSM_PHI_COEFFICIENT=1.954e-12 SMPI_DTRSM_PHI_INTERCEPT=5.222e-01"
 
-** Modeling Stampede
-*** Computations
 Each node of the Stampede cluster comprises two 8-core Intel Xeon
 E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
 (KNC) \NSI{1.1}{\GHz} accelerator that is roughly three times more
-powerful than the two CPUs and can be used in two ways:
-either as a classical accelerator, \ie for offloading expensive
-computations from the CPU, or by compiling
-binaries specifically for and executing them directly on the Xeon Phi.
-While the accelerator's \NSI{8}{\gibi\byte} of RAM are rather
-small, the main advantage of the second approach is that data does not
-need to be transferred back and forth between the node's CPUs and the
-accelerator via the x16 PCIe bus.
-
-The HPL output submitted to the TOP500 (Figure\ref{fig:hpl_output})
-does not indicate how the KNC was used. However, because of the values assigned
-to $P$ and $Q$, we are certain that only a single MPI process per node
-was run. For this reason, it is likely that the KNC used as an accelerator. 
-With Intel's Math Kernel Library (MKL), this is effortless as the MKL comes with
-support for automatic offloading *for* selected BLAS functions. 
-Unfortunately, we do not know which MKL version was used in 2013 and therefore decided to
-use the default version used on Stampede in the beginning of 2017, \ie
-version 11.1.1. The MKL documentation states
-that, depending on the matrix geometry, the computation will run on
-either all the cores of the CPU or exclusively on the KNC.  In the case of
-=DGEMM=, the computation of $A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ of
-dimensions $M\times{}K$, $K\times{}N$ and $M\times{}N$, respectively, is offloaded onto the KNC whenever $M$
-and $N$ are both larger than $1280$ while $K$ is simultaneously larger
-than $256$. Similarly, offloading for =DTRSM= is used when both $M$ and $N$
-are larger than $512$, which results in a
-better throughput but incurs a higher latency. The complexity for =DGEMM= is always of the order
-of $M\cdot{}N\cdot{}K$ ($M\cdot{}N^2$ for =DTRSM=) but the model that describes the time it
-takes to run =DGEMM= (=DTRSM=) is very different for small and large
-matrices. The table in Figure\ref{fig:macro_real} indicates the
-parameters of the linear regression for the four scenarios (=DGEMM=
-or =DTRSM= and CPU or Phi). The measured performance was close to the
-peak performance: \eg for =DGEMM= on the Phi reached
-$2/\Num{1.981e-12} = \NSI{1.009}{\tera\flops}$. Since the granularity
-used in HPL (see Figure\ref{fig:hpl_output}) is 1024, all calls (except
-for maybe the very last iteration) are offloaded to the KNC. 
-In any case, this behavior can easily be accounted for by replacing the
-macro in Figure\ref{fig:macro_simple} by the one in Figure\ref{fig:macro_real}.
-
-# The accelerators are essential to the performance of the cluster,
-# delivering \NSI{7}{\peta\flops} of sustainable performance whereas
-# the CPUs are only capable of delivering \NSI{2}{\peta\flops}. On
-# matrices of the size used for this work, however, CPUs are barely
-# used.
-
+powerful than the two CPUs. The HPL output submitted to the TOP500
+(Figure\ref{fig:typical_run}) does not indicate how the KNC was
+used. However, because of the values assigned to $P$ and $Q$, we are
+certain that only a single MPI process per node was run. For this
+reason, it is likely that the KNC was used as an accelerator, which is
+effortless with Intel's Math Kernel Library (MKL) as it support
+automatic offloading for selected BLAS functions.  Although, we cannot
+know precisely which MKL version was used in 2013, we measured the
+default version (version 11.1.1) used on Stampede in the beginning
+of 2017. The MKL documentation states that, depending on the matrix
+geometry, the computation will run on either all the cores of the CPU
+or exclusively on the KNC.  In the case of =dgemm=, the computation of
+$A=\alpha\cdot{}A+\beta\cdot{}B\times{}C$ with $A, B, C$ of dimensions $M\times{}K$, $K\times{}N$ and $M\times{}N$,
+respectively, is offloaded onto the KNC whenever $M$ and $N$ are both
+larger than $1280$ while $K$ is simultaneously larger than $256$,
+which calls for a \modelp model. Similarly, offloading for =dtrsm= is
+used when both $M$ and $N$ are larger than $512$, which results in a
+better throughput but incurs a higher latency. The measured
+performance was close to the peak performance: \eg for =DGEMM= on the
+Phi reached $2/\Num{1.981e-12} = \NSI{1.009}{\tera\flops}$. Since the
+block size used in HPL is \Num{1024}, all calls (except for maybe the
+very last iteration) are offloaded to the KNC. Therefore, we decided
+as a first step to use very simple (\modelp{1}\noise{0}) models for
+=dgemm= and =dtrsm= and to simply skip all other functions, which is a
+very optimistic modeling. Likewise, although the performance of MPI
+measured in 2017 calls for a \modelp{1}\noisep{1} model, we used a
+simple optimistic \modelp{1}\noise{0} model. All HPL input parameters were
+set to exactly the values used in the TOP500 qualification run and were
+coherent with the submitted output.
+*** Xeon Phi R figures                                           :noexport:
 # See CH's journal from [2017-10-03 Tue] to see how the version was determined
-**** R figures                                                  :noexport:
 #+begin_src R :results output :session *R* :exports both
   library(gridExtra)
   library(ggplot2)
@@ -3380,7 +3372,7 @@ pdfcrop figures/stampede_knc_model.pdf figures/stampede_knc_model.pdf
 #+RESULTS:
 [[file:/tmp/babel-1674kfe/figure1674sWN.png]]
 
-*** Communications
+**** Communications
 # #+BEGIN_EXPORT latex
 # \begin{figure}[t]
 #   \centering
@@ -3424,7 +3416,7 @@ Furthermore, we configured SMPI to use Stampede's network topology,
 a fat-tree topology (see Figure\ref{fig:fat_tree_topology}). We
 assumed the routing was done through D-mod-K\cite{dmodk} as it is
 commonly used on this topology.
-**** Stampede network calibration figures                       :noexport:
+***** Stampede network calibration figures                     :noexport:
 This figure is generated in [[file:~/Work/SimGrid/platform-calibration/data/stampede_17_06_01-17:14/calibration/analysis.org][the platform calibration repository]]. Data
 should be read from there. Final adjustments (in the "Combined plot
 section") were done here:
@@ -3477,7 +3469,7 @@ cp /tmp/stampede_send_recv_eth.png ./figures/stampede_calibration_send.png
 #+end_src
 
 #+RESULTS:
-*** Summary of modeling uncertainties
+**** Summary of modeling uncertainties
 For the compiler, Intel MPI and MKL, we were unable to determine
 which version was used in 2013, but decided to go for rather optimistic
 choices. The models for the MKL and for Intel MPI are close to the peak
@@ -3499,12 +3491,11 @@ With all these modifications in place, we expected the prediction of
 our simulations to be optimistic yet close to results obtained by a real life execution.
 # - iMPI version ???
 # - HPL compilation ? Possible modifications s.a. using openMP to have thread taking care of MPI communications and progressions.
-** Simulating HPL
-*** Performance Prediction
+*** Simulating HPL                                                 :ignore:
 Figure\ref{fig:stampede_prediction} compares two simulation scenarios
 with the original result from 2013. The solid red line represents the HPL
-performance prediction as obtained with SMPI with the Stampede model
-that we described in the previous section. Although we expected SMPI to be
+performance prediction as obtained with SMPI with the very optimistic Stampede model
+we just described. Although we expected SMPI to be particularly
 optimistic, the prediction was surprisingly much lower than the TOP500 result.
 We verified that no part of HPL was left unmodeled and decided to
 investigate whether a flaw in our network model that would result in
@@ -3515,8 +3506,8 @@ results in minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
 either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
-single \NSI{1.2}{\tera\flops} node does not sufficiently explain the
-divide between our results and reality.
+single \NSI{1.2}{\tera\flops} node also fails to explain the
+difference between our prediction results and reality.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -3528,7 +3519,7 @@ divide between our results and reality.
 \end{figure}
 #+END_EXPORT
 
-**** HPL prediction                                             :noexport:
+*** HPL prediction                                               :noexport:
 
 Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic desabled"
 #+begin_src R :results output :session *R* :exports both
@@ -3612,56 +3603,65 @@ ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geo
 #+RESULTS:
 [[file:/tmp/babel-23284Iao/figure232842Rn.png]]
 
-*** Performance Gap Investigation
+*** Performance Gap Investigation                                  :ignore:
 # The simulation time to get the full-scale trace was:
 # - 420 seconds for two iterations (250 seconds spent in HPL),
 # - 609 seconds for five iterations (265 seconds spent in HPL).
-In this section, we explain our investigation and give possible reasons for
-the aforementioned mismatch (apparent in Figure\ref{fig:stampede_prediction}). With SMPI, it is simple to trace
-the first iterations of HPL to get an idea of what could be
-improved (the trace for the first five iterations can be obtained in
-about 609 seconds on a commodity computer and is compressed about
-\NSI{175}{\mega\byte} large). Figure\ref{fig:hpl_gantt} illustrates the
-very synchronous and iterative nature of the first iterations: One can identify first a factorization of the panel, then a broadcast to all the
-nodes, and finally an update of trailing matrix.
-More than one fifth of each iteration is spent communicating (although the first
-iterations are the ones with the lowest communication to computation ratio),
-which prevents HPL from reaching the Top500 performance. 
-Overlapping of these heavy communication phases with computation would improve
-performance significantly. The fact that this is
-almost not happening can be explained by the look-ahead ~DEPTH~
-parameter that was supposedly set to =0= (see
-Figure\ref{fig:hpl_output}). This is quite surprising as even
-the tuning section of the HPL documentation indicates that a depth of
-1 is supposed to yield the best results, even though a large problem size could
-be needed to see some performance gain. We discussed this
-surprising behavior with the Stampede-team and were informed that the
-run in 2013 was executed with an HPL binary provided by Intel
-and probably specifically modified for Stampede. We
-believe that some configuration values have been hardcoded to enforce an overlap of
-iterations with others. Indeed, the shortened part (marked ``[...]'') in
-Figure\ref{fig:hpl_output} provides information about the progress of
-HPL throughout iterations and statistics for the panel-owning process
-about the time spent in the most important parts. 
-According to these statistics, the total time
-spent in the =Update= section was \NSI{9390}{\sec} whereas the total
-execution time was \NSI{7505}{\sec}, which is impossible unless iterations have overlapped.
 
-The broadcast and swapping algorithms use very heavy
-communication patterns. This is not at all surprising since for a matrix of
-this order, several hundred megabytes need to be broadcast. 
-Although the output states that the =blongM= algorithm was
-used it could be the case that another algorithm had been used.
-We tried the other of the 6 broadcast algorithms HPL comes with but
-did not achieve significantly better overall performance. 
-An analysis of the symbols in the Intel binary
-revealed that another broadcast algorithm named
-=HPL_bcast_bpush= was available. Unlike the others, this new algorithm relies on non-blocking sends,
-which could contribute to the performance obtained in 2013.
-Likewise, the swapping algorithm that was used (~SWAP=Binary-exchange~) involves communications that are rather long and
-organized in trees, which is surprising as the ~spread-roll~ algorithm
-is recommended for large matrices.
+To identify the origin of this mismatch, we decided to trace the first
+iterations of HPL to get an idea of what could be improved (the trace
+for the first five iterations can be obtained in about 10 minutes on a
+commodity computer and is about \NSI{175}{\mega\byte} large once
+compressed). Figure\ref{fig:hpl_gantt} illustrates the very
+synchronous and iterative nature of the first iterations: One can
+identify first a factorization of the panel, then a broadcast to all
+the nodes, and finally an update of trailing matrix.  More than one
+fifth of each iteration is spent communicating (although the first
+iterations are the ones with the lowest communication to computation
+ratio), which prevents HPL from reaching the Top500 performance.
+Overlapping of these heavy communication phases with computation would
+improve performance significantly. The fact that this is almost not
+happening can be explained by the look-ahead ~DEPTH~ parameter that was
+supposedly set to =0= (see Figure\ref{fig:typical_run}). This is quite
+surprising as even the tuning section of the HPL documentation
+indicates that a =depth= of =1= is supposed to yield the best results,
+even though a large problem size could be needed to see some
+performance gain. We discussed this surprising behavior with the
+Stampede-team and were informed that, although the output mentions
+=HPLinpack 2.1= from =October 26, 2012= by Petitet\etal, the run in 2013
+was actually executed with the Intel binary version of HPL and which
+was probably specifically modified for Stampede. The submitted HPL
+output provides information about the progress of HPL throughout
+iterations and statistics for the panel-owning process about the time
+spent in the most important parts.  According to these statistics, the
+total time spent in the =Update= section was \NSI{9390}{\sec} whereas
+the total execution time was \NSI{7505}{\sec}, which is impossible
+unless iterations have overlapped.
 
+It is thus very almost sure that some configuration values have been
+hardcoded to enforce an overlap of iterations with others and that
+they should not be trusted. The broadcast and swapping algorithms use
+very heavy communication patterns. This is not at all surprising since
+for a matrix of this order, several hundred megabytes need to be
+broadcast.  Although the output states that the =blongM= algorithm was
+used it is likely that another algorithm has been used.  We tried the
+other of the 6 broadcast algorithms HPL comes with but could not
+obtain significantly better overall performance.  An analysis of the
+symbols in the Intel binary revealed that another broadcast algorithm
+named =HPL_bcast_bpush= was available. Unlike the others, this new
+algorithm relies on non-blocking sends, which could contribute to the
+performance obtained in 2013.  Likewise, the swapping algorithm that
+was used (~SWAP=Binary-exchange~) involves communications that are
+rather long and organized in trees, which is surprising as the
+~spread-roll~ algorithm is recommended for large matrices.
+
+We do not aim to reverse engineer the Intel HPL code. We can, however,
+already draw two conclusions from our analysis: 1) it is very likely
+that the reported parameters are not the ones used in the real
+execution, probably because these values were hardcoded and the
+configuration output file was not updated accordingly and 2) it is
+apparent that many optimizations have been done on the communication
+side with respect to asynchrony and to the broadcast algorithm.
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
@@ -3674,12 +3674,8 @@ is recommended for large matrices.
 \end{figure}
 #+END_EXPORT
 
-We do not aim to reverse engineer the Intel HPL code. We can, however,
-already draw two conclusions from our simple analysis: 1) it is apparent that many optimizations have been done on
-the communication side and 2) it is very likely that the reported
-parameters are not the ones used in the real execution, probably because 
-these values were hardcoded and the configuration output file was not updated accordingly.
-*** Gantt charts                                                 :noexport:
+
+**** Gantt charts                                               :noexport:
 #+begin_src sh :results output :exports both
 cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
 #+end_src
@@ -3757,11 +3753,11 @@ to better understand of these platforms actually behave.
 
 # #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
 
+** Clearpage                                                        :ignore:
+\clearpage\setcounter{page}{11}
 * Acknowledgements
 
 Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
-** Clearpage                                                        :ignore:
-\clearpage\setcounter{page}{11}
 We warmly thank our TACC colleagues for their support in this study and
 providing us with as much information as they could.
 ** References                                                       :ignore:
