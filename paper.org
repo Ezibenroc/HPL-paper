@@ -1726,7 +1726,7 @@ HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
 ||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0005583 ...... PASSED
 ================================================================================
 #+END_EXAMPLE
-** Performance Evaluation Challenges
+** Performance Evaluation Challenges                                :ignore:
 :LOGBOOK:
 - State "TODO"       from              [2017-11-15 mer. 16:26]
 :END:
@@ -1734,7 +1734,7 @@ HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
 
 The performance typically achieved by supercomputers (=Rmax=) needs to
 be compared to the much larger peak performance (=Rpeak=). This difference may be attributed to the node
-usage (\eg the MKL), to the MPI library, to the network topology that
+usage, to the MPI library, to the network topology that
 may be unable to deal with the very intensive communication workload, to
 load imbalance among nodes because some node happens to be slower for some
 reason (defect, system noise, \ldots), to the algorithmic structure of
@@ -1764,14 +1764,14 @@ simulations quickly become intractable without significant effort.
 # challenging to simulate and representative of what can be found in
 # many MPI applications.
 Performance prediction of MPI application through simulation has been
-widely studied over the last decades, with today's literature distinguishing mainly
-between two approaches: offline and online simulation.
+widely studied over the last decades but two approaches can be
+distinguished in the literature: offline and online simulation.
 
 With the most common approach, /offline simulation/, a time-independent
 trace of the application is first obtained on a real platform. This
-trace comprises sequences of MPI optimizations and CPU bursts and can
-be given as an input to a simulator that implements performance models
-for the CPUs and the network to derive timings. Researchers
+trace comprises sequences of MPI operations and CPU bursts and is
+given as an input to a simulator that implements performance models
+for the CPUs and the network to derive predictions. Researchers
 interested in finding out how their application reacts to changes to
 the underlying platform can replay the trace on commodity hardware at
 will with different platform models.
@@ -1780,14 +1780,15 @@ Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 The main limitation of this approach comes from the trace
 acquisition requirement. Not only a large machine is required but the
 compressed trace of a few iterations (out of several thousands)
-iteration of HPL typically weights a few hundreds of MB.
-Additionally, tracing an application provides only information about
+of HPL typically weights a few hundreds of MB, which quickly becomes 
+impractical\cite{suter}. Even worse, tracing an application provides
+only information about
 its behavior at the time of the run. Even light modifications 
 (\eg to communication patterns) may make the trace inaccurate. For
-simple applications (\eg =stencil=) it is sometimes
+simple applications (\eg =stencil=) it is
 possible to extrapolate behavior from small-scale
-traces\cite{scalaextrap,pmac_lspp13} but the execution is
-non-deterministic whenever the application relies on
+traces\cite{scalaextrap,pmac_lspp13} but this fails if the execution is
+non-deterministic, i.e., whenever the application relies on
 non-blocking communication patterns, which is unfortunately the
 case for HPL.
 
