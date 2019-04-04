@@ -1241,6 +1241,12 @@ zlib 1.0
 \makeatother
 #+END_EXPORT
 
+#+BEGIN_EXPORT latex
+% Uggly hack to allow invisible title downscaling
+\let\osubsection=\subsection
+\def\subsection#1{\osubsection[]{#1}}
+#+END_EXPORT
+
 * ACM title and authors                                    :ignore:
 #+BEGIN_EXPORT latex
 \let\oldcite=\cite
