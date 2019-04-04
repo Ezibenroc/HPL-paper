@@ -2883,31 +2883,29 @@ illustrated on HPL as a whole in Section\ref{sec::validation}.
 #+LaTeX: \newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
 #+LaTeX: \newcommand{\norm}{\ensuremath{N}\xspace}
 #+LaTeX: \newcommand{\mcdots}{\ensuremath{\!\cdot\!\cdot\!\cdot\!}\xspace}
-In the following, we denote as $T$ the duration of an operation whose
-parameters are $M$, $N$, $K$, \dots In the case of the =dgemm=
-(matrix-matrix product) operation, these parameters would describe the
-geometry of the input matrices. The first three modeling options we
-consider are the following:
-- Modeling option \model{0}: The duration is modeled as a constant
-  duration independent of the input parameters, i.e. $T \sim \alpha$, where
+We denote as $T$ the duration of an operation whose parameters are
+$M$, $N$, $K$, \dots In the case of the =dgemm= (matrix-matrix product)
+operation, these parameters describe the geometry of the input
+matrices. We first consider the three following modeling options:
+- Modeling option \model{0}: For simple and stable
+  computation kernels, the duration can be modeled as a constant
+  duration independent of the input parameters, \ie $T \sim \alpha$, where
   $\alpha$ is estimated through the sample average of the duration of the
-  operation. This is a reasonable model for simple and stable
-  computation kernels.
-- Modeling option \model{1}: a simple combination of the parameters
-  (e.g., $S=M.N.K$) is the primary factor driving the performance of
-  the operation, i.e. $T \sim \alpha.S ~(+ \beta)$. $\alpha$ and $\beta$ are then simply
+  operation. 
+- Modeling option \model{1}: A simple combination of the parameters
+  (e.g., $S=M.N.K$) may be the primary factor driving the performance of
+  the operation. Then $T \sim \alpha.S ~(+ \beta)$ and $\alpha$ and $\beta$ can be
   estimated through a classical least-square linear regression.
-- Modeling option \model{2}: the behavior of the operation is complex
+- Modeling option \model{2}: When the behavior of the operation is complex
   or requires a faithful modeling over the full range of input
-  parameters and a full polynomial model is then required, i.e. $T \sim
-  \alpha.M.N.K + \beta.M.N + \gamma.N.P + \dots$. Again, the $\alpha,\beta,\gamma,\dots$ can then be
-  simply estimated through a classical least-square linear regression.
+  parameters, a full polynomial model is required, \ie $T \sim
+  \alpha.M.N.K + \beta.M.N + \gamma.N.P + \dots $ Again, the $\alpha,\beta,\gamma,\dots$ can be
+  estimated through a classical least-square linear regression.
 There are two situations where more elaborate variations need to be
 considered:
 - The platform may be slightly heterogeneous (spatial variability) and
   the previous models should then be built for each host
-  individually. We denote this modeling option as \model[H]{} but
-  the same tool can be used.
+  individually. We denote this modeling option as \model[H]{}.
 - The behavior of the operation may be mosly linear but solely on
   particular parameter ranges. This is for example the case for
   networking operations or for computing nodes on Stampede where the
@@ -2920,29 +2918,27 @@ considered:
       \text{else if } M<\theta_2 & \alpha_2.M+\beta_2 \\
       ... \end{cases},$
   #+END_EXPORT
-  where the $\theta, \alpha, \beta$ should be all be experimentally to be estimated.
-  We denote this kind of model as \modelp{}.
-
-All previous models can be easily fit with relatively simple linear
+  where the $\theta, \alpha, \beta$ should all be estimated. We denote this kind of
+  model as \modelp{}.
+All previous models can be fit with relatively simple linear
 regressions or maximum likelihood learning methods. However, an
-important hypothesis underlying all these methods is that the model is
-homoscedastic, i.e., that the variability is fully independent on the
-parameters. The residual (temporal) variability may an important
-phenomenon to account for as "system noise" is knows to be detrimental
-to overall performance of parallel applications like HPL. We therefore
-consider different modeling options for this temporal variability.
-- Noise option \noise{0}: the simplest option consists in simply
-  injecting the value predicted by the model, i.e., with no noise at
-  all $T \sim \model{}(M,N,K) + 0$.
-- Noise option \noise{1}: The simplest probability family to model
+important hypothesis underlying all these methods is the
+homoscedasticity, \ie that the variability is independent on the
+parameters. 
+
+The residual (temporal) variability may an important phenomenon to
+account for as "system noise" is knows to be detrimental to overall
+performance of parallel applications like HPL. We therefore consider
+different modeling options for this temporal variability.
+- Noise option \noise{0} (no noise): The simplest option consists in simply
+  injecting the value predicted by the model, \ie $T \sim \model{}(M,N,K) + 0$.
+- Noise option \noise{1} (homoscedastic): The simplest probability family to model
   variability is the normal distribution, hence $T \sim \model{}(M,N,K) +
-  \norm(0,\sigma^2)$, where $\sigma^2$ can easily be estimated through the sample
-  variance of the model residuals.
-- Noise option \noise{2}: The residuals are modeled as a normal
-  distribution whose variance is a polynomial function of the input
-  parameters.
-# - Noise option 3: T \sim ... + specific asymetric noise that depends on
-#   parameters
+  \norm(0,\sigma^2)$, where $\sigma^2$ is the sample variance of the model
+  residuals.
+- Noise option \noise{2} (heteroscedastic): The residuals (\ie the previous $\sigma^2$ term)
+  is modeled by polynomial function of the input parameters.
+  # ($M,N,K$).
 Finally, even sophisticated normal distribution from \noise{2} may be
 too simple to describe the noise observed on real platforms where it
 may be common for a same parameter set to have a few operations being
