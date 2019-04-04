@@ -3177,6 +3177,44 @@ and an overall slightly longer execution.
 
 A quantitative validation has also been conducted, by comparing the total time
 spent by each rank in each function.
+*** Plot generation                                              :noexport:
+**** Downloading the CSV
+These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/3933006b4bfb9b3ce5a8d0758258f6b1fd7957c2/dahu/hpl/hpl_trace.ipynb][notebook]] (the dump to the CSV files
+happens in the function paper_plot, cell 14, that is called in cells 15 and 16).
+The notebook uses the ZIP archives from this [[https://github.com/Ezibenroc/mpi_calibration/tree/0d4f39b8391597c93861482621b98f814272bdb4/dahu/smpi_hpl/paper_sc19/traces/2][directory]].
+
+#+begin_src sh :results output :exports both
+cd /tmp
+wget https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_reality.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.csv
+wget https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.csv
+#+end_src
+
+#+RESULTS:
+
+**** Drawing the Gantt charts
+TODO: improve the plots.
+
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+draw_gantt <- function(csv_name) {
+    df = read.csv(csv_name)
+    gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw()
+    gc = gc + scale_fill_brewer(type='qualitative', palette='Dark2', guide=F)
+    return(gc)
+}
+#+end_src
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+plot = draw_gantt('/tmp/trace_reality.csv')
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-Imi5Be/figureSNKqXZ.png]]
+
 ** Global performance
 Processing the trace of a full HPL execution on the whole cluster is not
 possible in a reasonable amount of time. Furthermore, in a capacity-planning
