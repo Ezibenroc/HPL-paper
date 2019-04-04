@@ -1576,7 +1576,6 @@ used for each of these runs.
 \multicolumn{1}{l|}{} & Stampede@TACC & Theta@ANL & Dahu@G5K\\
 \hline
 \texttt{Rpeak}     & \NSI{8520.1}{\tera\flops} & \NSI{9627.2}{\tera\flops} & \NSI{62.26}{\tera\flops}              \\
-\texttt{Rmax}      & \NSI{5168.1}{\tera\flops} & 5,884.6 & 24.55              \\
 $N$         & \Num{3875000}                & \Num{8360352}                & \Num{500000}            \\
 \texttt{NB}        & \Num{1024}                    & 336                      & 128                \\
 $P\times Q$             & 77$\times$78                  & 32$\times$101                 & 32$\times$32            \\
@@ -1584,6 +1583,8 @@ $P\times Q$             & 77$\times$78                  & 32$\times$101         
 \texttt{SWAP}      & Binary-exch.             & Binary-exch.             & Binary-exch.       \\
 \texttt{BCAST}     & Long modified            & 2 Ring modified          & 2 Ring             \\
 \texttt{DEPTH}     & 0                        & 0                        & 1                  \\
+\hline
+\texttt{Rmax}      & \NSI{5168.1}{\tera\flops} & \NSI{5884.6}{\tera\flops} & \NSI{24.55}{\tera\flops}              \\
 Duration   & 2 hours                  & 28 hours                 & 1 hour             \\
 Memory    & \NSI{120}{\tera\byte}     & \NSI{559}{\tera\byte}     & \NSI{2}{\tera\byte} \\
 MPI ranks & 1/node                & 1/node                   & 1/core             \\
