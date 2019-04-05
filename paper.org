@@ -3421,16 +3421,104 @@ dfsim = rbind(
     read.csv('data/validation_performance/hpl_simulation_homogeneous.csv')
 )
 head(dfreal)
+head(dfsim)
 #+end_src
 
 #+RESULTS:
-:   matrix_size gflops    time    mode    date
-: 1      175000  22610  158.00 reality 2019-03
-: 2      500000  22330 3732.41 reality 2019-03
-: 3       50000  12780    6.52 reality 2019-03
-: 4      300000  21140  851.46 reality 2019-03
-: 5      400000  21660 1969.91 reality 2019-03
-: 6      150000  19910  113.02 reality 2019-03
+#+begin_example
+  matrix_size gflops    time    mode    date
+1      175000  22610  158.00 reality 2019-03
+2      500000  22330 3732.41 reality 2019-03
+3       50000  12780    6.52 reality 2019-03
+4      300000  21140  851.46 reality 2019-03
+5      400000  21660 1969.91 reality 2019-03
+6      150000  19910  113.02 reality 2019-03
+  matrix_size gflops    time       mode stochastic_cpu stochastic_network
+1      125000  18260   71.31 simulation           True               True
+2      250000  20790  501.01 simulation           True               True
+3      450000  21600 2812.52 simulation           True               True
+4      100000  17700   37.67 simulation           True               True
+5      200000  20130  264.91 simulation           True               True
+6      400000  21390 1994.66 simulation           True               True
+  polynomial_dgemm heterogeneous_dgemm  model
+1             True                True D2_het
+2             True                True D2_het
+3             True                True D2_het
+4             True                True D2_het
+5             True                True D2_het
+6             True                True D2_het
+#+end_example
+
+Keeping only a subset of the models, to have a readable plot.
+#+begin_src R :results output :session *R* :exports both
+dfsim = dfsim %>% filter(model %in% c('A1', 'A2', 'A1_het', 'C1_het', 'D1_het', 'D2_het'))
+#+end_src
+
+#+RESULTS:
+
+Removing the two outliers in the real executions. These two points are
+"abnormaly fast", each of them was the first to be made in the sequence of runs
+(the machines were not overheating yet).
+#+begin_src R :results output :session *R* :exports both
+print(length(dfreal$gflops))
+dfreal = dfreal %>% filter(matrix_size != 175000 | gflops < 22000)
+print(length(dfreal$gflops))
+#+end_src
+
+#+RESULTS:
+: [1] 112
+: [1] 110
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
+text_size = 6
+# Labels definitions
+lab = dfsim %>% filter(matrix_size == 300000) %>% select(gflops, matrix_size, model) %>% distinct()
+lab = lab %>% mutate(label = case_when(model == 'A1'     ~ 'simple',
+                                       model == 'A2'     ~ 'stochastic network',
+                                       model == 'A1_het' ~ 'heterogeneous',
+                                       model == 'C1_het' ~ 'heterogeneous\n&polynomial dgemm',
+                                       model == 'D1_het' ~ 'heterogeneous\n&polynomial dgemm\n&stochastic kernels',
+                                       model == 'D2_het' ~ 'heterogeneous\n&polynomial dgemm\n&stochastic kernels\n&stochastic network',
+                                       T             ~ 'undefined'))
+lab$x = lab$matrix_size
+lab$y = lab$gflops
+lab$xl = lab$x*1.0
+lab$yl = lab$y*1.0
+delta_x = max(dfsim$matrix_size) / 15
+delta_y = max(dfsim$gflops) / 15
+lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ xl-delta_x,
+                                    model == 'A2'     ~ xl+delta_x,
+                                    model == 'A1_het' ~ xl-1.5*delta_x,
+                                    model == 'C1_het' ~ xl+1.5*delta_x,
+                                    model == 'D1_het' ~ xl-delta_x,
+                                    model == 'D2_het' ~ xl+2*delta_x,
+                                       T             ~ xl))
+lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ yl+delta_y,
+                                    model == 'A2'     ~ yl+delta_y,
+                                    model == 'A1_het' ~ yl+delta_y,
+                                    model == 'C1_het' ~ yl+1.2*delta_y,
+                                    model == 'D1_het' ~ yl-2*delta_y,
+                                    model == 'D2_het' ~ yl-2*delta_y,
+                                       T             ~ yl))
+
+# Plot drawing
+plot = ggplot(dfsim, aes(x=matrix_size, y=gflops)) + geom_point(data=dfreal, shape=1) + geom_point(aes(color=model))
+plot = plot + stat_summary(aes(color=model), fun_y=mean, geom='line', linetype='dashed')
+plot = plot + stat_summary(fun_y=mean, geom='line', data=dfreal)
+plot = plot + theme_bw() + expand_limits(y=0)
+plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
+plot = plot + theme(text=element_text(size=30))
+plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
+plot = plot + geom_segment(data=lab, aes(x=xl, xend=x, y=yl, yend=y, color=model), linetype="solid")
+plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, color=model), size=text_size)
+plot = plot + geom_segment(data=lab, x=4.7e5, xend=4.5e5, y=2.5e4, yend=mean((dfreal %>% filter(matrix_size == 450000))$gflops), linetype="solid")
+plot = plot + geom_label(data=lab, aes(x=4.7e5, y=2.5e4), label='reality', size=text_size)
+ggsave(filename='figures/validation_performance.pdf', plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-xBbVhd/figurefowhPt.png]]
 
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
@@ -3472,7 +3560,7 @@ of collective operations.
 #+BEGIN_EXPORT latex
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{./figures/validation_performance.pdf}
+    \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
     \caption{Comparison of HPL performance prediction with the reality}
     \label{fig:validation_performance}
     \labspace
