@@ -3069,9 +3069,11 @@ draw_reg <- function(df, breakpoints) {
         i = i+1
     }
     df$group = as.factor(df$group)
+    func = unique(df$func)
     plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(size=.5, alpha=0.1)
     plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
-    plot = plot + xlab('Message size (bytes)') + ylab(paste(unique(df$func), 'duration\n (seconds)'))
+    plot = plot + xlab('Message size (bytes)')  + ylab('duration\n (seconds)') # + ylab(paste(unique(df$func), 'duration\n (seconds)'))
+    plot = plot + annotate(geom='text', label=func, size=5, x=50, y=5e-5)
     plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
     plot = plot + expand_limits(y=1e-07)
     for(grp in unique(df$group)) {
