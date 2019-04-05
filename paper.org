@@ -2956,8 +2956,8 @@ STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
 #+BEGIN_EXPORT latex
 \begin{figure}
-  \centering \subfigure[Stampede]{\includegraphics[width=.45\linewidth,page=1]{./figures/network/stampede.png}}
-  \subfigure[Dahu]{\includegraphics[width=.45\linewidth,page=1]{./figures/network/dahu.png}}
+  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
+  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
   \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
   \label{fig:nw_var}
 \end{figure}
@@ -2984,7 +2984,7 @@ changes in SMPI was to visually estimate breakpoints and to manually
 conduct linear regression for each range. The expectation duration was
 then used in the simulation with no particular effort for the noise
 and the default model was thus \modelp{1}\noise{0}. Yet, as illustrated
-on Figure\ref{fig:nw_var}\AL[]{$\to$ Tom: Regenerate}, the variability of highe speed networks can
+on Figure\ref{fig:nw_var}, the variability of highe speed networks can
 be quite particular. We
 therefore took care of correctly estimating all the parameters for
 \modelp{1}\noisep{1}, where each message size range is automatically estimated with
@@ -3069,9 +3069,9 @@ draw_reg <- function(df, breakpoints) {
         i = i+1
     }
     df$group = as.factor(df$group)
-    plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(alpha=0.1)
+    plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(size=.5, alpha=0.1)
     plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
-    plot = plot + xlab('Message size (bytes)') + ylab(paste(unique(df$func), 'duration (seconds)'))
+    plot = plot + xlab('Message size (bytes)') + ylab(paste(unique(df$func), 'duration\n (seconds)'))
     plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
     plot = plot + expand_limits(y=1e-07)
     for(grp in unique(df$group)) {
@@ -3098,18 +3098,18 @@ draw_mpi_reg <- function(platform, breakpoints) {
 }
 #+end_src
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
 plot = draw_mpi_reg('dahu', c(8133, 15831, 33956, 64000))
-ggsave(filename='figures/network/dahu.png', plot=plot)
+ggsave(filename='figures/network/dahu.png', plot=plot, width=3,height=4, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
 [[file:/tmp/babel-R1JxhR/figureXQawW8.png]]
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
 plot = draw_mpi_reg('stampede', c(150, 5000, 17420, 110000))
-ggsave(filename='figures/network/stampede.png', plot=plot)
+ggsave(filename='figures/network/stampede.png', plot=plot, width=3,height=4, dpi=200)
 plot
 #+end_src
 
