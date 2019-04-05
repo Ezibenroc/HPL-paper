@@ -3157,7 +3157,7 @@ head(df)
 #+RESULTS:
 #+begin_example
 [1] dtrsm         dgemm         HPL_dlatcpy   HPL_dlaswp03T HPL_dlaswp02N
-Levels: dgemm dtrsm HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy
+Levels: HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy dgemm dtrsm
          func     m n  k   start        end    duration rank    mode node cpu
 1       dtrsm     2 2 NA 0.01674 0.01678434 0.000044337    0 reality    1   2
 2       dgemm 50046 2  2 0.01678 0.01698043 0.000200426    0 reality    1   2
@@ -3174,17 +3174,73 @@ Levels: dgemm dtrsm HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy
 6     NA      4     NA NA
 #+end_example
 **** DGEMM
-Regression lines, to show the heterogeneity.
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+#+begin_src R :results output :session *R* :exports both
 dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),]
-plot = ggplot(dgemm, aes(x=m*n*k, y=duration, color=factor(cpu))) + geom_smooth(method='lm')
-plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N×K') + labs(color='CPU')
-ggsave(filename="figures/kernels/dgemm_heterogeneity.pdf", plot=plot)
+summary(lm(data=dgemm, duration ~ I(m*n*k):factor(cpu)))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = duration ~ I(m * n * k):factor(cpu), data = dgemm)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.41411 -0.00186 -0.00139  0.00104  0.42966 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                2.020e-03  8.787e-05   22.98   <2e-16 ***
+I(m * n * k):factor(cpu)2  6.790e-11  3.322e-14 2043.67   <2e-16 ***
+I(m * n * k):factor(cpu)3  6.825e-11  3.290e-14 2074.40   <2e-16 ***
+I(m * n * k):factor(cpu)4  6.799e-11  3.335e-14 2038.54   <2e-16 ***
+I(m * n * k):factor(cpu)5  6.767e-11  3.292e-14 2055.37   <2e-16 ***
+I(m * n * k):factor(cpu)6  6.679e-11  3.348e-14 1995.27   <2e-16 ***
+I(m * n * k):factor(cpu)7  6.701e-11  3.306e-14 2027.08   <2e-16 ***
+I(m * n * k):factor(cpu)8  6.593e-11  3.309e-14 1992.18   <2e-16 ***
+I(m * n * k):factor(cpu)9  6.571e-11  3.270e-14 2009.51   <2e-16 ***
+I(m * n * k):factor(cpu)10 6.774e-11  3.340e-14 2028.37   <2e-16 ***
+I(m * n * k):factor(cpu)11 6.820e-11  3.300e-14 2066.43   <2e-16 ***
+I(m * n * k):factor(cpu)12 6.665e-11  3.357e-14 1985.21   <2e-16 ***
+I(m * n * k):factor(cpu)13 6.862e-11  3.309e-14 2073.58   <2e-16 ***
+I(m * n * k):factor(cpu)14 6.564e-11  3.329e-14 1971.86   <2e-16 ***
+I(m * n * k):factor(cpu)15 6.554e-11  3.286e-14 1994.85   <2e-16 ***
+I(m * n * k):factor(cpu)16 6.829e-11  3.368e-14 2027.41   <2e-16 ***
+I(m * n * k):factor(cpu)17 6.781e-11  3.324e-14 2039.94   <2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.0225 on 68061 degrees of freedom
+Multiple R-squared:  0.9989,	Adjusted R-squared:  0.9989 
+F-statistic: 3.966e+06 on 16 and 68061 DF,  p-value: < 2.2e-16
+#+end_example
+
+# I(m * n * k):factor(cpu)15 6.554e-11  3.286e-14 1994.85   <2e-16 ***
+# I(m * n * k):factor(cpu)7  6.701e-11  3.306e-14 2027.08   <2e-16 ***
+# I(m * n * k):factor(cpu)13 6.862e-11  3.309e-14 2073.58   <2e-16 ***
+
+Regression lines, to show the heterogeneity.
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+cpu_sel1 = c(7,8,12,13,4,15);
+cpu_sel2 = c(cpu_sel1,16,17); # 2,5,9,12,
+dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),];
+dgemm_sel1 = dgemm[dgemm$cpu %in% cpu_sel1,];
+dgemm_sel2 = dgemm[dgemm$cpu %in% cpu_sel2,];
+MSet1 <- c("#EE0000", "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00",
+           "#FFFF33", "#A65628", "#F781BF", "#999999");
+plot = ggplot(dgemm_sel2, aes(x=m*n*k, y=duration, color=factor(cpu))) +
+    geom_point(alpha=.2) + 
+    geom_smooth(data=dgemm_sel1, method='lm', se=F, fullrange=T, size=.5) +
+    geom_smooth(data=dgemm, color="black", method='lm', se=F, fullrange=T, linetype=4) + 
+    scale_color_manual(values=MSet1, guide=F)
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N.K') +  labs(color='CPU') + xlim(0,9E10)
+ggsave(filename="figures/kernels/dgemm_heterogeneity.pdf", plot=plot, width=4,height=4)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-R1JxhR/figureV4WSB1.png]]
+[[file:/tmp/babel-19053_Jy/figure190537Ok.png]]
 
 Scatter plot for one CPU, to show the time variability.
 
