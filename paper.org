@@ -3121,8 +3121,8 @@ plot
 The file trace_functions.csv has been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to
 the CSV file happens in cells 25-26). The notebook uses this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/smpi_hpl/grenoble_2019-04-03_1858209.zip][ZIP archive]].
 
-The file dgemm_calibration.csv has been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/26fdfbb565e1eb5b9f1015a47ddd8fe9aaa424e5/dahu/blas/dgemm_heterogeneous_model.ipynb][notebook]] (the dump
-to the CSV file happens in cell 1). The notebook uses these [[https://github.com/Ezibenroc/mpi_calibration/tree/26fdfbb565e1eb5b9f1015a47ddd8fe9aaa424e5/dahu/blas/heterogeneity_exp/7][ZIP archives]].
+The file dgemm_calibration.csv has been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/df5a957901fac35a3df0bd466acea7d6199a9426/dahu/blas/dgemm_heterogeneous_model.ipynb][notebook]] (the dump
+to the CSV file happens in cell 38). The notebook uses these [[https://github.com/Ezibenroc/mpi_calibration/tree/26fdfbb565e1eb5b9f1015a47ddd8fe9aaa424e5/dahu/blas/heterogeneity_exp/7][ZIP archives]].
 
 #+begin_src sh :results output :exports both
 mkdir -p data/kernel_calibration/
