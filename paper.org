@@ -3058,11 +3058,11 @@ library(gridExtra)
 read_csv <- function(filename) {
     df = read.csv(filename, header=F)
     colnames(df) = c('func', 'msg_size', 'start', 'duration')
-#    df = df[sample(nrow(df), 1000), ]  # take only some points, for quick prototyping of the plot
     return(df)
 }
 
 draw_reg <- function(df, breakpoints) {
+    font_size=30
     i = 1
     df$group = 0
     for(bp in breakpoints) {
@@ -3071,10 +3071,13 @@ draw_reg <- function(df, breakpoints) {
     }
     df$group = as.factor(df$group)
     plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(alpha=0.1)
-    plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
-    plot = plot + xlab('Message size (bytes)') + ylab(paste(unique(df$func), 'duration (seconds)'))
-    plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
-    plot = plot + expand_limits(y=1e-07)
+    plot = plot + scale_x_log10(breaks=c(1e1, 1e3, 1e5)) + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
+    func = unique(df$func)
+    plot = plot + xlab('Message size (B)') + ylab('Duration (s)')
+    plot = plot + expand_limits(x=980284, y=0.00022)  # to get the same scale on all plots
+    plot = plot + expand_limits(x=1, y=1e-07)
+    plot = plot + theme(text = element_text(size=font_size))
+    plot = plot + annotate(geom='text', label=func, size=font_size%/%3, x=10, y=5e-5)
     for(grp in unique(df$group)) {
         tmp = df[df$group == grp,]
         reg = lm(duration~msg_size, tmp)
@@ -3093,11 +3096,16 @@ draw_mpi_reg <- function(platform, breakpoints) {
     df_pingpong = read_csv(pingpong_file)
     df_send = df_pingpong %>% filter(func == 'MPI_Send')
     df_recv = read_csv(recv_file)
+    # Dahu's calibration has 10 times more points than Stampede, so let's remove some points to get similar plots
+    df_send = df_send[sample(nrow(df_send), 33100), ]
+    df_recv = df_recv[sample(nrow(df_recv), 33100), ]
     plot_send = draw_reg(df_send, breakpoints)
     plot_recv = draw_reg(df_recv, breakpoints)
     return(grid.arrange(plot_send, plot_recv, nrow=2))
 }
 #+end_src
+
+#+RESULTS:
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
 plot = draw_mpi_reg('dahu', c(8133, 15831, 33956, 64000))
@@ -3106,7 +3114,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-R1JxhR/figureXQawW8.png]]
+[[file:/tmp/babel-I9Qhts/figuredzU4eP.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session *R*
 plot = draw_mpi_reg('stampede', c(150, 5000, 17420, 110000))
@@ -3115,7 +3123,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-R1JxhR/figurey3kWXd.png]]
+[[file:/tmp/babel-I9Qhts/figureilT40P.png]]
 
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
