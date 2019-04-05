@@ -3118,15 +3118,22 @@ plot
 
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
-These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to the CSV files
-happens in cells 25-26). The notebook uses this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/smpi_hpl/grenoble_2019-04-03_1858209.zip][ZIP archive]].
+The file trace_functions.csv has been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/hpl/hpl_trace_simple.ipynb][notebook]] (the dump to
+the CSV file happens in cells 25-26). The notebook uses this [[https://github.com/Ezibenroc/mpi_calibration/blob/74870b0d26497cf623c47a747e2f089eedb62857/dahu/smpi_hpl/grenoble_2019-04-03_1858209.zip][ZIP archive]].
+
+The file dgemm_calibration.csv has been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/26fdfbb565e1eb5b9f1015a47ddd8fe9aaa424e5/dahu/blas/dgemm_heterogeneous_model.ipynb][notebook]] (the dump
+to the CSV file happens in cell 1). The notebook uses these [[https://github.com/Ezibenroc/mpi_calibration/tree/26fdfbb565e1eb5b9f1015a47ddd8fe9aaa424e5/dahu/blas/heterogeneity_exp/7][ZIP archives]].
 
 #+begin_src sh :results output :exports both
 mkdir -p data/kernel_calibration/
 cd data/kernel_calibration/
 wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/paper_sc19/traces/2/trace_functions.csv
 sed 's/function/func/g' -i trace_functions.csv  # cannot have a column named "function" in R...
+wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/blas/dgemm_calibration.csv
+sed 's/function/func/g' -i dgemm_calibration.csv  # cannot have a column named "function" in R...
 #+end_src
+
+#+RESULTS:
 
 *** Drawing the regression plots
 There are several interesting functions in the CSV file. For each function,
