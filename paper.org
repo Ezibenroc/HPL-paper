@@ -1146,6 +1146,7 @@ zlib 1.0
 #+LATEX_HEADER: \usepackage{ifthen,figlatex}
 #+LATEX_HEADER: \usepackage{longtable}
 #+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{dblfloatfix}    % To enable figures at the bottom of page
 #+LATEX_HEADER: \usepackage{wrapfig}
 #+LATEX_HEADER: \usepackage{subfigure}
 #+LATEX_HEADER: \usepackage{graphicx}
@@ -2858,6 +2859,30 @@ models with individual measurements of both computation and
 communications to illustrate the importance of the model
 complexity. The consequence of using simpler modeling options will be
 illustrated on HPL as a whole in Section\ref{sec::validation}.
+** Figures                                                          :ignore:
+#+BEGIN_EXPORT latex
+\begin{figure}
+  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
+  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
+  \label{fig:nw_var}
+\end{figure}
+
+\begin{figure*}[!b]
+  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
+    \subfigure[\texttt{dgemm} heterogeneity]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
+    \subfigure[\texttt{dgemm} model]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
+    \caption{Illustrating the realism of modeling for BLAS functions.}
+    \label{fig:blas_var}
+  \end{minipage}\hfill%
+  \begin{minipage}[t]{.39\linewidth}
+    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}
+    \caption{Illustrating the realism of modeling for HPL functions.}
+    \label{fig:HPL_var}
+  \end{minipage}
+\end{figure*}
+
+#+END_EXPORT
 ** Modeling Notations
 #+LaTeX: \newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
 #+LaTeX: \newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
@@ -2954,30 +2979,6 @@ available (e.g., clustering with =mclust=\cite{mclust} for
 Bayesian estimation could be made with frameworks like
 STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
-#+BEGIN_EXPORT latex
-\begin{figure}
-  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
-  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
-  \label{fig:nw_var}
-\end{figure}
-
-\begin{figure}
-%  \begin{minipage}{.5\linewidth}
-    \subfigure[\texttt{dgemm} heterogeneity]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
-    \subfigure[\texttt{dgemm} model]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
-    \caption{Illustrating the realism of modeling for BLAS functions.}
-    \label{fig:blas_var}
-%  \end{minipage}%
-%  \begin{minipage}{.5\linewidth}
-    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=.8\linewidth]{figures/kernels/dlatcpy_model.png}}
-    \caption{Illustrating the realism of modeling for HPL functions.}
-    \label{fig:HPL_var}
-%  \end{minipage}
-  \AL{$\to$ Tom. Left: Duration ~ Size with a regression line for each host; Right: Duration ~ Size for a particular host + polynomial prediction to get a feeling of the remaining noise. Illustrates heterogeneity and heteroscedasticity. Same thing for dgemm.}
-\end{figure}
-
-#+END_EXPORT
 ** Modeling MPI communications
 Prior to this work, the standard way of accounting for protocol
 changes in SMPI was to visually estimate breakpoints and to manually
@@ -3033,7 +3034,6 @@ Figure\ref{fig:HPL_var}. Again, only models
 observations called for further complexity.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
-
 ** Network plots                                                  :noexport:
 *** Downloading the CSV
 #+begin_src sh :results output :exports both
