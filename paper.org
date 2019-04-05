@@ -3273,11 +3273,92 @@ plot
 **** HPL_dlatcpy
 Scatter plot to show the time variability and how we model it.
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+#+begin_src R :results output :session *R2* :exports both
+df = read.csv('data/kernel_calibration/trace_functions.csv')
+print(unique(df$func))
+# in this experiment, we got the nodes dahu-{1,...,8} and the ranks were mapped in the right order
+df$node = 1 + df$rank %/% 32
+df$cpu = 2*df$node + df$rank %% 2
+df$mnk = df$m * df$n * df$k
+df$mn = df$m * df$n
+df$mk = df$m * df$k
+df$nk = df$n * df$k
+head(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] dtrsm         dgemm         HPL_dlatcpy   HPL_dlaswp03T HPL_dlaswp02N
+[6] ion          
+Levels: HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy dgemm dtrsm ion
+         func     m n  k   start        end    duration rank    mode node cpu
+1       dtrsm     2 2 NA 0.01674 0.01678434 0.000044337    0 reality    1   2
+2       dgemm 50046 2  2 0.01678 0.01698043 0.000200426    0 reality    1   2
+3 HPL_dlatcpy     2 2 NA 0.01726 0.01726033 0.000000326    0 reality    1   2
+4       dtrsm     4 4 NA 0.01726 0.01726144 0.000001438    0 reality    1   2
+5       dgemm 50044 4  4 0.01727 0.01764994 0.000379944    0 reality    1   2
+6       dtrsm     2 2 NA 0.01790 0.01790106 0.000001056    0 reality    1   2
+     mnk     mn     mk nk
+1     NA      4     NA NA
+2 200184 100092 100092  4
+3     NA      4     NA NA
+4     NA     16     NA NA
+5 800704 200176 200176 16
+6     NA      4     NA NA
+#+end_example
+
+#+begin_src R :results output :session *R2* :exports both
 func = df[(df$func == 'HPL_dlatcpy'),]
-plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) + geom_point()
-plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N') + labs(color='Mode')
-ggsave(filename="figures/kernels/dlatcpy_model.png", plot=plot)
+summary(lm(data=func, duration ~ (I(m*n):factor(cpu))+0))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = duration ~ (I(m * n):factor(cpu)) + 0, data = func)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-1.357e-03 -8.570e-06 -7.100e-07  4.000e-08  2.735e-03 
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+I(m * n):factor(cpu)2  4.949e-09  1.012e-11 489.036   <2e-16 ***
+I(m * n):factor(cpu)3  5.020e-09  9.889e-12 507.660   <2e-16 ***
+I(m * n):factor(cpu)4  4.975e-09  1.011e-11 492.166   <2e-16 ***
+I(m * n):factor(cpu)5  5.080e-09  1.037e-11 489.933   <2e-16 ***
+I(m * n):factor(cpu)6  4.974e-09  1.019e-11 488.265   <2e-16 ***
+I(m * n):factor(cpu)7  5.001e-09  1.027e-11 487.150   <2e-16 ***
+I(m * n):factor(cpu)8  4.892e-09  1.013e-11 482.801   <2e-16 ***
+I(m * n):factor(cpu)9  4.845e-09  1.051e-11 460.972   <2e-16 ***
+I(m * n):factor(cpu)10 4.795e-09  1.022e-11 469.275   <2e-16 ***
+I(m * n):factor(cpu)11 4.760e-09  1.046e-11 455.167   <2e-16 ***
+I(m * n):factor(cpu)13 3.295e-09  3.937e-09   0.837    0.403    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 9.619e-05 on 21086 degrees of freedom
+Multiple R-squared:  0.991,	Adjusted R-squared:  0.991 
+F-statistic: 2.116e+05 on 11 and 21086 DF,  p-value: < 2.2e-16
+#+end_example
+
+OK. cpu 13, is the one with very few measurements and a weird
+behavior. Let's get rid of it.
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R2*
+func = df[(df$func == 'HPL_dlatcpy') & (df$cpu!=13),]
+plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) + 
+    geom_smooth(data = func[func$mode == "reality",], aes(group=factor(cpu)), method='lm', 
+                se=F, size=.2, color="blue", alpha=.2, fullrange=T) + 
+    geom_point(alpha=.5,size=.5) + 
+    geom_smooth(data = func[func$mode == "reality",], method='lm', se=F, fullrange=T, linetype=4, color="black")
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N') + labs(color='Mode') + 
+    xlim(0,max(func$m*func$n)*1.1) +     
+    scale_color_brewer(palette="Set1")  +
+    theme(legend.position = c(0.3,0.85), legend.title=element_blank())
+
+ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=5,height=4, dpi=200)
 plot
 #+end_src
 
