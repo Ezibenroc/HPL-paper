@@ -4469,9 +4469,19 @@ to better understand of these platforms actually behave.
 \clearpage\setcounter{page}{11}
 * Acknowledgements
 
-Experiments presented in this paper were carried out using the Grid'5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr).
+Experiments presented in this paper were carried out using the Grid'5000
+testbed, supported by a scientific interest group hosted by Inria and including
+CNRS, RENATER and several Universities as well as other organizations (see
+https://www.grid5000.fr).
+
 We warmly thank our TACC colleagues for their support in this study and
 providing us with as much information as they could.
+
+This research used resources of the Argonne Leadership Computing Facility, which
+is a DOE Office of Science User Facility supported under Contract
+DE-AC02-06CH11357.
+We thank our Cray colleagues for providing us with information about the Top500
+run of Theta.
 ** References                                                       :ignore:
 
 # See next section to understand how refs.bib file is created.
