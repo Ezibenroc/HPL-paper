@@ -2824,8 +2824,8 @@ illustrated on HPL as a whole in Section\ref{sec:validation}.
 
 \begin{figure*}[!b]
   \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
-    \subfigure[\texttt{dgemm} heterogeneity]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
-    \subfigure[\texttt{dgemm} model]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
+    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
+    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
     \caption{Illustrating the realism of modeling for BLAS functions.}
     \label{fig:blas_var}
   \end{minipage}\hfill%
@@ -2952,23 +2952,39 @@ pipelined communication patterns.
 # - SimGrid priori this work: M1' + N0. Breakpoint estimation was manual.
 # - Proposal: M1' + N1' (pytree + flexmix)
 # - Future work: M1' + N3' (pytree + flexmix + STAN)
-** Modeling BLAS kernels 
-We took care of modeling the 5 more important BLAS kernels used in HPL
-(=dgemm=, =dtrsm=, ..) with the previous modeling alternatives:
-#+LaTeX: \model{\{1,2\}}\noise{\{0,1,2\}} and \model[H]{\{1,2\}}\noise[H]{\{0,1,2\}}.  The
-\modelp{} and \noisep{} families were not investigated as nothing in
-our observations called for such complexity on classical multi-core
+** Modeling =dgemm=
+=dgemm= is the computation kernel in which HPL spends most of the
+time. Therefore, we evaluated the previous modeling alternatives:
+#+LaTeX: \model{\{1,2\}}\noise{\{0,1,2\}} and \model[H]{\{1,2\}}\noise[H]{\{0,1,2\}}. 
+The \modelp{} and \noisep{} families were not investigated as nothing
+in our observations called for such complexity on classical multi-core
 machines. Figure\ref{fig:blas_var} illustrates various models and
-their respective quality for the =dgemm= function (but the other main
-BLAS kernels exhibit a similar behavior). The first observation is
-that a few nodes exhibit a slightly different behavior, which is
-important as these nodes will systematically be slightly slower than
-other nodes. Second, the full polynomial model allows to account for
-some of the variability induced by particular (e.g., tall and skinny)
-matrix geometries. Once platform and parameters have been fully
-accounted for, the remaining (temporal) variability remains limited
-\AL[]{??} but is still worth accounting for.
-
+their respective quality for the =dgemm= function. In these figures, the
+performance of =dgemm= is evaluated by calling =dgemm= with randomized
+sizes over the whole node (to reproduce experimental conditions
+similar to the one of HPL). The first observation
+(Figure\ref{fig:dgemm_het}) is that a few nodes exhibit quite a
+different behavior (each color and each regression line under model
+\model[H]{1} corresponds to a different cpu, whereas the black dotted
+line correspond to model \model{1} over all the nodes). These nodes
+will systematically be slightly slower than other nodes and accounting
+for this spatial heterogeneity is likely to be rather important for
+HPL. Likewise, it is also common that the cores of two CPUs of the
+same node have a significantly different performance. Second, the
+range of values for $M$, $N$, and $K$ is uniform over ??? and it is
+interesting to note that $M.N.K$ is not sufficient to fully describe
+the performance of =dgemm=. Indeed, for $M.N.K \approx \num{4.5E9}$ some
+duration are systematically quite slow regardless of the node. This
+happens for some particular (e.g., tall and skinny) matrix geometries,
+which calls using the full polynomial
+model. Figure\ref{fig:dgemm_poly} depicts the performance (red dots)
+of a given node as well as the prediction using a simple linear model
+(\model[H]{1}, black line), a full polynomial model (\model[H]{2},
+blue dots) and a full polynomial model with heroscedastic noise
+(\model[H]{2}\noise{2}, orange dots). A close inspection reveals that
+all experimental variability is actually very well explained by both the
+polynomial model (better fit for particular combinations of
+parameters) and some temporal variability.
 # Full modeling of DGEMM (Modeling option 2 + Noise option 4) is
 #   - T \sim \alpha.M.N.K + \beta.M.N + ... +  |N(0,\alpha'.MNK + ....) |
 #   - T \sim \alpha (M.N.K + |N(0,\sigma^2)|) but part of the noise can be explained
@@ -2976,22 +2992,27 @@ accounted for, the remaining (temporal) variability remains limited
 #   - T \sim \alpha.M.N.K
 # The consequence of using simpler options are already visible but will
 # be illustrated later.
-** Modeling Minor HPL Kernels
-Several small computation kernels (often related to memory management)
-are deeply intertwined with collective operations to allow HPL to be
-as efficient as possible. Although the total duration of these kernels
-is rather small compared to the total execution time, they may perturb
+** Modeling Other BLAS and HPL Kernels
+Four other BLAS kernels and a few other very small HPL computation
+kernels (often related to memory management) are deeply intertwined
+with collective operations to allow HPL to be as efficient as
+possible. Although the total duration of these kernels is extremely
+small compared to the total execution time, they may perturb
 collective communication by introducing late sends and receives. The
 behavior of one of these kernels is illustrated in
-Figure\ref{fig:HPL_var}. Again, only models
-\model[H]{0-1}\noise[H]{0-2} were investigated as none of our
-observations called for further complexity.
-
-\TC{Attention: seulement dgemm a un modèle hétérogène, tous les autres kernels sont homogènes. Aussi, seulement dgemm a un modèle polynomial, les autres sont linéaires.}
-
-\TC{Tel que c'est écrit là, on a l'impression qu'on a MH2 pour tous les BLAS et MH1 pour tous les kernels HPL, c'est faux...}
-
-\TC{En fait, je trouve la dichotomie BLAS/HPL étrange, on traite *exactement* de la meme manière dtrsm et HPL\_dlatcpy par exemple. On devrait plutot faire une section dgemm, et une section "other kernels".}
+Figure\ref{fig:HPL_var}. This kind of data can only be obtained by
+running HPL for a small input matrix over each node
+individually. Again, for all these kernels a single parameter
+combination explains most of the performance and there some
+variability from a node to an other (one blue regression lines per
+CPU) but it remains quite limited (black dotted line for the platform
+as a whole), especially since these kernels are very short and
+infrequently called compared to =dgemm=. Last, since variability clearly
+increases with input parameters, a \noise{2} is clearly required. The
+blue dots in Figure\ref{fig:HPL_var} therefore represent the outcome
+of a \model{1}\noise{2} model and are hardly distinguishable from the
+real behavior.  It turns out that for all these kernels similar
+results could be obtained with such kind of model.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
 ** Network plots                                                  :noexport:
