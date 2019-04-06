@@ -1347,7 +1347,7 @@ underlying platform.
 
 Alas, it takes typically several hours to run HPL on the list's number one system.
 This duration, combined with the power consumption that often reaches several MW
-for TOP500 machines, makes it financially infeasible to test-run HPL on the whole
+for TOP500 machines, makes it financially prohibitive to test-run HPL on the whole
 machine just to tweak parameters. 
 Yet, performance results of an already deployed, current-generation machine typically also
 play a role in the funding process for future machines. Results near
@@ -1787,7 +1787,7 @@ need to be considered when predicting performance of MPI applications.
 For instance, the protocol used, such as ``eager'' or ``rendez-vous''
 are selected based on the message size, with each protocol having its
 own synchronization semantics, which stronly impact performance.
-To deal with this, SMPI relies on a generalization of the LogGPS
+To deal with this, SMPI relies on a generalization of the LogGPS.
 Modeling network topologies and contention is also difficult.  SMPI
 relies on SimGrid's communication models where each ongoing
 communication is represented as a whole (as opposed to single packets)
@@ -1802,7 +1802,7 @@ applications frequently sending large messages.  SimGrid does not
 model transient phenomena incurred by the network protocol but
 accounts for network topology and heterogeneity. Special attention to
 the modeling of collective communication algorithms has also been
-taken in SMPI this is of little significance in this article as HPL
+taken in SMPI, but this is of little significance in this article as HPL
 ships with its own implementation of collective operations.
 
 SMPI maps every MPI process
@@ -1878,7 +1878,7 @@ depicted in Figure\ref{fig:kernel_sampling}. This
 modification speeds up the simulation by orders of magnitude,
 especially when the matrix order grows. The precision of
 the simulation will be investigated in more details in the next sections
-but it can already be observed that his kernel model leads to a
+but it can already be observed that this kernel model leads to a
 slightly more optimistic estimation of the performance. This may be 
 caused by inaccuracies in our model as well as by the fact that the
 initial emulation is generally more sensitive to pre-emptions, \eg by
@@ -2285,7 +2285,7 @@ addresses, the page table rapidly becomes too large to fit in a single
 node. The page table for a matrix of order $N=4,000,000$ consume
 \NSI{250}{\giga\byte} on
 a system where double-precision floating-point numbers and addresses
-ftake 8 bytes. Thankfully, the x86-64 architecture supports several
+take 8 bytes. Thankfully, the x86-64 architecture supports several
 page sizes, known as ``huge pages'' in Linux. Typically, these pages
 are around \NSI{2}{\mebi\byte} (instead of \NSI{4}{\kibi\byte}), which
 reduces drastically the page table size. For example, for a matrix of
@@ -2812,7 +2812,7 @@ have investigated. Then we briefly compare the prediction of these
 models with individual measurements of both computation and
 communications to illustrate the importance of the model
 complexity. The consequence of using simpler modeling options will be
-illustrated on HPL as a whole in Section\ref{sec::validation}.
+illustrated on HPL as a whole in Section\ref{sec:validation}.
 ** Figures                                                          :ignore:
 #+BEGIN_EXPORT latex
 \begin{figure}
@@ -2887,8 +2887,8 @@ important hypothesis underlying all these methods is the
 homoscedasticity, \ie that the variability is independent on the
 parameters. 
 
-The residual (temporal) variability may an important phenomenon to
-account for as "system noise" is knows to be detrimental to overall
+The residual (temporal) variability may be an important phenomenon to
+account for, as "system noise" is known to be detrimental to overall
 performance of parallel applications like HPL. We therefore consider
 different modeling options for this temporal variability.
 - Noise option \noise{0} (no noise): The simplest option consists in simply
@@ -2961,7 +2961,7 @@ our observations called for such complexity on classical multi-core
 machines. Figure\ref{fig:blas_var} illustrates various models and
 their respective quality for the =dgemm= function (but the other main
 BLAS kernels exhibit a similar behavior). The first observation is
-that a few node exhibit a slightly different behavior, which is
+that a few nodes exhibit a slightly different behavior, which is
 important as these nodes will systematically be slightly slower than
 other nodes. Second, the full polynomial model allows to account for
 some of the variability induced by particular (e.g., tall and skinny)
@@ -2986,6 +2986,10 @@ behavior of one of these kernels is illustrated in
 Figure\ref{fig:HPL_var}. Again, only models
 \model[H]{0-1}\noise[H]{0-2} were investigated as none of our
 observations called for further complexity.
+
+\TC{Attention: seulement dgemm a un modèle hétérogène, tous les autres kernels sont homogènes. Aussi, seulement dgemm a un modèle polynomial, les autres sont linéaires.}
+
+\TC{Tel que c'est écrit là, on a l'impression qu'on a MH2 pour tous les BLAS et MH1 pour tous les kernels HPL, c'est faux...}
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
 ** Network plots                                                  :noexport:
