@@ -3769,10 +3769,10 @@ text_size = 8
 lab = dfsim %>% filter(matrix_size == 300000) %>% select(gflops, matrix_size, model) %>% distinct()
 lab = lab %>% mutate(label = case_when(model == 'A1'     ~ 'simple',
                                        model == 'A2'     ~ 'stochastic network',
-                                       model == 'A1_het' ~ 'heterogeneous',
-                                       model == 'C1_het' ~ 'heterogeneous\n& polynomial dgemm',
-                                       model == 'D1_het' ~ 'heterogeneous\n& polynomial dgemm\n& stochastic kernels',
-                                       model == 'D2_het' ~ 'heterogeneous\n& polynomial dgemm\n& stochastic kernels\n& stochastic network',
+                                       model == 'A1_het' ~ 'heterogeneous dgemm',
+                                       model == 'C1_het' ~ 'heterogeneous dgemm\n& polynomial dgemm',
+                                       model == 'D1_het' ~ 'heterogeneous dgemm\n& polynomial dgemm\n& stochastic kernels',
+                                       model == 'D2_het' ~ 'heterogeneous dgemm\n& polynomial dgemm\n& stochastic kernels\n& stochastic network',
                                        T             ~ as.character(model)))
 lab$x = lab$matrix_size
 lab$y = lab$gflops
@@ -3782,14 +3782,14 @@ delta_x = max(dfsim$matrix_size) / 12
 delta_y = max(dfsim$gflops) / 12
 lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ xl-delta_x,
                                     model == 'A2'     ~ xl+delta_x,
-                                    model == 'A1_het' ~ xl-1.2*delta_x,
-                                    model == 'C1_het' ~ xl+1.5*delta_x,
+                                    model == 'A1_het' ~ xl-1.7*delta_x,
+                                    model == 'C1_het' ~ xl+1.7*delta_x,
                                     model == 'D1_het' ~ xl-1.2*delta_x,
-                                    model == 'D2_het' ~ xl+2*delta_x,
+                                    model == 'D2_het' ~ xl+2.2*delta_x,
                                        T             ~ xl))
 lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ yl+delta_y,
                                     model == 'A2'     ~ yl+delta_y,
-                                    model == 'A1_het' ~ yl+0.8*delta_y,
+                                    model == 'A1_het' ~ yl+0.5*delta_y,
                                     model == 'C1_het' ~ yl+1.2*delta_y,
                                     model == 'D1_het' ~ yl-2*delta_y,
                                     model == 'D2_het' ~ yl-2*delta_y,
@@ -3812,7 +3812,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-U7iI14/figureCt4iym.png]]
+[[file:/tmp/babel-fhdEeb/figure8QFZF1.png]]
 
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
@@ -3822,8 +3822,8 @@ execution to 256 ranks and the first five iterations, to limit the
 trace sizes. A first qualitative validation can be done by visually
 comparing the Gantt charts of the simulations with the reality (see
 figure\ref{fig:gantt_simulation}). In the charts, calls to
-\texttt{dgemm} are in purple, \texttt{MPI\_Send} in orange,
-\texttt{MPI\_Recv} in green. Although the structure is similar in all
+\texttt{dgemm} are in yellow, \texttt{MPI\_Send} in red,
+\texttt{MPI\_Recv} in blue. Although the structure is similar in all
 charts, the shape and the duration of the communication phases can be
 way too optimistic in simulations compared to reality.  The charts
 show that, at this scale, using a deterministic or a stochastic model
@@ -3864,19 +3864,39 @@ of collective operations.
 We now provide a more quantative comparison using the whole cluster
 and focusing on the \si{\giga\flops} rate reported by HPL when varying
 matrix size (see Figure\ref{fig:validation_performance}).
-The purple (resp. orange) line corresponds to simulations of HPL with simple
-(resp. complex) models, we inject deterministic (resp. stochastic) durations and
-the function \texttt{dgemm} is modeled as a linear (resp. polynomial) relation.
-This plot shows that the complex models enable a much more realistic
-simulation. The largest error is done for the matrix of size \num{450000}. Here, the
-simple simulation overestimates the performance by 20.6% whereas the complex
-simulation only overestimates it by 8.4%.
+
+The real executions are depicted in black. For each matrix size, we performed 8
+runs of HPL, to illustrate the temporal variability of the performance.  The
+light green line, on the top, is our first tentative to simulate HPL. The
+simulation was done with a simple model: \model{1} for the kernels and
+\modelp{1} for the network with no noise (\noise{0}) in both cases. This model
+overestimates HPL performance by more than 30%. Our initial thoughts was that
+the network model was too optimistic, so we switched to a stochastic multi-modal
+network model, \noisep{1}, shown in yellow. This does not cause any significant
+change in HPL performance prediction, as shown by the plot.
+
+As shown by figure \ref{fig:blas_var}, there is an important heterogeneity in
+the cluster. For this reason, we started using a \model[H]{1}/\noise{0} model
+for \texttt{dgemm} while keeping the models for the other kernels and the
+network as before. This increases very significantly the realism of the
+simulation as the performance is now overestimated by only 9% (shown in dark
+green in the plot).
+
+As expected, using a polynomial model for \texttt{dgemm} instead of a linear
+model (thus switching from \model[H]{1} to \model[H]{2}) has an higher impact on
+the performance prediction for smaller matrices. This new model, depicted in
+orange, is very close to the reality at the beginning, but the larger the
+matrix, the closer it comes to the previous model.
+
+Finally, adding some noise (\noise{2} for all kernels, \noise[H]{2} for
+\texttt{dgemm}) helps a lot to get the last bit of realism. The prediction, in
+blue, is now extremly close to the reality as it underestimates the performance
+by less than 5%, even 2% for the larger matrices. Adding back some noise to the
+network model (\noisep{1}, in pink) is still not significant.
 
 We have shown it is possible to consistently predict performance
 within a few percents of reality provided a faithful model of each
-individual resource is realized. Our prediction are always slightly
-optimistic compared to reality, which is expected as we skipped
-several small HPL operations during our emulation.
+individual resource is realized.
 
 ** \scalebox{.92}{Comparing with the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
