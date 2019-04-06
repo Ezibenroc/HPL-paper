@@ -10,6 +10,9 @@ fast:
 	--eval "(setq org-export-babel-evaluate t)" paper.org  --funcall org-latex-export-to-latex
 	pdflatex paper.tex
 
+watch:
+	while inotifywait -e close_write paper.org; do make fast; done
+
 # If you have good Emacs and Org-mode installed by default, delete "-l ~/.emacs.d/init.el"
 %.tex: %.org
 	emacs -batch -l ~/.emacs.d/init.el $^  --funcall org-babel-tangle
