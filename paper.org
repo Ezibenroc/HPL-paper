@@ -1496,7 +1496,7 @@ article by summarizing our contributions.
 
 For this work, we use the freely-available reference-implementation of
 the High-Performance Linpack benchmark\cite{HPL}, HPL, which is 
-used to benchmark systems for the TOP500\cite{top500} list. HPL
+used to benchmark systems for the TOP500\cite{TOP500} list. HPL
 requires MPI to be available and implements
 a LU decomposition. HPL checks the correctness of this factorization by
 solving a linear system $A\cdot{}x=b$, but only the factorization step is
@@ -1574,7 +1574,7 @@ used for each of these runs.
 % \TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
 % demandait de ne pas diffuser plus loin sans on accord, mais je ne sais pas s'il
 % parlait du HPL.dat ou des réponses de son collègue.}
-% \TC{Le run Top500 de Theta a été refait plusieurs fois. Je ne sais pas auquel
+% \TC{Le run TOP500 de Theta a été refait plusieurs fois. Je ne sais pas auquel
 % correspond le fichier HPL.dat que l'on a. J'ai reporté la perf de novembre
 % 2017.}
 
@@ -1602,7 +1602,7 @@ MPI ranks & 1/node                & 1/node                   & 1/core           
 #+END_EXPORT
 
 *** Hidden information about the Stampede execution              :noexport:
-Top500: https://www.top500.org/system/177931
+TOP500: https://www.TOP500.org/system/177931
 
 #+BEGIN_SRC C :exports none :tangle fullrun_hpl.txt
 ================================================================================
@@ -1651,7 +1651,7 @@ HPL_pdgesv() end time   Sun Jun  2 15:10:04 2013
 #+END_SRC
 
 *** Hidden information about the Theta execution                 :noexport:
-Top500: https://www.top500.org/system/178926
+TOP500: https://www.TOP500.org/system/178926
 Remarks:
 - they report a Nmax of 7,680,000, which is smaller that what we have in the HPL.dat
 - none of the 3 "total cores" values is a multiple of P*Q=32*101
@@ -3636,7 +3636,7 @@ look-ahead =depth= of 1. Finally, we used the =increasing-2-ring= broadcast with
 
 Although this machine is much smaller than top supercomputers, we
 believe that faithfully simulating an HPL execution with such settings
-is as challenging as a typical Top500 qualification run.
+is as challenging as a typical TOP500 qualification run.
 - We simulated one rank per core to obtain a higher number
   (\Num{1024}) of MPI process. This is more difficult than simulating
   one rank per node, as the performance is more subject to network
@@ -4290,7 +4290,7 @@ ggplot(results[results$mode != 'highbw',], aes(x=size, y=Gflops, color=mode, lin
                colour =  "white", fontface = "bold") +
     # SMPI lines
     geom_point() + geom_line() +  
-    # Top500 perf
+    # TOP500 perf
     geom_hline(yintercept=5.16811e+06) + 
     annotate("text",x=3875000, 1E2,y=5.4e+06, hjust="right",
         label="Top 500 performance",color="black") + 
@@ -4330,7 +4330,7 @@ identify first a factorization of the panel, then a broadcast to all
 the nodes, and finally an update of trailing matrix.  More than one
 fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation
-ratio), which prevents HPL from reaching the Top500 performance.
+ratio), which prevents HPL from reaching the TOP500 performance.
 Overlapping of these heavy communication phases with computation would
 improve performance significantly. The fact that this is almost not
 happening can be explained by the look-ahead ~DEPTH~ parameter that was
@@ -4445,7 +4445,7 @@ invaluable in the future to aid compute centers with the decision of
 whether a new machine (and what technology) will work best for a given
 application or if an upgrade of the current machine should be
 considered. As a future work, we intend to conduct similar studies
-with other HPC benchmarks (\eg HPCG or HPGMG) and with other top500
+with other HPC benchmarks (\eg HPCG or HPGMG) and with other TOP500
 machines. From our experience, we believe that a faithful and public
 reporting of the experimental conditions (compiler options, library
 versions, HPL output, etc.) is invaluable and allows researchers
@@ -4480,7 +4480,7 @@ providing us with as much information as they could.
 This research used resources of the Argonne Leadership Computing Facility, which
 is a DOE Office of Science User Facility supported under Contract
 DE-AC02-06CH11357.
-We thank our Cray colleagues for providing us with information about the Top500
+We thank our Cray colleagues for providing us with information about the TOP500
 run of Theta.
 ** References                                                       :ignore:
 
