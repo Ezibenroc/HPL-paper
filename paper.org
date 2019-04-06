@@ -2953,7 +2953,7 @@ pipelined communication patterns.
 # - Proposal: M1' + N1' (pytree + flexmix)
 # - Future work: M1' + N3' (pytree + flexmix + STAN)
 ** Modeling BLAS kernels 
-We took care of modeling the 5 mode important BLAS kernels used in HPL
+We took care of modeling the 5 more important BLAS kernels used in HPL
 (=dgemm=, =dtrsm=, ..) with the previous modeling alternatives:
 #+LaTeX: \model{\{1,2\}}\noise{\{0,1,2\}} and \model[H]{\{1,2\}}\noise[H]{\{0,1,2\}}.  The
 \modelp{} and \noisep{} families were not investigated as nothing in
@@ -2990,6 +2990,8 @@ observations called for further complexity.
 \TC{Attention: seulement dgemm a un modèle hétérogène, tous les autres kernels sont homogènes. Aussi, seulement dgemm a un modèle polynomial, les autres sont linéaires.}
 
 \TC{Tel que c'est écrit là, on a l'impression qu'on a MH2 pour tous les BLAS et MH1 pour tous les kernels HPL, c'est faux...}
+
+\TC{En fait, je trouve la dichotomie BLAS/HPL étrange, on traite *exactement* de la meme manière dtrsm et HPL\_dlatcpy par exemple. On devrait plutot faire une section dgemm, et une section "other kernels".}
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
 ** Network plots                                                  :noexport:
