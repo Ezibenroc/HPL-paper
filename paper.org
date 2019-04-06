@@ -1310,67 +1310,21 @@ is crucial. We validate our approach by showing that the simulation
 predictions are systematically within a few percents of real
 experiments.
 * Abstract                                                           :ignore:
-#+LaTeX: \begin{abstract}
-The High-Performance Linpack (HPL) benchmark is the 
-benchmark used to rank supercomputers in the TOP500 and for which a careful
-tuning of all parameters (problem size, grid arrangement, granularity,
-collective operation algorithms, etc.) is essential. Such optimization
-can hardly be done through simple mathematical performance models but
-with a power consumption of several MW per hour on a TOP500 machine,
-test-running HPL on the whole machine for hours is extremely
-expensive. In this article, we first explain how we both extended the
-SimGrid's SMPI simulator and slightly modified the open-source version
-of HPL to allow a fast emulation of HPL on a single commodity computer
-at the scale of a supercomputer.  Then we explain how to model the
-different components (network, linear algebra library, …) of the
-supercomputer to obtain a faithful performance prediction. We validate
-our approach with a detailed study of HPL running with 1024 MPI ranks
-on a recent small scale machine and by showing that the simulation
-prediction is systematically within a few percents of real experiments
-for both small and large inputs. Our study reveals that a careful
-modeling of both spatial and temporal node variability is
-crucial. Finally, this approach allows us to re-evaluate the
-performance that would have been obtained on the Stampede cluster at
-TACC in 2013, when it got ranked 6th in the TOP500. This performance
-reveals much lower than what was reported and we show it cannot have
-been obtained with the open-source version of HPL. This performance
-was actually obtained a closed-source version specifically designed by
-the Intel engineers and our simulation allows us to hint where the
-main algorithmic improvements have been done.
-# The High-Performance Linpack (HPL) benchmark is the de-facto standard
-# benchmark to rank supercomputers in the TOP500 for which a careful
-# tuning of all HPL parameters (problem size, grid arrangement,
-# granularity, collective operation algorithms, etc.)  specifically
-# suited to the network topology is essential. Such optimization can can
-# hardly be done through simple mathematical performance models but with
-# a power consumption of several MW per hour on a TOP500 machine,
-# test-running HPL on the whole machine for hours is extremely
-# expensive. In this article, we first explain how we both extended the
-# SimGrid's SMPI simulator and slightly modified the open-source version
-# of HPL to allow a fast emulation of HPL on a single commodity computer
-# at the scale of a supercomputer.
-# # More precisely, we take as a motivating use case the large-scale run
-# # performed on the Stampede cluster at TACC in 2013, when it got
-# # ranked 6th in the TOP500. While this qualification run required the
-# # dedication of 6,006 computing nodes of the supercomputer and more
-# # than 120 TB of RAM for more than 2 hours, we manage to
-# # simulate a similar configuration on a commodity computer with
-# # 19 GB of RAM in about 62 hours.
-# Then we explain how to model the different components (network, linear
-# algebra library, ...) of the supercomputer to obtain a faithful
-# performance prediction. We validate our approach with a detailed study
-# of HPL with 1024 MPI ranks on a recent small scale machine and by
-# showing that the simulation prediction is systematically within a few
-# percents of real experiments. Our study reveals that a careful
-# modeling of both spatial and temporal node variability is
-# crucial. Finally, this approach allows us to re-evaluate the
-# performance that would have been obtained on the Stampede cluster at
-# TACC in 2013, when it got ranked 6th in the TOP500. This performance
-# reveals much lower than what was reported and we show it cannot have
-# been obtained with the open-source version of HPL. Indeed, this
-# performance was obtained a closed-source version specifically designed
-# by the Intel engineers and our simulation allows us to hint where the
-# main algorithmic improvements have been done.
+
+#+Latex:\begin{abstract}
+High-Performance Linpack is the benchmark used to rank supercomputers in the
+TOP500 and for which a careful tuning of all parameters (problem size, grid
+arrangement, granularity, collective operation algorithms, etc.) is
+essential. With a power consumption of several MW per hour on a TOP500 machine,
+test-running HPL on the whole machine for hours is extremely expensive. In this
+article, we explain how we both extended the SimGrid's SMPI simulator and
+slightly modified the open-source version of HPL to allow a fast emulation on a
+single commodity computer at the scale of a supercomputer. We explain how to
+model the different components (network, BLAS, ...) of the supercomputer to
+obtain a faithful performance prediction and show that a careful modeling of
+both spatial and temporal node variability is crucial. We validate our approach
+by showing that the simulation predictions are systematically within a few
+percents of real experiments.
 #+LaTeX: \end{abstract}
 
 #+LaTeX: \maketitle              % typeset the title of the contribution
