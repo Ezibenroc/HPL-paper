@@ -1867,8 +1867,7 @@ on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
 =dtrsm= (for solving an equation of the form $Ax=b$). An analysis of an
 HPL simulation with $64$ processes and a very small matrix of order
 $30,000$ showed that roughly \NSI{96}{\percent} of the time is spent in
-these two very regular kernels.  For larger matrices, these kernels
-will consume an even bigger percentage of the computation time. Since
+these two kernels. Since
 these kernels do not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
 performance model for the respective kernel. 
@@ -1884,15 +1883,10 @@ parameters and eventually passed on to =smpi_execute_benched= that
 advances the clock of the executing rank by this estimate.
 The effect on simulation time for a small scenario is
 depicted in Figure\ref{fig:kernel_sampling}. This
-modification speeds up the simulation by orders of magnitude,
-especially when the matrix order grows. The precision of
+modification speeds up the simulation by orders of magnitude. The precision of
 the simulation will be investigated in more details in the next sections
-but it can already be observed that this kernel model leads to a
-slightly more optimistic estimation of the performance. This may be 
-caused by inaccuracies in our model as well as by the fact that the
-initial emulation is generally more sensitive to pre-emptions, \eg by
-the operating system, and therefore more likely to be pessimistic
-compared to a real execution. 
+but it can already be observed that this kernel model leads to an accurate,
+albeit slightly more optimistic, estimation of the performance.
 
 #+BEGIN_EXPORT latex
 \begin{figure}%[!htb]
@@ -2051,12 +2045,11 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 HPL uses pseudo-randomly generated
 matrices that need to be setup every time HPL is executed. The time
 spent on this just as the validation of the computed result is
-not considered in the reported \si{\giga\flops} performance. 
-We skip all the
-computations since we replaced them by a kernel model and therefore, 
-result validation is meaningless. Since both 
+not considered in the reported performance.
+Since both
 phases do not have an impact on the reported performance, we can safely
 skip them.
+
 In addition to the main computation kernels =dgemm= and =dtrsm=, 
 we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
