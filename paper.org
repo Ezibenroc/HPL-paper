@@ -2229,7 +2229,7 @@ To apply this to HPL's =panel= data\-structure
 and partially share it between processes, we only had to modify a few lines. 
 
 We also leveraged the information on which memory area is private, shared or
-partially shared to improve the and overall performance. 
+partially shared to improve the overall performance. 
 By making SMPI internally aware of the memory's
 visibility, it can now avoid calling =memcopy= when large messages
 containing shared segments are sent from one MPI rank to another.
@@ -2280,9 +2280,7 @@ matrix of order $80,000$ and $32$ MPI processes, the number
 of minor page faults drops from \Num{4412047} (with =mmap=) to
 \Num{6880} (with =dlopen=), which results in a reduction of system time from 
 \NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
-\NSI{2.12}{\sec}. Obviously, the larger the matrix and the number of
-processes, the larger the number of context switch during the
-simulation, and thus the higher the gain.
+\NSI{2.12}{\sec}.
 
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
 thousand), the performance of the simulation quickly deteriorates as
@@ -2291,11 +2289,8 @@ allows to reduce the /physical/ memory usage. The /virtual/ memory, on the
 other hand, is still allocated for every process since the allocation
 calls are still executed.  Without a reduction of allocated virtual
 addresses, the page table rapidly becomes too large to fit in a single
-node. The page table for a matrix of order $N=4,000,000$ consume
-\NSI{250}{\giga\byte} on
-a system where double-precision floating-point numbers and addresses
-take 8 bytes. Thankfully, the x86-64 architecture supports several
-page sizes, known as ``huge pages'' in Linux. Typically, these pages
+node. Thankfully, the x86-64 architecture supports several
+page sizes, known as /huge pages/ in Linux. Typically, these pages
 are around \NSI{2}{\mebi\byte} (instead of \NSI{4}{\kibi\byte}), which
 reduces drastically the page table size. For example, for a matrix of
 order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
