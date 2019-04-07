@@ -2209,24 +2209,20 @@ regardless of the size of the actual allocations.
 
 Although using the default =SHARED_MALLOC= mechanism works flawlessly
 for =A=, a more careful strategy needs to be used for the
-=panel=. Indeed, the =panel= is an intricate data structure with both \texttt{int}s
+=panel=. The =panel= is an intricate data structure with both \texttt{int}s
 (accounting for matrix indices, error codes, MPI tags, and pivoting information)
 and \texttt{double}s (corresponding to a copy of a sub-matrix of =A=). To
 optimize data transfers, HPL flattens this structure into a single
 allocation of \texttt{double}s (see
 Figure\ref{fig:panel_structure}). Using a fully shared memory
 allocation for the =panel= therefore leads to index corruption that results in
-classic invalid memory accesses as well as communication
-deadlocks, as processes may not send to or receive from the correct
-process. Since \texttt{int}s and \texttt{double}s are stored in
+classic invalid memory accesses. Since \texttt{int}s and \texttt{double}s are stored in
 non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism that preserves the process-specific
 content. We have thus introduced the 
 =SMPI_PARTIAL_SHARED_MALLOC= macro that allows to specify which ranges of the
 allocation should be preserved (\ie private to each process) and
 which ones may be corrupted (\ie shared between process). 
-To apply this to HPL's =panel= data\-structure
-and partially share it between processes, we only had to modify a few lines. 
 
 We also leveraged the information on which memory area is private, shared or
 partially shared to improve the overall performance. 
