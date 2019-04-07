@@ -4297,8 +4297,7 @@ our simulations to be optimistic yet close to results obtained by a real life ex
 Figure\ref{fig:stampede_prediction} compares two simulation scenarios
 with the original result from 2013. The solid red line represents the HPL
 performance prediction as obtained with SMPI with the very optimistic Stampede model
-we just described. Although we expected SMPI to be particularly
-optimistic, the prediction was surprisingly much lower than the TOP500 result.
+we just described. Surprisingly, the prediction was much lower than the TOP500 result.
 We verified that no part of HPL was left unmodeled and decided to
 investigate whether a flaw in our network model that would result in
 too much congestion could explain the performance. 
@@ -4309,7 +4308,7 @@ either the CPU or the KNC seemed to be used at one time and a specifically
 optimized version of the MKL may have been used in 2013. 
 Removing the offloading latency and modeling each node as a
 single \NSI{1.2}{\tera\flops} node also fails to explain the
-difference between our prediction results and reality.
+huge difference between our prediction results and reality.
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -4415,21 +4414,22 @@ iterations of HPL to get an idea of what could be improved (the trace
 for the first five iterations can be obtained in about 10 minutes on a
 commodity computer and is about \NSI{175}{\mega\byte} large once
 compressed). Figure\ref{fig:hpl_gantt} illustrates the very
-synchronous and iterative nature of the first iterations: One can
+synchronous and iterative nature of the first iterations with the
+HPL configuration of Figure\ref{fig:typical_run}: One can
 identify first a factorization of the panel, then a broadcast to all
 the nodes, and finally an update of trailing matrix.  More than one
 fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation
 ratio), which prevents HPL from reaching the TOP500 performance.
-Overlapping of these heavy communication phases with computation would
-improve performance significantly. The fact that this is almost not
+Overlapping these heavy communication phases with computation would
+significantly improve performance. The fact that this is almost not
 happening can be explained by the look-ahead ~DEPTH~ parameter that was
-supposedly set to =0= (see Figure\ref{fig:typical_run}). This is quite
+supposedly set to =0=. This is quite
 surprising as even the tuning section of the HPL documentation
 indicates that a =depth= of =1= is supposed to yield the best results,
 even though a large problem size could be needed to see some
 performance gain. We discussed this surprising behavior with the
-Stampede-team and were informed that, although the output mentions
+Stampede-team and were informed that, although the HPL output mentions
 =HPLinpack 2.1= from =October 26, 2012= by Petitet\etal, the run in 2013
 was actually executed with the Intel binary version of HPL and which
 was probably specifically modified for Stampede. The submitted HPL
@@ -4447,7 +4447,7 @@ very heavy communication patterns. This is not at all surprising since
 for a matrix of this order, several hundred megabytes need to be
 broadcast.  Although the output states that the =blongM= algorithm was
 used it is likely that another algorithm has been used.  We tried the
-other of the 6 broadcast algorithms HPL comes with but could not
+the 6 other broadcast algorithms provided by HPL but could not
 obtain significantly better overall performance.  An analysis of the
 symbols in the Intel binary revealed that another broadcast algorithm
 named =HPL_bcast_bpush= was available. Unlike the others, this new
@@ -4475,7 +4475,6 @@ side with respect to asynchrony and to the broadcast algorithm.
   \labspace
 \end{figure}
 #+END_EXPORT
-
 
 **** Gantt charts                                               :noexport:
 #+begin_src sh :results output :exports both
