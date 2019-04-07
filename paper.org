@@ -1278,7 +1278,7 @@ zlib 1.0
 \affiliation{%
   \institution{Univ. of Neverwhere}
 %  \city{}
-  \state{Wonderland}
+%  \state{Wonderland}
 %  \postcode{38000}
 }
 % \email{firstname.lastname@inria.fr}
@@ -1338,13 +1338,13 @@ other scientific applications in terms of potential performance issues
 and their solutions. Although in the case of HPL, machine vendors know
 how to estimate the performance using simple mathematical performance
 models, these models provide trends but are not particularly accurate
-as they underestimate the serious impact of the network
-(\eg congestion or topology). Whenever actual
+as they underestimate the impact of the network congestion and of
+system noise. Whenever actual
 performance do not match expectations, it can be very difficult to
 understand whether the mismatch originates from model imperfections or
 from machine misconfiguration.
 
-\TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
+# \TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
 
 # Yet, performance results of an already deployed, current-generation
 # machine typically also play a role in the funding process for future
@@ -1557,7 +1557,7 @@ Duration   & 2 hours                  & 28 hours                 & 1 hour       
 Memory    & \NSI{120}{\tera\byte}     & \NSI{559}{\tera\byte}     & \NSI{2}{\tera\byte} \\
 MPI ranks & 1/node                & 1/node                   & 1/core             \\
 \end{tabular}}\vspace{-1em}
-\caption{Typical runs of HPL}\vspace{-1em}
+\caption{Typical runs of HPL}\vspace{-1.5em}
 \label{fig:typical_run}
 \end{figure}
 #+END_EXPORT
@@ -1852,9 +1852,8 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 We now present the changes to SimGrid and HPL that were required for a
 scalable simulation. We provide only a brief presentation of our
 modifications and refer the reader interested in details
-to\cite{cornebize:hal-01544827}\AL[]{Anonymize}
-
-For our experiments in this section, we used a node
+to\cite{cornebize:hal-01544827} and \cite{cornebize:github_notebook}.
+For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
 CPUs processors and Debian Stretch (Linux 4.9). 
@@ -1894,12 +1893,11 @@ albeit slightly more optimistic, estimation of the performance.
   \subfigure[Non-intrusive macro replacement with a very simple computation model.\label{fig:macro_simple}]{
     \begin{minipage}[b]{\linewidth}
       \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
-    \end{minipage}}
+    \end{minipage}}\vspace{-1em}
   \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
     \begin{minipage}[b]{\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
-    \end{minipage}}
-  \vspace{-1em}
+    \end{minipage}}\vspace{-1em}
   \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
@@ -2042,27 +2040,25 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 *** Specific Adjustments of HPL
 #+LaTeX: \label{sec:hplchanges}
 
-HPL uses pseudo-randomly generated
-matrices that need to be setup every time HPL is executed. The time
-spent on this just as the validation of the computed result is
-not considered in the reported performance.
-Since both
-phases do not have an impact on the reported performance, we can safely
-skip them.
+HPL uses pseudo-randomly generated matrices that are setup every time
+HPL is executed. This initialization, just like the factorization
+correctness verification, is not considered in the reported
+performance.  Since both phases have no impact on the reported
+performance, we can safely skip them.
 
 In addition to the main computation kernels =dgemm= and =dtrsm=, 
 we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
-handling: =dgemv=, =dswap=, =daxpy=,
+handling: =dtrsm=, =dgemv=, =dswap=, =daxpy=,
 =dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
 spent in fifteen functions implemented in HPL: 
 =HPL_dlaswp*N=, =HPL_dlaswp*T=, =HPL_dlacpy= and =HPL_dlatcpy=.
-All of these functions are called during the
+All these functions are called during the
 LU factorization and hence impact the performance measured by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations, they all operate on
 bogus data and hence also produce bogus data. To study their impact on
-overal performance, we handled them in the same was as =dgemm= and
-=dtrsm= through performance models and macro substitution.
+overal performance, we handled them similarly to =dgemm= and
+=dtrsm=, through performance models and macro substitution.
 
 Last, note that HPL
 implements an LU factorization with partial pivoting and a special
@@ -2074,7 +2070,6 @@ We confirmed that this modification is harmless in terms of performance predicti
 speeds up the simulation by an additional factor of $\approx3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
 ** Scaling Down Memory Consumption
-*** Figure                                                         :ignore:
 #+BEGIN_EXPORT latex
 \tikzset{draw half paths/.style 2 args={%
   % From https://tex.stackexchange.com/a/292108/71579
@@ -2091,8 +2086,8 @@ on small ($N=30,000$) and even more on large scenarios.
 \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
 \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
 \tikzstyle{bigswitch}=[base, draw]
-\begin{figure}%[b]%[htbp]
-  \centering
+\begin{figure}[b]%[htbp]
+  \vspace{-1em}\centering
   \begin{tikzpicture}[yscale=0.5, scale=0.7]
     \pgfmathtruncatemacro{\size}{4}
     \pgfmathtruncatemacro{\width}{2}
@@ -2127,51 +2122,8 @@ on small ($N=30,000$) and even more on large scenarios.
 	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
   \end{tikzpicture}
   \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are mapped onto the same physical pages.}
-% \end{figure}
-% \begin{figure}%[htbp]
-%  \centering
-
-  {\begin{minipage}{1.0\linewidth}
-  \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
-    \begin{minipage}[b]{\linewidth}\centering
-      \begin{tikzpicture}[yscale=.6,scale=0.8]
-        \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
-        \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
-        \draw[dashed] (3, 2) -- (3, 3);
-        \draw[dashed] (6, 2) -- (6, 3);
-        \node(1) at (1.5, 2.5) {matrix parts};
-        \node(2) at (4.5, 2.5) {indices};
-        \node(3) at (7.5, 2.5) {matrix parts};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0.2, 3) -- (2.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6.2, 3) -- (8.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (3.2, 3) -- (5.8, 3) node [pos=0.5, yshift=+0.5cm] {must not be shared};
-      \end{tikzpicture}
-    \end{minipage}}
-  \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
-    \begin{minipage}[b]{\linewidth}\centering
-      \begin{tikzpicture}[yscale=.5]
-        \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
-        \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
-        \draw[dashed] (2, 1) -- (2, 1.5);
-        \draw[dashed] (4, 1) -- (4, 1.5);
-
-        \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
-        \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
-        \draw[dashed] (2, 0) -- (2, .5);
-        \draw[dashed] (3, 0) -- (3, .5);
-
-        \draw[-latex] (2, 1) -- (2, .5);
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
-      \end{tikzpicture}
-    \end{minipage}
-  }    
-  \end{minipage}}
-  \vspace{-1em}
-  \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
-
 *** Text                                                           :ignore:
 The largest two allocated data structures in HPL are the input matrix =A=
 (with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
@@ -2200,9 +2152,53 @@ regardless of the size of the actual allocations.
 # Instead, SMPI's =SHARED_MALLOC= mechanism can be used
 # to share unimportant data structures between all ranks, minimizing the memory footprint.
 
+#+BEGIN_EXPORT latex
+\begin{figure}%[htbp]
+ \centering
+
+  {\begin{minipage}{1.0\linewidth}
+  \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[yscale=.6,scale=0.8]
+        \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
+        \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
+        \draw[dashed] (3, 2) -- (3, 3);
+        \draw[dashed] (6, 2) -- (6, 3);
+        \node(1) at (1.5, 2.5) {matrix parts};
+        \node(2) at (4.5, 2.5) {indices};
+        \node(3) at (7.5, 2.5) {matrix parts};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0.2, 3) -- (2.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6.2, 3) -- (8.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (3.2, 3) -- (5.8, 3) node [pos=0.5, yshift=+0.5cm] {must not be shared};
+      \end{tikzpicture}
+    \end{minipage}}\vspace{-1em}
+  \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
+    \begin{minipage}[b]{\linewidth}\centering
+      \begin{tikzpicture}[yscale=.5]
+        \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
+        \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
+        \draw[dashed] (2, 1) -- (2, 1.5);
+        \draw[dashed] (4, 1) -- (4, 1.5);
+
+        \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
+        \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
+        \draw[dashed] (2, 0) -- (2, .5);
+        \draw[dashed] (3, 0) -- (3, .5);
+
+        \draw[-latex] (2, 1) -- (2, .5);
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
+      \end{tikzpicture}
+    \end{minipage}
+  }    
+  \end{minipage}}\vspace{-1em}
+  \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1.5em}
+\end{figure}
+#+END_EXPORT
+
 Although using the default =SHARED_MALLOC= mechanism works flawlessly
 for =A=, a more careful strategy needs to be used for the
-=panel=. The =panel= is an intricate data structure with both \texttt{int}s
+=panel=, which is an intricate data structure with both \texttt{int}s
 (accounting for matrix indices, error codes, MPI tags, and pivoting information)
 and \texttt{double}s (corresponding to a copy of a sub-matrix of =A=). To
 optimize data transfers, HPL flattens this structure into a single
@@ -2216,6 +2212,9 @@ content. We have thus introduced the
 =SMPI_PARTIAL_SHARED_MALLOC= macro that allows to specify which ranges of the
 allocation should be preserved (\ie private to each process) and
 which ones may be corrupted (\ie shared between process). 
+For a matrix of order $40,000$ and $64$ MPI processes,
+memory consumption decreased from about \NSI{13.5}{\giga\byte} to
+less than \NSI{40}{\mega\byte}.
 
 We also leveraged the information on which memory area is private, shared or
 partially shared to improve the overall performance. 
@@ -2226,9 +2225,9 @@ For fully private or partially shared segments, SMPI
 identifies and copies only those parts that are process-dependent
 (private) into the corresponding buffers on the receiver side.
 HPL simulation times and memory consumption were considerably improved
-in our experiments. For a matrix of order $40,000$ and $64$ MPI processes,
-the memory consumption decreased from about \NSI{13.5}{\giga\byte} to
-less than \NSI{40}{\mega\byte}.
+in our experiments because the =panel= as the most frequently
+transferred datastructure is partially shared with only a small part
+being private. 
 
 HPL \texttt{malloc}s/\texttt{free}s panels in each
 iteration, with the size of the panel strictly decreasing from
@@ -2238,13 +2237,15 @@ makes these repeated allocations / frees become a bottleneck. Since
 the very first allocation can fit all subsequent panels, we modified
 this allocation mechanism to allocate only the first panels and reuse
 them as much as possible for subsequent iterations (see
-Figure\ref{fig:panel_reuse}). For a very small matrix of order
-$40,000$ and $64$ MPI processes, the simulation time decreases by four
-seconds, from \NSI{20.5}{\sec} to \NSI{16.5}{\sec}. Responsible for this
-is a reduction of system time, namely from \NSI{5.9}{\sec} to
-\NSI{1.7}{\sec}. The number of page faults decreased from $2$ million
+Figure\ref{fig:panel_reuse}). Even for a very small matrix of order
+$40,000$ and $64$ MPI processes, the simulation time decreases from
+\NSI{20.5}{\sec} to \NSI{16.5}{\sec}.
+The number of page faults decreased from $2$ million
 to $0.2$ million, confirming the devastating effect these
 allocations/deallocations would have at scale.
+# Responsible for this
+# is a reduction of system time, namely from \NSI{5.9}{\sec} to
+# \NSI{1.7}{\sec}.
 
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
 thousand), the performance of the simulation quickly deteriorates as
@@ -2264,14 +2265,15 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
 # =hugetlbfs= file system must be mounted. After at least one huge
 # page has been allocated, the path of the allocated file system can then be
 # passed on to SimGrid.
+
 ** Scalability Evaluation
 #+LaTeX: \label{sec:scalabilityevol}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}
-  \vspace{-2em}
+  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}\vspace{-1em}
+%  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
   \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank.}\vspace{-1em}
   \label{fig:hpl_scalability}
   \labspace
@@ -2824,20 +2826,30 @@ regressions or maximum likelihood learning methods. However, an
 important hypothesis underlying all these methods is the
 homoscedasticity, \ie that the variability is independent on the
 parameters. 
+#+BEGIN_EXPORT latex
+\begin{figure}[b]
+  \vspace{-2em}
+  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
+  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
+  \vspace{-1em}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-1em}
+  \label{fig:nw_var}
+\end{figure}
+#+END_EXPORT
 
 #+BEGIN_EXPORT latex
-\begin{figure*}[!b]
+\begin{figure*}[!t]
   \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
-    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
-    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
-    \caption{Illustrating the realism of modeling for BLAS functions.}
+    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}\vspace{-1em}%
+    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}\vspace{-1em}
+    \caption{Illustrating the realism of modeling for BLAS functions.}\vspace{-1em}
     \label{fig:blas_var}
   \end{minipage}\hfill%
   \begin{minipage}[t]{.39\linewidth}
-    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}
-    \caption{Illustrating the realism of modeling for HPL functions.}
+    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}\vspace{-1em}
+    \caption{Illustrating the realism of modeling for HPL functions.}\vspace{-1em}
     \label{fig:HPL_var}
-  \end{minipage}
+  \end{minipage}%\vspace{-1em}
 \end{figure*}
 #+END_EXPORT
 The residual (temporal) variability may be an important phenomenon to
@@ -2886,14 +2898,6 @@ available (e.g., clustering with =mclust=\cite{mclust} for
 Bayesian estimation could be made with frameworks like
 STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
-#+BEGIN_EXPORT latex
-\begin{figure}[!h]
-  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
-  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
-  \label{fig:nw_var}
-\end{figure}
-#+END_EXPORT
 
 ** Modeling MPI communications
 Prior to this work, the standard way of accounting for protocol
@@ -3877,7 +3881,7 @@ of collective operations.
     \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
     \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.85\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
     \end{tabular}
-    \caption{Gantt charts of HPL first iterations in simulation}
+    \caption{Gantt charts of HPL first iterations in simulation}\vspace{-1em}
     \label{fig:gantt_simulation}
     \labspace
 \end{figure}
@@ -3888,7 +3892,7 @@ of collective operations.
     \centering
     \resizebox{0.95\linewidth}{!}{\input{figures/validation_performance.tex}}
     % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
-    \caption{Comparison of HPL performance prediction with the reality}
+    \caption{Comparison of HPL performance prediction with the reality}\vspace{-1em}
     \label{fig:validation_performance}
     \labspace
 \end{figure}
@@ -3943,6 +3947,7 @@ slow nodes by "average" nodes in our model, we have been able to
 re-estimate the overall performance of HPL and to obtain a (higher)
 prediction matching the performance obtained a few months ago.
 
+#+LaTeX: \AL[]{Have fig 11 and 12 in the same figure*, with equal height}
 We have thus shown it is possible to predict consistently the
 performance of HPL within a few percents of reality provided a
 faithful model of each individual resource is realized. Again, we
@@ -4565,9 +4570,11 @@ Tangle this file with C-c C-v t
 
 @mastersthesis{cornebize:hal-01544827,
   TITLE = {{Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
-  AUTHOR = {Cornebize, Tom},
-  URL = {https://hal.inria.fr/hal-01544827},
-  SCHOOL = {{Grenoble INP ; Universit{\'e} Grenoble - Alpes}},
+  OPTAUTHOR = {Cornebize, Tom},
+  OPTURL = {https://hal.inria.fr/hal-01544827},
+  OPTSCHOOL = {{Grenoble INP ; Universit{\'e} Grenoble - Alpes}},
+  AUTHOR = {Anonymous PhD Student},
+  SCHOOL = {{University of Neverwhere, Wonderland}},
   YEAR = {2017},
   MONTH = Jun,
   KEYWORDS = {Simulation ;  MPI runtime and applications ;  Performance prediction and extrapolation ;  High Performance LINPACK},
@@ -4575,6 +4582,16 @@ Tangle this file with C-c C-v t
   HAL_ID = {hal-01544827},
   HAL_VERSION = {v1},
 }
+
+@Misc{cornebize:github_notebook,
+  OPTAUTHOR = {Cornebize, Tom},
+  author = 	 {Anonymous PhD Student},
+  title = 	 {{Laboratory Notebook hosted on GitHub. Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
+  OPThowpublished = {\url{https://github.com/Ezibenroc/m2_internship_journal}},
+  howpublished = {\url{https://github.com/phdstudent/m2_internship_journal}},
+  year = 	 {2017},
+}
+
 
 @incollection{grid5000,
    title = {Adding Virtualization Capabilities to the {Grid'5000} Testbed},
@@ -4913,7 +4930,7 @@ pages = {366-376},
 
 #+end_src
 
-* Emacs Setup 							   :noexport:
+* Emacs Setup                                                      :noexport:
 # Local Variables:
 # eval:    (require 'org-install)
 # eval:    (org-babel-do-load-languages 'org-babel-load-languages '( (shell . t) (R . t) (perl . t) (ditaa . t) ))
