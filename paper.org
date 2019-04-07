@@ -1852,8 +1852,8 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 We now present the changes to SimGrid and HPL that were required for a
 scalable simulation. We provide only a brief presentation of our
 modifications and refer the reader interested in details
-to\cite{cornebize:hal-01544827}\AL[]{Anonymize} and our laboratory
-#+LaTeX: notebooks\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}}.
+to\cite{cornebize:hal-01544827}\AL[]{Anonymize}
+
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
