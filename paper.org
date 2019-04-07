@@ -2101,7 +2101,7 @@ on small ($N=30,000$) and even more on large scenarios.
 \tikzstyle{bigswitch}=[base, draw]
 \begin{figure}%[b]%[htbp]
   \centering
-  \begin{tikzpicture}[yscale=0.7, scale=0.7]
+  \begin{tikzpicture}[yscale=0.5, scale=0.7]
     \pgfmathtruncatemacro{\size}{4}
     \pgfmathtruncatemacro{\width}{2}
     \pgfmathtruncatemacro{\sizem}{\size-1}
@@ -2134,7 +2134,7 @@ on small ($N=30,000$) and even more on large scenarios.
 	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
 	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
   \end{tikzpicture}
-  \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are cyclically mapped onto the same physical pages.}\vspace{-1em}
+  \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are mapped onto the same physical pages.}
 % \end{figure}
 % \begin{figure}%[htbp]
 %  \centering
@@ -2150,14 +2150,14 @@ on small ($N=30,000$) and even more on large scenarios.
         \node(1) at (1.5, 2.5) {matrix parts};
         \node(2) at (4.5, 2.5) {indices};
         \node(3) at (7.5, 2.5) {matrix parts};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 3) -- (3, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6, 3) -- (9, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
-        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (3, 2) -- (6, 2) node [pos=0.5, yshift=-0.5cm] {must not be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0.2, 3) -- (2.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6.2, 3) -- (8.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+        \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (3.2, 3) -- (5.8, 3) node [pos=0.5, yshift=+0.5cm] {must not be shared};
       \end{tikzpicture}
     \end{minipage}}
   \subfigure[Reusing panel allocation from an iteration to another.\label{fig:panel_reuse}]{\small
     \begin{minipage}[b]{\linewidth}\centering
-      \begin{tikzpicture}[yscale=.6]
+      \begin{tikzpicture}[yscale=.5]
         \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
         \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
         \draw[dashed] (2, 1) -- (2, 1.5);
@@ -2175,7 +2175,7 @@ on small ($N=30,000$) and even more on large scenarios.
     \end{minipage}
   }    
   \end{minipage}}
-  \caption{Panel structure and allocation strategy when simulating.\label{fig:panel}}\vspace{-1em}
+  \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
 
