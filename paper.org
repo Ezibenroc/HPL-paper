@@ -2337,15 +2337,10 @@ $4,096$ MPI processes and with matrices of orders \Num{5e5},
 similar to the ones of the Stampede scenario.  The impact of the
 matrix order on total makespan and memory is illustrated in
 Figure\ref{fig:hpl_scalability}.  With all previously described
-optimizations enabled, the simulation with the largest matrix took
+optimizations enabled, the longest simulation took
 close to $47$ hours and consumed \NSI{16}{\giga\byte} of memory
-whereas the smallest one took $20$ minutes and \NSI{282}{\mega\byte}
-of memory.  One can also see that, when the matrix order ($N$) is
-increased, memory consumption and simulation time both grow slightly
-quadratic as the amount of matrix elements is $N^{2}$ and the number of
-steps of the algorithm also linearly.  Moreover, all the simulations
-spend less than \NSI{10}{\percent} of their execution time in kernel
-mode, which means the number of system calls is reasonably low.
+whereas the shortest one took $20$ minutes and \NSI{282}{\mega\byte}
+of memory.
 \AL[]{This section should end on page 5.}
 *** Hidden section                                               :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
