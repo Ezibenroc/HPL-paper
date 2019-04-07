@@ -1763,7 +1763,7 @@ SimGrid/SMPI are mature enough to emulate faithfully
 HPL. For our work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
-* SimGrid/SMPI in a nutshell
+* SimGrid/SMPI in a Nutshell
 #+LATEX: \label{sec:smpi}
 
 SimGrid\cite{simgrid} is a flexible and open-source simulation
@@ -1835,7 +1835,7 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 # - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{4}
-* Emulating HPL
+* Emulating HPL at Large Scale
 #+LaTeX: \label{sec:em}
 
 We now present our changes to SimGrid and HPL that were
@@ -3596,7 +3596,7 @@ plot
 #+LaTeX: \label{sec:validation}
 To evaluate the soundness of our approach, we compare several real
 executions of HPL with simulations using the previous models.
-** Experimental setup
+** Experimental Setup
 We used the /Dahu/ cluster from the /Grid5000/ testbed. It has 32 nodes connected
 through a single switch by 100 Gbps Omnipath links. Each node has two Intel Xeon
 Gold 6130 CPU with 16 cores per CPU. We took care of disabling hyperthreading
@@ -3983,7 +3983,7 @@ performance of HPL within a few percents of reality provided a
 faithful model of each individual resource is realized. Again, we
 insist on the fact that modeling both spatial and temporal variability
 is crucial.
-** \scalebox{.92}{Comparing with the Stampede Qualification Run}
+** \scalebox{.92}{Comparing With the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:science}
 # #+BEGIN_EXPORT latex
