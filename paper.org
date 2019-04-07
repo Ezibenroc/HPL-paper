@@ -1344,6 +1344,8 @@ performance do not match expectations, it can be very difficult to
 understand whether the mismatch originates from model imperfections or
 from machine misconfiguration.
 
+\TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
+
 # Yet, performance results of an already deployed, current-generation
 # machine typically also play a role in the funding process for future
 # machines. Results near the optimal performance for the current machine
