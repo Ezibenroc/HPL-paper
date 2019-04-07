@@ -2074,8 +2074,7 @@ We confirmed that this modification is harmless in terms of performance predicti
 speeds up the simulation by an additional factor of $\approx3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
 ** Scaling Down Memory Consumption
-*** Matrix and Panel Folding
-**** Figure                                                       :ignore:
+*** Figure                                                         :ignore:
 #+BEGIN_EXPORT latex
 \tikzset{draw half paths/.style 2 args={%
   % From https://tex.stackexchange.com/a/292108/71579
@@ -2172,7 +2171,7 @@ on small ($N=30,000$) and even more on large scenarios.
 \end{figure}
 #+END_EXPORT
 
-**** Text                                                         :ignore:
+*** Text                                                           :ignore:
 The largest two allocated data structures in HPL are the input matrix =A=
 (with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
 information about the sub-matrix currently being factorized. This sub-matrix 
@@ -2232,7 +2231,7 @@ being private. For a matrix of order $40,000$ and $64$ MPI processes,
 the memory consumption decreased from about \NSI{13.5}{\giga\byte} to
 less than \NSI{40}{\mega\byte}.
 
-Last, HPL \texttt{malloc}s/\texttt{free}s panels in each
+HPL \texttt{malloc}s/\texttt{free}s panels in each
 iteration, with the size of the panel strictly decreasing from
 iteration to iteration. As we explained above, the partial sharing of
 panels requires many calls to =mmap= and introduces an overhead that
@@ -2247,29 +2246,6 @@ is a reduction of system time, namely from \NSI{5.9}{\sec} to
 \NSI{1.7}{\sec}. The number of page faults decreased from $2$ million
 to $0.2$ million, confirming the devastating effect these
 allocations/deallocations would have at scale.
-*** Memory virtualization
-
-Mapping MPI processes to threads of a single process effectively folds
-them into the same address space.  Consequently, global variables in
-the MPI application are shared between threads unless these variables
-are /privatized/ and the simulated MPI ranks thus isolated from each
-other. Several technical solutions are possible to handle this
-issue\cite{smpi}. The default strategy in SMPI consists of making a
-copy of the =data= segment (containing all global variables) per MPI
-rank at startup and, when context switching to another rank, to remap
-the =data= segment via =mmap= to the private copy of that rank.  SMPI also
-implements another mechanism relying on the =dlopen= function that
-allows to project several times the global variables in the =data=
-segment and to avoid costly calls to =mmap= when context
-switching. The main advantage of this second approach is that caches
-do not need to be flushed as is the case for the =mmap= approach,
-because data consistency can always be guaranteed. 
-For a
-matrix of order $80,000$ and $32$ MPI processes, the number
-of minor page faults drops from \Num{4412047} (with =mmap=) to
-\Num{6880} (with =dlopen=), which results in a reduction of system time from 
-\NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
-\NSI{2.12}{\sec}.
 
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
 thousand), the performance of the simulation quickly deteriorates as
