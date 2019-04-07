@@ -1832,7 +1832,8 @@ larger scale with HPL, whose emulation comes with at least two challenges:
   500 days if perfect scaling was reached. 
   # Although the emulation could
   # be done in parallel, we want to use as little computing resources as possible.
-- The tremendous memory consumption and amount of memory accesses need to be dealt with.
+- The tremendous memory consumption and amount of memory accesses need
+  to be drastically reduced.
 
 # Real execution:
 # - Matrix of order 3,875,000
