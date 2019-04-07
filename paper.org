@@ -2939,8 +2939,8 @@ changes in SMPI was to visually estimate breakpoints and to manually
 conduct linear regression for each range. The expectation duration was
 then used in the simulation with no particular effort for the noise
 and the default model was thus \modelp{1}\noise{0}. Yet, as illustrated
-on Figure\ref{fig:nw_var}, the variability of highe speed networks can
-be quite particular. We
+on Figure\ref{fig:nw_var}, the variability of high speed networks 
+quite particular. We
 therefore took care of correctly estimating all the parameters for
 \modelp{1}\noisep{1}, where each message size range is automatically estimated with
 =pytree=, as well as of the 2 to 4 modes of the Gaussian mixture for each
@@ -3011,7 +3011,7 @@ infrequently called compared to =dgemm=. Last, since variability clearly
 increases with input parameters, a \noise{2} is clearly required. The
 blue dots in Figure\ref{fig:HPL_var} therefore represent the outcome
 of a \model{1}\noise{2} model and are hardly distinguishable from the
-real behavior.  It turns out that for all these kernels similar
+real behavior. It turns out that for all these kernels similar
 results could be obtained with such kind of model.
 ** Clearpage                                                        :ignore:
 \clearpage\setcounter{page}{8}
@@ -3620,15 +3620,16 @@ believe that faithfully simulating an HPL execution with such settings
 is as challenging as a typical TOP500 qualification run.
 - We simulated one rank per core to obtain a higher number
   (\Num{1024}) of MPI process. This is more difficult than simulating
-  one rank per node, as the performance is more subject to network
+  one rank per node, as (1) this increases the amount of data
+  transfered through MPI (2) the performance is more subject to network
   heterogeneity (which we model by having a different model for
   local and remote communications) and memory interference.
 - We used a smaller block size than what is usually done, which leads
-  to a higher number of iterations and increases complexity.
+  to a higher number of iterations, hence a larger amount of
+  complex communication patterns.
 - The matrix is smaller, hence a lower simulation time, which is
   generally harder to predict with a good precision.
 # - The network is more stable due to its smaller size.
-#+LaTeX: \def\sectitle{}
 ** Gantt Chart generation                                         :noexport:
 *** Downloading the CSV
 These CSV have been generated with this [[https://github.com/Ezibenroc/mpi_calibration/blob/3933006b4bfb9b3ce5a8d0758258f6b1fd7957c2/dahu/hpl/hpl_trace.ipynb][notebook]] (the dump to the CSV files
@@ -3931,16 +3932,15 @@ of collective operations.
 We now provide a more quantative comparison using the whole cluster
 and focusing on the \si{\giga\flops} rate reported by HPL when varying
 matrix size (see Figure\ref{fig:validation_performance}).
-
 The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
 light green line, on the top, is our first tentative to simulate HPL. The
 simulation was done with a simple model: \model{1} for the kernels and
-\modelp{1} for the network with no noise (\noise{0}) in both cases. This model
+\modelp[H]{1} for the network with no noise (\noise{0}) in both cases. This model
 overestimates HPL performance by more than 30%. Our initial thoughts was that
 the network model was too optimistic, so we switched to a stochastic multi-modal
-network model, \noisep{1}, shown in yellow. This does not cause any significant
-change in HPL performance prediction, as shown by the plot.
+network model, \noisep{1}, shown in yellow, which unfortunately does
+not yield any significant change in HPL performance prediction.
 
 As shown by figure \ref{fig:blas_var}, there is an important heterogeneity in
 the cluster. For this reason, we started using a \model[H]{1}/\noise{0} model
@@ -3950,21 +3950,40 @@ simulation as the performance is now overestimated by only 9% (shown in dark
 green in the plot).
 
 As expected, using a polynomial model for \texttt{dgemm} instead of a linear
-model (thus switching from \model[H]{1} to \model[H]{2}) has an higher impact on
-the performance prediction for smaller matrices. This new model, depicted in
-orange, is very close to the reality at the beginning, but the larger the
-matrix, the closer it comes to the previous model.
+model (thus switching from \model[H]{1} to \model[H]{2}) improves
+the performance prediction, in particular for smaller matrices. 
+This new model, depicted in orange, is very close to reality at the
+beginning but gets equivalent to the previous model when the matrix gets
+larger. Adding the temporal variability noise (\noise{2} for all
+kernels, \noise[H]{2} for \texttt{dgemm}) is the key ingredient to
+obtain the last bit of realism. The prediction, in blue, is now
+extremly close to the reality as it underestimates the performance by
+less than 5%, even 2% for the larger matrices. Adding back temporal variability
+to the network model (\noisep{1}, in pink) still has no significant
+effect but this can be explained by the fact that HPL mostly
+communicates very large amount of data in bulk. Network temporal
+variability may be a very important aspect to model for applications
+that are more /latency-bound/.
 
-Finally, adding some noise (\noise{2} for all kernels, \noise[H]{2} for
-\texttt{dgemm}) helps a lot to get the last bit of realism. The prediction, in
-blue, is now extremly close to the reality as it underestimates the performance
-by less than 5%, even 2% for the larger matrices. Adding back some noise to the
-network model (\noisep{1}, in pink) is still not significant.
+It is interesting to mention that we obtained an early access to the
+Dahu cluster just after it was installed. It experienced several
+maintenance sessions and over the duration of our investigations (a
+few months), the performance of HPL has surprisingly decreased by
+about 10%. Although we had a very good software control over the
+cluster, we noticed that the performance of a few nodes has
+significantly changed, which has increased the system heterogeneity,
+leading to the current performance depicted in
+Figure\ref{fig:validation_performance}. By replacing the few currently
+slow nodes by "average" nodes in our model, we have been able to
+re-estimate the overall performance of HPL and to obtain a (higher)
+prediction that is consistent with the performance obtained a few
+months ago.
 
-We have shown it is possible to consistently predict performance
-within a few percents of reality provided a faithful model of each
-individual resource is realized.
-
+We have thus shown it is possible to consistently predict the
+performance of HPL within a few percents of reality provided a
+faithful model of each individual resource is realized. Again, we
+insist on the fact that modeling both spatial and temporal variability
+is crucial.
 ** \scalebox{.92}{Comparing with the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:science}
