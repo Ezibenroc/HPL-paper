@@ -1301,8 +1301,8 @@ their performance is extremely expensive. High-Performance Linpack,
 the benchmark used to rank supercomputers in the TOP500, requires a
 careful tuning of many parameters (problem size, grid arrangement,
 granularity, collective operation algorithms, etc.) and supports
-exploration of the most fundamental performance issues and their
-solutions. In this article, we explain how we both extended the
+exploration of the most common and fundamental performance issues and
+their solutions. In this article, we explain how we both extended the
 SimGrid's SMPI simulator and slightly modified the open-source version
 of HPL to allow a fast emulation on a single commodity computer at the
 scale of a supercomputer. We explain how to model the different
@@ -1356,7 +1356,7 @@ from machine misconfiguration.
 # estimating performance of specific functions) or by a simulation based approach.
 # \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
 
-#+LaTeX: \AL[]{Clearly list contributions?}
+# #+LaTeX: \AL[]{Clearly list contributions?}
 # 1) Explain how to obtain Scalable simulation 2) Explain how to model
 # resources 3) Detailed comparison with RL experiments that show the
 # importance of carefully modeling spatial and temporal variability 4)
@@ -1920,7 +1920,7 @@ generic_do_plot <- function(plot, fixed_shape=TRUE) {
 #   old version for xrange (broken)
 #   xrange = ggplot_build(plot)$panel$ranges[[1]]$x.range
 #   new version for xrange (may break in the next ggplot update...)
-    xrange = p$layout$panel_scales_x[[1]]$range$range # ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+    xrange = ggplot_build(plot)$layout$panel_scales_x[[1]]$range$range # ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
     xwidth = xrange[2] - xrange[1]
     if(fixed_shape) {
         point = stat_summary(fun.y = mean, geom="point", shape=21)
@@ -2247,6 +2247,27 @@ allocations/deallocations would have at scale.
 # is a reduction of system time, namely from \NSI{5.9}{\sec} to
 # \NSI{1.7}{\sec}.
 
+Mapping MPI processes to threads of a single process effectively folds
+them into the same address space.  Consequently, global variables in
+the MPI application are shared between threads unless these variables
+are /privatized/ and the simulated MPI ranks thus isolated from each
+other. Several technical solutions are possible to handle this
+issue\cite{smpi}. The default strategy in SMPI consists in making a
+copy of the =data= segment (containing all global variables) per MPI
+rank at startup and, when context switching to another rank, to remap
+the =data= segment via =mmap= to the private copy of that rank.  SMPI also
+implements another mechanism relying on the =dlopen= function that
+allows to load several times =data= segment and to avoid costly
+calls (and cache flushing) to =mmap= when context switching. For a
+matrix of order $80,000$ and $32$ MPI processes, the number of minor
+page faults drops from \Num{4412047} (with =mmap=) to \Num{6880} (with
+=dlopen=), which results in a reduction of system time from
+\NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
+\NSI{2.12}{\sec}.
+# The main advantage of this second approach is that caches do not need
+# to be flushed as is the case for the =mmap= approach, because data
+# consistency can always be guaranteed.
+
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
 thousand), the performance of the simulation quickly deteriorates as
 the memory consumption rises rapidly. Indeed, folding the memory
@@ -2316,22 +2337,22 @@ library(ggrepel)
 library(reshape2)
 library(gridExtra)
 results = rbind(
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_512.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_1024.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_2048.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_500000_4096.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_512.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_1024.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_2048.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_1000000_4096.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_512.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_1024.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_2048.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_2000000_4096.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_512.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_1024.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_2048.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/scalability/result_4000000_4096.csv')
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_500000_512.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_500000_1024.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_500000_2048.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_500000_4096.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_1000000_512.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_1000000_1024.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_1000000_2048.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_1000000_4096.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_2000000_512.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_2000000_1024.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_2000000_2048.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_2000000_4096.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_4000000_512.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_4000000_1024.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_4000000_2048.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/scalability/result_4000000_4096.csv')
 )
 results$simulation_time = results$simulation_time/3600
 results$memory_size = results$memory_size * 1e-9
@@ -2425,7 +2446,8 @@ results
   #   old version for xrange (broken)
   #   xrange = ggplot_build(plot)$panel$ranges[[1]]$x.range
   #   new version for xrange (may break in the next ggplot update...)
-      xrange = ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+      xrange = ggplot_build(plot)$layout$panel_scales_x[[1]]$range$range # ggplot_build(plot)$layout$panel_ranges[[1]]$x.range
+      print(xrange);
       xwidth = xrange[2] - xrange[1]
       if(fixed_shape) {
           point = stat_summary(fun.y = mean, geom="point", shape=21)
@@ -2618,7 +2640,7 @@ size_mem
 #+RESULTS:
 [[file:figures/scalability_3.pdf]]
 
-#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 7 :height 4
+#+begin_src R :file figures/scalability_plot_size.pdf :results value graphics :results output :session *R* :exports both :width 7 :height 3
 grid_arrange_shared_legend(size_time, size_mem, nrow=1, ncol=2)
 #+end_src
 
@@ -2758,9 +2780,20 @@ scatter3D(
 
 *** Clearpage                                             :noexport:ignore:
 \clearpage\setcounter{page}{6}
-* Modeling HPL Kernels and Communications
+
+*** Hack                                                  :noexport:ignore:
+#+BEGIN_EXPORT latex
+\let\osection=\section 
+\def\section#1{\osection[]{#1}}
+\makeatletter \def\@secfont{\sffamily\bfseries\section@raggedright}
+\ACM@NRadjust\@secfont
+#+END_EXPORT
+
+* MODELING HPL KERNELS AND COMMUNICATIONS\hspace{-1cm}
+# #+LaTeX: \def\@secfont{\sffamily\bfseries\section@raggedright\MakeTextUppercase}\makeatother
+# #+LaTeX: \let\section=\osection
 #+LaTeX: \label{sec:modeling}
-As we have explained in Section\ref{sec:em}, most of HPL computation
+As explained in Section\ref{sec:em}, most of HPL computation
 time is spent in a dozen of specific functions for which a performance
 model has to be designed. Most computation kernels have several
 parameters from which a very simple model can generally easily be
@@ -2770,7 +2803,7 @@ as well as the spatial and temporal variability of the operation are
 also possible. Likewise, communications between two nodes are mostly
 linear with message size but the actual performance can wildly vary
 depending on the range of the message size as MPI switches from a
-protocol to another whenever needed. In this section we first
+protocol to another whenever needed (see Figure\ref{fig:nw_var}). In this section we first
 introduce some notations to describe the complexity of the models we
 have investigated. Then we briefly compare the prediction of these
 models with individual measurements of both computation and
@@ -2826,32 +2859,7 @@ regressions or maximum likelihood learning methods. However, an
 important hypothesis underlying all these methods is the
 homoscedasticity, \ie that the variability is independent on the
 parameters. 
-#+BEGIN_EXPORT latex
-\begin{figure}[b]
-  \vspace{-2em}
-  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
-  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
-  \vspace{-1em}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-1em}
-  \label{fig:nw_var}
-\end{figure}
-#+END_EXPORT
 
-#+BEGIN_EXPORT latex
-\begin{figure*}[!t]
-  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
-    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}\vspace{-1em}%
-    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}\vspace{-1em}
-    \caption{Illustrating the realism of modeling for BLAS functions.}\vspace{-1em}
-    \label{fig:blas_var}
-  \end{minipage}\hfill%
-  \begin{minipage}[t]{.39\linewidth}
-    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}\vspace{-1em}
-    \caption{Illustrating the realism of modeling for HPL functions.}\vspace{-1em}
-    \label{fig:HPL_var}
-  \end{minipage}%\vspace{-1em}
-\end{figure*}
-#+END_EXPORT
 The residual (temporal) variability may be an important phenomenon to
 account for, as "system noise" is known to be detrimental to overall
 performance of parallel applications like HPL. We therefore consider
@@ -2879,6 +2887,32 @@ estimations are denoted by \noise[H]{}.
  # | M0 | mean              | mean, sd          | -                     | sample histogram or estimate half-normal |
  # | M1 | linear regression | linear regression | normalize by size, sd | normalize by size + \uparrow                    |
  # | M2 | linear regression | linear regression | Bayesian sampling     | Bayesian sampling                        |
+#+BEGIN_EXPORT latex
+\begin{figure}[!t]
+  \vspace{-1em}
+  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
+  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
+  \vspace{-1em}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-2em}
+  \label{fig:nw_var}
+\end{figure}
+#+END_EXPORT
+
+#+BEGIN_EXPORT latex
+\begin{figure*}[!b]
+  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
+    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}\vspace{-1em}%
+    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}\vspace{-1em}
+    \caption{Illustrating the realism of modeling for BLAS functions.}\vspace{-1em}
+    \label{fig:blas_var}
+  \end{minipage}\hfill%
+  \begin{minipage}[t]{.39\linewidth}
+    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}\vspace{-1em}
+    \caption{Illustrating the realism of modeling for HPL functions.}\vspace{-1em}
+    \label{fig:HPL_var}
+  \end{minipage}%\vspace{-1em}
+\end{figure*}
+#+END_EXPORT
 Linear regression is a standard tool in R\cite{R} or in
 python/statsmodels\cite{statsmodels} and models \model[H]{0\mcdots2} are
 thus easy to fit assuming \noise{1}. Model \modelp{0} assuming
@@ -3890,9 +3924,9 @@ of collective operations.
 #+BEGIN_EXPORT latex
 \begin{figure}[h]
     \centering
-    \resizebox{0.95\linewidth}{!}{\input{figures/validation_performance.tex}}
+    \resizebox{0.95\linewidth}{!}{\input{figures/validation_performance.tex}}\vspace{-1em}
     % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
-    \caption{Comparison of HPL performance prediction with the reality}\vspace{-1em}
+    \caption{Comparison of HPL performance prediction with the reality}\vspace{-2em}
     \label{fig:validation_performance}
     \labspace
 \end{figure}
@@ -3947,7 +3981,6 @@ slow nodes by "average" nodes in our model, we have been able to
 re-estimate the overall performance of HPL and to obtain a (higher)
 prediction matching the performance obtained a few months ago.
 
-#+LaTeX: \AL[]{Have fig 11 and 12 in the same figure*, with equal height}
 We have thus shown it is possible to predict consistently the
 performance of HPL within a few percents of reality provided a
 faithful model of each individual resource is realized. Again, we
@@ -4030,9 +4063,9 @@ coherent with the submitted output.
 #+begin_src R :results output :session *R* :exports both
   library(gridExtra)
   library(ggplot2)
-  dgemm <- read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dgemm.csv')
+  dgemm <- read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/offloading_dgemm.csv')
   dgemm$m = as.double(dgemm$m)
-  dtrsm <- read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/offloading_dtrsm.csv')
+  dtrsm <- read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/offloading_dtrsm.csv')
   dtrsm$m = as.double(dtrsm$m)
 
   dgemm_new = dgemm[dgemm$automatic_offload == 'True',]
@@ -4279,8 +4312,9 @@ huge difference between our prediction results and reality.
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
-  \caption{Performance prediction of HPL on Stampede using SimGrid.}\vspace{-1em}
+%  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
+  \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
+  \caption{Performance prediction of HPL on Stampede using SimGrid.}\vspace{-2em}
   \label{fig:stampede_prediction}
   \labspace
 \end{figure}
@@ -4291,23 +4325,23 @@ huge difference between our prediction results and reality.
 Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic desabled"
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
-# files <- dir('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
+# files <- dir('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
 # tables <- lapply(files, read.csv)
 # results = do.call(rbind, tables)
 
-classical = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_1000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_2000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_3875000.csv'))
+classical = rbind(read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_1000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_2000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_3875000.csv'))
 classical$mode = 'classical'
 
-highbw = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_1000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_2000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_highbw_3875000.csv'))
+highbw = rbind(read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_highbw_1000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_highbw_2000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_highbw_3875000.csv'))
 highbw$mode = 'highbw'
 
-fatpipe = rbind(read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_1000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_2000000.csv'),
-    read.csv('/home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/simulation/8/result_fatpipe_3875000.csv'))
+fatpipe = rbind(read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_fatpipe_1000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_fatpipe_2000000.csv'),
+    read.csv('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8/result_fatpipe_3875000.csv'))
 fatpipe$mode = 'fatpipe'
 
 results = rbind(classical, highbw, fatpipe)
@@ -4315,7 +4349,7 @@ results = rbind(classical, highbw, fatpipe)
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file figures/stampede_simgrid.pdf :exports both :width 5 :height 3.5 :session *R* 
+#+begin_src R :results output graphics :file figures/stampede_simgrid.pdf :exports both :width 5 :height 3 :session *R* 
 res_lab = results[results$mode != 'highbw' & results$size > 3E6,];
 res_lab$x=res_lab$size;
 res_lab$y=res_lab$Gflops;
@@ -4355,8 +4389,7 @@ ggplot(results[results$mode != 'highbw',], aes(x=size, y=Gflops, color=mode, lin
     # Cosmetics
     guides(fill=FALSE, color=FALSE, linetype=FALSE) + ylab("GFlop/s") + xlab("Matrix rank") +
     theme_bw() +  scale_color_brewer(palette="Set1") +  scale_fill_brewer(palette="Set1")+ 
-    theme(legend.position="top") +
-    ggtitle('Performance of HPL')
+    theme(legend.position="top") # +    ggtitle('Performance of HPL')
 #+end_src
 
 #+RESULTS:
@@ -4444,7 +4477,7 @@ side with respect to asynchrony and to the broadcast algorithm.
 
 **** Gantt charts                                               :noexport:
 #+begin_src sh :results output :exports both
-cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
+cp /home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/communications/fullscale_unzoomed.png figures/
 #+end_src
 
 #+RESULTS:
