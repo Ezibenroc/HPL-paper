@@ -3705,8 +3705,12 @@ The zip archives for these files are:
 - Simulations with the homogeneous dgemm model: [[https://github.com/Ezibenroc/mpi_calibration/tree/master/dahu/smpi_hpl/paper_sc19/performance/2][these archives]].
 - Simulation with the heterogeneous dgemm model: [[https://github.com/Ezibenroc/mpi_calibration/tree/master/dahu/smpi_hpl/paper_sc19/performance/11][these archives]].
 *** Drawing the plot
+Here, we use tikzDevice to generate Tikz code with ggplot. More information on
+this [[https://matthew-parker.rbind.io/post/easy-latex-titles-and-labels-for-ggplot/][tutorial]].
+
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
+library(tikzDevice)
 library(dplyr)
 dfreal = read.csv('data/validation_performance/hpl_reality.csv')
 dfreal = dfreal %>% filter(date == '2019-03')
@@ -3763,16 +3767,54 @@ print(length(dfreal$gflops))
 : [1] 112
 : [1] 110
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
-text_size = 8
+For information, the notations are:
+#+BEGIN_SRC latex
+\newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\noise}[2][]{\ensuremath{\mathcal{N}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+#+END_SRC
+
+#  +begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
+#+begin_src R :results output :session *R* :exports both
+tikzDevice::tikz(file = './figures/validation_performance.tex', width = 5, height = 3)
+
+model_ <- function(letter, het, prime, nb) {
+    if(prime) {
+        letter = paste(letter, "'", sep='')
+    }
+    result = paste('\\mathcal{', letter, '}', sep='')
+    if(het) {
+        result = paste(result, '_{H}', sep='')
+    }
+    return(paste(result, '\\!-\\!', as.character(nb), sep=''))
+}
+model <- function(het_model, prime_model, nb_model, het_noise, prime_noise, nb_noise) {
+    return(paste(model_('M', het_model, prime_model, nb_model), model_('N', het_noise, prime_noise, nb_noise)))
+}
+to_tex <- function(name, result) {
+    result=paste(name, '$\\sim', result, '$', sep='')
+    print(result)
+    return(result)
+}
+
+text_size = 3
 # Labels definitions
-lab = dfsim %>% filter(matrix_size == 300000) %>% select(gflops, matrix_size, model) %>% distinct()
-lab = lab %>% mutate(label = case_when(model == 'A1'     ~ 'simple',
-                                       model == 'A2'     ~ 'stochastic network',
-                                       model == 'A1_het' ~ 'heterogeneous dgemm',
-                                       model == 'C1_het' ~ 'heterogeneous dgemm\n& polynomial dgemm',
-                                       model == 'D1_het' ~ 'heterogeneous dgemm\n& polynomial dgemm\n& stochastic kernels',
-                                       model == 'D2_het' ~ 'heterogeneous dgemm\n& polynomial dgemm\n& stochastic kernels\n& stochastic network',
+lab = dfsim %>% filter(
+    (model == 'A1'     & matrix_size == 300000) |
+    (model == 'A2'     & matrix_size == 300000) |
+    (model == 'A1_het' & matrix_size == 250000) |
+    (model == 'C1_het' & matrix_size == 250000) |
+    (model == 'D1_het' & matrix_size == 500000) |
+    (model == 'D2_het' & matrix_size == 500000)
+) 
+lab = lab %>% select(gflops, matrix_size, model) %>% distinct()
+lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'A2'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+                                       model == 'A1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'C1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D2_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
                                        T             ~ as.character(model)))
 lab$x = lab$matrix_size
 lab$y = lab$gflops
@@ -3780,39 +3822,63 @@ lab$xl = lab$x*1.0
 lab$yl = lab$y*1.0
 delta_x = max(dfsim$matrix_size) / 12
 delta_y = max(dfsim$gflops) / 12
-lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ xl-delta_x,
-                                    model == 'A2'     ~ xl+delta_x,
-                                    model == 'A1_het' ~ xl-1.7*delta_x,
-                                    model == 'C1_het' ~ xl+1.7*delta_x,
-                                    model == 'D1_het' ~ xl-1.2*delta_x,
-                                    model == 'D2_het' ~ xl+2.2*delta_x,
+max_x = max(dfsim$matrix_size)
+max_y = max(dfsim$gflops)
+lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ 0.25*max_x,
+                                    model == 'A2'     ~ 0.8*max_x,
+                                    model == 'A1_het' ~ 0.3*max_x,
+                                    model == 'C1_het' ~ 0.6*max_x,
+                                    model == 'D1_het' ~ 0.38*max_x,
+                                    model == 'D2_het' ~ 0.8*max_x,
                                        T             ~ xl))
-lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ yl+delta_y,
-                                    model == 'A2'     ~ yl+delta_y,
-                                    model == 'A1_het' ~ yl+0.5*delta_y,
-                                    model == 'C1_het' ~ yl+1.2*delta_y,
-                                    model == 'D1_het' ~ yl-2*delta_y,
-                                    model == 'D2_het' ~ yl-2*delta_y,
+lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ 0.95*max_y,
+                                    model == 'A2'     ~ 0.9*max_y,
+                                    model == 'A1_het' ~ 0.4*max_y,
+                                    model == 'C1_het' ~ 0.4*max_y,
+                                    model == 'D1_het' ~ 0.1*max_y,
+                                    model == 'D2_het' ~ 0.1*max_y,
                                        T             ~ yl))
 
 # Plot drawing
-plot = ggplot(dfsim, aes(x=matrix_size, y=gflops)) + geom_point(data=dfreal, shape=1) + geom_point(aes(color=model))
-plot = plot + stat_summary(aes(color=model), fun_y=mean, geom='line', linetype='dashed')
-plot = plot + stat_summary(fun_y=mean, geom='line', data=dfreal)
+plot = ggplot(dfsim, aes(x=matrix_size, y=gflops)) + geom_point(data=dfreal, shape=1, size=0.5) + geom_point(aes(color=model), size=0.5)
+plot = plot + stat_summary(aes(color=model), fun.y='mean', geom='line', linetype='dashed')
+plot = plot + stat_summary(fun.y='mean', geom='line', data=dfreal)
 plot = plot + theme_bw() + expand_limits(y=0)
 plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
-plot = plot + theme(text=element_text(size=30))
+plot = plot + theme(text=element_text(size=12))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
 plot = plot + geom_segment(data=lab, aes(x=xl, xend=x, y=yl, yend=y, color=model), linetype="solid")
 plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, color=model), size=text_size)
-plot = plot + geom_segment(data=lab, x=4.7e5, xend=4.5e5, y=2.5e4, yend=mean((dfreal %>% filter(matrix_size == 450000))$gflops), linetype="solid")
-plot = plot + geom_label(data=lab, aes(x=4.7e5, y=2.5e4), label='reality', size=text_size)
-ggsave(filename='figures/validation_performance.pdf', plot=plot)
+plot = plot + geom_segment(data=lab, x=max_x*0.75, xend=4.5e5, y=max_y*0.6, yend=mean((dfreal %>% filter(matrix_size == 450000))$gflops), linetype="solid")
+plot = plot + geom_label(data=lab, aes(x=max_x*0.75, y=max_y*0.6), label='\\textbf{reality}', size=text_size)
 plot
+dev.off()
+print(plot)
+#ggsave(filename='figures/validation_performance.pdf', plot=plot)
+#plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-fhdEeb/figure8QFZF1.png]]
+#+begin_example
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}\\!-\\!0$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
+[1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
+[1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
+[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
+null device 
+          1
+#+end_example
 
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
@@ -3854,7 +3920,8 @@ of collective operations.
 #+BEGIN_EXPORT latex
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
+    \resizebox{0.95\linewidth}{!}{\input{figures/validation_performance.tex}}
+    % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
     \caption{Comparison of HPL performance prediction with the reality}
     \label{fig:validation_performance}
     \labspace
