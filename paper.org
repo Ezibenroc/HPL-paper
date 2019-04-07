@@ -1854,11 +1854,10 @@ scalable simulation. We provide only a brief presentation of our
 modifications and refer the reader interested in details
 to\cite{cornebize:hal-01544827}\AL[]{Anonymize}
 
-For our experiments in this section, we used a single core from nodes
+For our experiments in this section, we used a node
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
 CPUs processors and Debian Stretch (Linux 4.9). 
-# with \NSI{2.1}{\GHz}
 ** Speeding Up the Emulation
 *** Kernel Modeling
 Given its complexity, a faithful prediction of HPL requires emulation,
@@ -1889,7 +1888,7 @@ but it can already be observed that this kernel model leads to an accurate,
 albeit slightly more optimistic, estimation of the performance.
 
 #+BEGIN_EXPORT latex
-\begin{figure}%[!htb]
+\begin{figure}[!htb]
 %  \null\vspace{-1cm}
   \centering
   \subfigure[Non-intrusive macro replacement with a very simple computation model.\label{fig:macro_simple}]{
@@ -1900,6 +1899,7 @@ albeit slightly more optimistic, estimation of the performance.
     \begin{minipage}[b]{\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
     \end{minipage}}
+  \vspace{-1em}
   \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
@@ -2167,6 +2167,7 @@ on small ($N=30,000$) and even more on large scenarios.
     \end{minipage}
   }    
   \end{minipage}}
+  \vspace{-1em}
   \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1em}
 \end{figure}
 #+END_EXPORT
@@ -2270,7 +2271,7 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}
-%  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
+  \vspace{-2em}
   \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank.}\vspace{-1em}
   \label{fig:hpl_scalability}
   \labspace
@@ -2303,7 +2304,6 @@ optimizations enabled, the longest simulation took
 close to $47$ hours and consumed \NSI{16}{\giga\byte} of memory
 whereas the shortest one took $20$ minutes and \NSI{282}{\mega\byte}
 of memory.
-\AL[]{This section should end on page 5.}
 *** Hidden section                                               :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
 test" section of Tom's journal:
