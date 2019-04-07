@@ -1842,7 +1842,7 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 # Requirement for the emulation of Stampede's execution:
 # - $\ge 3, 875, 000 2 \times 8$ bytes \approx 120 terabytes of memory
 # - $\ge 6, 006 \times 2$ hours \approx 500 days (very optimistic)
-** Clearpage                                                        :ignore:
+** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{4}
 * Emulating HPL at Large Scale
 #+LaTeX: \label{sec:em}
@@ -2799,7 +2799,7 @@ scatter3D(
 #+RESULTS:
 [[file:/tmp/babel-23284Iao/figure23284e_o.png]]
 
-*** Clearpage                                                      :ignore:
+*** Clearpage                                             :noexport:ignore:
 \clearpage\setcounter{page}{6}
 * Modeling HPL Kernels and Communications
 #+LaTeX: \label{sec:modeling}
@@ -3020,7 +3020,7 @@ blue dots in Figure\ref{fig:HPL_var} therefore represent the outcome
 of a \model{1}\noise{2} model and are hardly distinguishable from the
 real behavior. It turns out that for all these kernels similar
 results could be obtained with such kind of model.
-** Clearpage                                                        :ignore:
+** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{8}
 ** Network plots                                                  :noexport:
 *** Downloading the CSV
@@ -4565,7 +4565,7 @@ to better understand of these platforms actually behave.
 
 # #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
 
-** Clearpage                                                        :ignore:
+** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{11}
 * Acknowledgements
 
