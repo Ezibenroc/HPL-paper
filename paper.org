@@ -3936,7 +3936,7 @@ The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
 light green line, on the top, is our first tentative to simulate HPL. The
 simulation was done with a simple model: \model{1} for the kernels and
-\modelp[H]{1} for the network with no noise (\noise{0}) in both cases. This model
+\modelp{1} for the network with no noise (\noise{0}) in both cases. This model
 overestimates HPL performance by more than 30%. Our initial thoughts was that
 the network model was too optimistic, so we switched to a stochastic multi-modal
 network model, \noisep{1}, shown in yellow, which unfortunately does
