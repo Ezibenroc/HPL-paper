@@ -1294,21 +1294,19 @@ zlib 1.0
 
 #+END_EXPORT
 * Submission Abstract                                              :noexport:
-High-Performance Linpack is the benchmark used to rank
-supercomputers in the TOP500 and for which a careful tuning of all
-parameters (problem size, grid arrangement, granularity, collective
-operation algorithms, etc.) is essential. With a power consumption of
-several MW per hour on a TOP500 machine, test-running HPL on the whole
-machine for hours is extremely expensive. In this article, we explain
-how we both extended the SimGrid's SMPI simulator and slightly
-modified the open-source version of HPL to allow a fast emulation on a
-single commodity computer at the scale of a supercomputer. We explain
-how to model the different components (network, BLAS, ...)  of the
-supercomputer to obtain a faithful performance prediction and show
-that a careful modeling of both spatial and temporal node variability
-is crucial. We validate our approach by showing that the simulation
-predictions are systematically within a few percents of real
-experiments.
+High-Performance Linpack is the benchmark used to rank supercomputers
+in the TOP500 and for which a careful tuning of all parameters
+(problem size, grid arrangement, granularity, collective operation
+algorithms, etc.) is essential. With a power consumption of several MW
+per hour on a TOP500 machine, test-running HPL on the whole machine
+for hours is extremely expensive. In this article, we explain how we
+both extended the SimGrid's SMPI simulator and slightly modified the
+open-source version of HPL to allow a fast emulation on a single
+commodity computer at the scale of a supercomputer. We explain how to
+model the different components (network, BLAS, ...) and show that a
+careful modeling of both spatial and temporal node variability allows
+to obtain faithful simulation predictions within a few percents of
+real experiments.
 * Abstract                                                           :ignore:
 
 #+Latex:\begin{abstract}
