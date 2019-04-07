@@ -2225,9 +2225,7 @@ For fully private or partially shared segments, SMPI
 identifies and copies only those parts that are process-dependent
 (private) into the corresponding buffers on the receiver side.
 HPL simulation times and memory consumption were considerably improved
-in our experiments because the =panel= as the most frequently
-transferred datastructure is partially shared with only a small part
-being private. For a matrix of order $40,000$ and $64$ MPI processes,
+in our experiments. For a matrix of order $40,000$ and $64$ MPI processes,
 the memory consumption decreased from about \NSI{13.5}{\giga\byte} to
 less than \NSI{40}{\mega\byte}.
 
@@ -2293,11 +2291,10 @@ modifying HPL more profoundly.
 
 To evaluate the efficiency of our proposal, we conduct a first
 evaluation on a non-existing, albeit similar to Stampede, platform
-comprising 4,096 8-core nodes interconnected through a
-$\langle2;16,32;1,16;1,1\rangle$ fat-tree topology built on ideal network links
-with a bandwidth of \NSI{50}{\giga\byte\per\sec} and a latency of
-\NSI{5}{\micro\sec}. We run simulations with $512$; $1,024$; $2,048$ or
-$4,096$ MPI processes and with matrices of orders \Num{5e5},
+comprising 4,096 nodes interconnected through a
+fat-tree topology.
+We run simulations with $512$; $1,024$; $2,048$ or
+$4,096$ MPI ranks and with matrices of orders \Num{5e5},
 \Num{1e6}, \Num{2e6} or \Num{4e6}. All other HPL parameters are
 similar to the ones of the Stampede scenario.  The impact of the
 matrix order on total makespan and memory is illustrated in
