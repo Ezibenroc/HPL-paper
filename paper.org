@@ -4509,39 +4509,40 @@ employed several non-trivial operating-system level optimizations
 integrated into the last version of SimGrid/SMPI.
 
 The downside of scaling this high is a less well-controlled scenario.
-The reference run of HPL on Stampede was done several years ago and we only
-have very limited information about the setup (\eg software versions
-and configuration), but a reservation and re-execution on the whole
-machine was impossible for us. We nevertheless modeled Stampede carefully, which
-allowed us to predict the performance that would
-have been obtained using an unmodified, freely available version of HPL.
-Unfortunately, despite all our efforts, the predicted performance
-was much lower than what was reported in 2013. We determined that this
-discrepancy comes from the fact that a modified, closed-source version of HPL
-supplied by Intel was used in 2013.
-We believe that some of the HPL configuration parameters were
-hardcoded and therefore misreported in the output. A quick analysis of the optimized
-HPL binary confirmed that algorithmic differences were likely to be the
-reason for the performance differences.
-
-We conclude that a large-scale (in)validation is unfortunately not
-possible due to the modified source code being unavailable to us.
-We claim that the modifications we made are
-minor and are applicable to that optimized version. In fact, while HPL
-comprises 16K lines of ANSI C over 149 files, our modifications only
-changed 14 files with 286 line insertions and 18 deletions.
+We explain how to model the performance of computation kernels and of
+the MPI library and show that a careful modeling allows to predict
+performance within a few percents of real experiments on a controlled
+cluster of Grid5000. Interestingly spatial and temporal variability
+are key ingredients of faithful predictions.
+Unfortunately, the reference run of HPL on Stampede was done several
+years ago and we only have very limited information about the setup
+(\eg software versions and configuration), but a reservation and
+re-execution on the whole machine was impossible for us. We
+nevertheless modeled Stampede carefully, which allowed us to predict
+the performance that would have been obtained using an unmodified,
+freely available version of HPL.  Unfortunately, despite all our
+efforts, the predicted performance was much lower than what was
+reported in 2013. We determined that this discrepancy comes from the
+fact that a modified, closed-source version of HPL supplied by Intel
+was used in 2013 and misreports the true configuration. A quick
+analysis of the optimized HPL binary confirmed that algorithmic
+differences were likely to be the reason for the performance
+differences.  We claim that the modifications we made are minor and
+are applicable to that optimized version. In fact, while HPL comprises
+16K lines of ANSI C over 149 files, our modifications only changed 14
+files with 286 line insertions and 18 deletions.
 
 We believe being capable of precisely predicting an application's
-performance on a given platform will become
-invaluable in the future to aid compute centers with the decision of
-whether a new machine (and what technology) will work best for a given
-application or if an upgrade of the current machine should be
-considered. As a future work, we intend to conduct similar studies
-with other HPC benchmarks (\eg HPCG or HPGMG) and with other TOP500
-machines. From our experience, we believe that a faithful and public
-reporting of the experimental conditions (compiler options, library
-versions, HPL output, etc.) is invaluable and allows researchers
-to better understand of these platforms actually behave.
+performance on a given platform will become invaluable in the future
+to aid compute centers with the decision of whether a new machine (and
+what technology) will work best for a given application or if an
+upgrade of the current machine should be considered. As a future work,
+we intend to automate our modeling approach as much as possible and to
+conduct similar studies with other HPC benchmarks (\eg HPCG or HPGMG)
+and with other TOP500 machines. In this context, we believe that a
+faithful and public reporting of the experimental conditions (compiler
+options, library versions, HPL output, etc.) is invaluable and allows
+researchers to better understand how these platforms actually behave.
 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
