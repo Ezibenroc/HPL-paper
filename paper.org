@@ -3582,7 +3582,7 @@ plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) +
                 se=F, size=.2, color="blue", alpha=.2, fullrange=T) + 
     geom_point(alpha=.5,size=.5) + 
     geom_smooth(data = func[func$mode == "reality",], method='lm', se=F, fullrange=T, linetype=4, color="black")
-plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M×N') + labs(color='Mode') + 
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N')
     xlim(0,max(func$m*func$n)*1.1) +     
     scale_color_brewer(palette="Set1")  +
     theme(legend.position = c(0.3,0.85), legend.title=element_blank()) +
