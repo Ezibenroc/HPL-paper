@@ -1313,66 +1313,87 @@ simulation predictions within a few percents of real experiments.
 
 #+LaTeX: \maketitle              % typeset the title of the contribution
 * Introduction
+Today, machines with 100,000\nbsp{}cores and more are common and several
+machines beyond the 1,000,000\nbsp{}cores mark are already in
+production. This high density of computation units requires diligent
+optimization of application parameters, such as problem size, process
+organization or choice of algorithm, as these have a huge impact on
+load distribution and network utilization. Scientific application
+developers and users often spend considerable amount of time and
+efforts running their application at different scales solely to tweak
+parameters and optimize their performance. This duration, combined
+with the power consumption that often reaches several MW for TOP500
+machines, makes it financially expensive to test-run applications. A
+large part of this tuning work could be simplified if a generic and
+faithful performance prediction tool was available. This article
+presents a decisive step in this direction.
 
-\AL{Abstract and Introduction are way to verbose. Shrink this!}
-The world's largest and fastest machines are ranked twice a year in the so-called
-TOP500 list. Among the benchmarks that are often used to evaluate
-those machines, the Linpack benchmark, in particular the High-Performance Linpack (HPL)
-implementation, has emerged as the de-facto standard benchmark, although
-other benchmarks such as HPCG and HPGMG have recently been proposed to
-become the new standard. Today, machines with 100,000\nbsp{}cores 
-and more are common and several machines beyond the 1,000,000\nbsp{}cores mark
-are already in production. This high density of computation units requires diligent optimization of application
-parameters, such as problem size, process organization or choice of algorithm, as these
-have an impact on load distribution and network utilization.
-Furthermore, to yield best benchmark results,
-runtimes (such as OpenMPI) and supporting libraries (such as BLAS) need to be fine-tuned and adapted to the
-underlying platform. 
+The world's largest and fastest machines are ranked twice a year in
+the TOP500 list using the High-Performance Linpack (HPL) benchmark. To
+reach a good performance, a very large input is needed and it takes
+typically several hours to run HPL on the list's number one
+system. HPL implements several algorithmic optimizations that should
+be carefully optimized and it is thus quite representative of many
+other scientific applications in terms of potential performance issues
+and their solutions. Although in the case of HPL, machine vendors know
+how to estimate the performance using simple mathematical performance
+models, these models provide trends but are not particularly accurate
+as they underestimate the serious impact of the network
+(\eg congestion or topology). Whenever actual
+performance do not match expectations, it can be very difficult to
+understand whether the mismatch originates from model imperfections or
+from machine misconfiguration.
 
-Alas, it takes typically several hours to run HPL on the list's number one system.
-This duration, combined with the power consumption that often reaches several MW
-for TOP500 machines, makes it financially prohibitive to test-run HPL on the whole
-machine just to tweak parameters. 
-Yet, performance results of an already deployed, current-generation machine typically also
-play a role in the funding process for future machines. Results near
-the optimal performance for the current machine are hence considered critical for
-HPC centers and vendors. These entities would benefit from being able to
-tune parameters without actually running the benchmark for hours.
+# Yet, performance results of an already deployed, current-generation
+# machine typically also play a role in the funding process for future
+# machines. Results near the optimal performance for the current machine
+# are hence considered critical for HPC centers and vendors. These
+# entities would benefit from being able to tune parameters without
+# actually running the benchmark for hours.
 # This estimation can be done either via (mathematical) performance models (e.g., by
 # estimating performance of specific functions) or by a simulation based approach.
-# While performance models neglect the
-# oftentimes serious impact of the network (\eg due to congestion, shared bandwidth,
-# ...), this is not in general true for the simulation approach.
-
 # \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
-#+LaTeX: \AL{Clearly list contributions: 1) Explain how to obtain Scalable simulation 2) Explain how to model resources 3) Detailed comparison with RL experiments that show the importance of carefully modeling spatial and temporal variability 4) Compare with a top 500 qualification run }
 
-In this article, we explain how to predict the performance of HPL
-through simulation with the SimGrid/SMPI simulator. We detail how we obtained
-faithful models for several functions (\eg =DGEMM= and =DTRSM=) and how we managed
-to reduce the memory consumption from more than a hundred terabytes to several
-gigabytes, allowing us to emulate HPL on a commonly available server node.
-We evaluate the effectiveness of our solution by
-simulating a scenario similar to the run conducted on the Stampede
-cluster (TACC) in 2013 for the TOP500 . 
+#+LaTeX: \AL[]{Clearly list contributions?}
+# 1) Explain how to obtain Scalable simulation 2) Explain how to model
+# resources 3) Detailed comparison with RL experiments that show the
+# importance of carefully modeling spatial and temporal variability 4)
+# Compare with a top 500 qualification run }
 
-This article is organized as follows:
-Section\ref{sec:con} presents the main characteristics of the HPL
-application and provides detail on the run that was conducted at TACC
-in 2013.  Section\ref{sec:relwork} discusses existing related work and
-explains why emulation (or /online simulation/) is the only relevant
-approach when studying an application as complex as HPL. In
-Section\ref{sec:smpi}, we briefly present the simulator we used for
-this work, SimGrid/SMPI, followed by an
-extensive discussion in Section\ref{sec:em} about the
-optimizations on all levels (\ie simulator, application, system) that
-were necessary to make a large-scale run tractable. The scalability of
-our approach is evaluated in Section\ref{sec:scalabilityevol}. The
-modeling of the Stampede platform and the comparison of our simulation
-with the 2013 execution is detailed in
-Section\ref{sec:science}. Lastly, Section\ref{sec:cl} concludes this
-article by summarizing our contributions.
-** Clearpage                                                        :ignore:
+In this article, we explain how to predict the performance of HPL on a
+supercomputer through simulation with the SimGrid/SMPI simulator. We
+detail how we obtained faithful models for several functions (\eg
+=dgemm= and =dtrsm=) and how we managed to reduce the memory consumption
+from more than a hundred terabytes to several gigabytes, allowing us
+to emulate HPL on a single commodity node. We evaluate the
+effectiveness of our solution by simulating scenarios similar to the
+run conducted on the Stampede cluster (TACC) in 2013 for the
+TOP500. We manage to simulate such a scenario in details on a single
+node in about two days. We are also able to predict the performance of
+a controlled cluster (with a thousand of MPI processes) within a few
+percents of reality.
+
+This article is organized as follows: Section\ref{sec:con} presents
+the main characteristics of the HPL application and provides detail on
+the run that was conducted at TACC in 2013. Section\ref{sec:relwork}
+discusses existing related work and explains why emulation (or /online
+simulation/) is the only relevant approach when studying an application
+as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
+simulator we used for this work, SimGrid/SMPI, followed by an
+extensive discussion in Section\ref{sec:em} about the optimizations on
+all levels (\ie simulator, application, system) that were necessary to
+make a large-scale run tractable. The scalability of our approach is
+evaluated in Section\ref{sec:scalabilityevol}. In
+Section\ref{sec:modeling}, we explain how the different resources of
+the supercomputer (network, BLAS kernels, ...) can be modeled to
+account faithfully for the performance of HPL. In particular, we
+discuss about the usefulness and relevance of different degrees of
+modeling complexity. In Section\ref{sec:validation}, we compare
+simulation results with real experiments and illustrate the importance
+of modeling both spatial and temporal variability. Lastly,
+Section\ref{sec:cl} concludes this article by discussing perspectives
+and future work.
+** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{2}
 * Context
 #+LaTeX: \label{sec:con}
@@ -2780,6 +2801,7 @@ scatter3D(
 *** Clearpage                                                      :ignore:
 \clearpage\setcounter{page}{6}
 * Modeling HPL Kernels and Communications
+#+LaTeX: \label{sec:modeling}
 As we have explained in Section\ref{sec:em}, most of HPL computation
 time is spent in a dozen of specific functions for which a performance
 model has to be designed. Most computation kernels have several
@@ -3972,7 +3994,7 @@ insist on the fact that modeling both spatial and temporal variability
 is crucial.
 ** \scalebox{.92}{Comparing With the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
-#+LaTeX: \label{sec:science}
+#+LaTeX: \label{sec:stampede}
 # #+BEGIN_EXPORT latex
 # \begin{figure*}%[!htb]
 #   \centering
@@ -4468,6 +4490,11 @@ cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications
 
 * Conclusions
 #+LaTeX: \label{sec:cl}
+
+, although
+other benchmarks such as HPCG and HPGMG have recently been proposed to
+become the new standard
+
 
 Studying HPC applications at scale can be very time- and
 resource-consuming. Simulation is often an effective approach in this
