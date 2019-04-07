@@ -1847,15 +1847,16 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 * Emulating HPL at Large Scale
 #+LaTeX: \label{sec:em}
 
-We now present our changes to SimGrid and HPL that were
-required for a scalable and faithful simulation. We provide
-only a brief evaluation of our modifications and refer the 
-reader interested in details to\cite{cornebize:hal-01544827}\AL[]{Anonymize} and our laboratory 
-#+LaTeX: notebook\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}}.
+We now present the changes to SimGrid and HPL that were required for a
+scalable simulation. We provide only a brief presentation of our
+modifications and refer the reader interested in details
+to\cite{cornebize:hal-01544827}\AL[]{Anonymize} and our laboratory
+#+LaTeX: notebooks\footnote{See \texttt{journal.org} at \url{https://github.com/Ezibenroc/simulating_mpi_applications_at_scale/}}.
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
-CPUs processors with \NSI{2.1}{\GHz} and Debian Stretch (kernel 4.9). 
+CPUs processors and Debian Stretch (Linux 4.9). 
+# with \NSI{2.1}{\GHz}
 ** Speeding Up the Emulation
 *** Kernel Modeling
 Given its complexity, a faithful prediction of HPL requires emulation,
@@ -2820,30 +2821,6 @@ models with individual measurements of both computation and
 communications to illustrate the importance of the model
 complexity. The consequence of using simpler modeling options will be
 illustrated on HPL as a whole in Section\ref{sec:validation}.
-** Figures                                                          :ignore:
-#+BEGIN_EXPORT latex
-\begin{figure}
-  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
-  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
-  \label{fig:nw_var}
-\end{figure}
-
-\begin{figure*}[!b]
-  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
-    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
-    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
-    \caption{Illustrating the realism of modeling for BLAS functions.}
-    \label{fig:blas_var}
-  \end{minipage}\hfill%
-  \begin{minipage}[t]{.39\linewidth}
-    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}
-    \caption{Illustrating the realism of modeling for HPL functions.}
-    \label{fig:HPL_var}
-  \end{minipage}
-\end{figure*}
-
-#+END_EXPORT
 ** Modeling Notations
 #+LaTeX: \newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
 #+LaTeX: \newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
@@ -2894,6 +2871,21 @@ important hypothesis underlying all these methods is the
 homoscedasticity, \ie that the variability is independent on the
 parameters. 
 
+#+BEGIN_EXPORT latex
+\begin{figure*}[!b]
+  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
+    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
+    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}
+    \caption{Illustrating the realism of modeling for BLAS functions.}
+    \label{fig:blas_var}
+  \end{minipage}\hfill%
+  \begin{minipage}[t]{.39\linewidth}
+    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}
+    \caption{Illustrating the realism of modeling for HPL functions.}
+    \label{fig:HPL_var}
+  \end{minipage}
+\end{figure*}
+#+END_EXPORT
 The residual (temporal) variability may be an important phenomenon to
 account for, as "system noise" is known to be detrimental to overall
 performance of parallel applications like HPL. We therefore consider
@@ -2940,6 +2932,15 @@ available (e.g., clustering with =mclust=\cite{mclust} for
 Bayesian estimation could be made with frameworks like
 STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
+#+BEGIN_EXPORT latex
+\begin{figure}[!h]
+  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
+  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}
+  \label{fig:nw_var}
+\end{figure}
+#+END_EXPORT
+
 ** Modeling MPI communications
 Prior to this work, the standard way of accounting for protocol
 changes in SMPI was to estimate breakpoints visually and to
@@ -4492,10 +4493,9 @@ cp /home/alegrand/Work/SimGrid/tom/m2_internship_journal/stampede/communications
 * Conclusions
 #+LaTeX: \label{sec:cl}
 
-, although
-other benchmarks such as HPCG and HPGMG have recently been proposed to
-become the new standard
-
+# , although
+# other benchmarks such as HPCG and HPGMG have recently been proposed to
+# become the new standard
 
 Studying HPC applications at scale can be very time- and
 resource-consuming. Simulation is often an effective approach in this
