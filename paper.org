@@ -3649,26 +3649,29 @@ wget -c https://github.com/Ezibenroc/mpi_calibration/raw/master/dahu/smpi_hpl/pa
 #+RESULTS:
 
 *** Drawing the Gantt charts
-TODO: improve the plots.
-
 #+NAME: init_gantt
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
+library(dplyr)
 # Levels: MPI_Recv MPI_Send dgemm dtrsm other
 colours <- c("#5050AA", "#AA2020", "#FFFF88", "#FF00FF", "#FF0000")
 
 draw_gantt <- function(csv_name, xmax= 10, xstep = 2) {
     df = read.csv(csv_name)
+    df$func = factor(df$func, levels=c('MPI_Recv', 'MPI_Send', 'dgemm', 'dtrsm', 'other'))
     dfend = df %>% group_by(rank) %>% filter(func=="dgemm") %>% summarize(end=max(end)) %>% select(end) %>% ungroup()  %>% summarize(end=mean(end))
     myend <<- dfend;
     gc = ggplot(df) + geom_rect(aes(xmin=start, xmax=end, ymin=rank, ymax=rank+1, fill=func)) + theme_bw() +
         scale_fill_manual(values=colours,  guide=F) +  # scale_fill_brewer(type='qualitative', palette='Set1',) 
         geom_vline(data=data.frame(x=seq(from=0, to=xmax, by=xstep)),aes(xintercept=x), linetype=2) +
         geom_vline(data=dfend,aes(xintercept=end),color="darkred") +
-        xlim(0,xmax) 
+        xlim(0,xmax) +
+        theme(text=element_text(size=20)) 
     return(gc)
 }
 #+end_src
+
+#+RESULTS: init_gantt
 
 #+RESULTS:
 
