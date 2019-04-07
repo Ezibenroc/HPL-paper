@@ -1457,8 +1457,8 @@ look-ahead depths. The working principle of the factorization is depicted in
 Figure\ref{fig:hpl_overview} and consists of a series of panel
 factorizations followed by an update of the trailing sub-matrix.
 HPL uses a two-dimensional block-cyclic data distribution of $A$ and implements several custom
-collective communication algorithms to efficiently overlap communication
-with computation.
+collective communication algorithms to overlap efficiently communications 
+with computations.
 The main parameters of HPL are listed subsequently:
 - $N$ is the order of the square matrix $A$.
 - =NB= is the ``blocking factor'', \ie the granularity at
@@ -1474,7 +1474,7 @@ The main parameters of HPL are listed subsequently:
   panel of columns to the other process columns. Legacy versions of
   the MPI standard only supported non-blocking point-to-point communications but did
   not support non-blocking collective communications, which is why HPL
-  ships with in total 6 self-implemented variants to efficiently
+  ships with in total 6 self-implemented variants to 
   overlap the time spent waiting for an incoming panel with updates to
   the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
   =long=, and =long-modified=. The =modified= versions guarantee that
@@ -1759,7 +1759,7 @@ recent simulators such as SST Macro\cite{sstmacro},
 SimGrid/SMPI\cite{simgrid} 
 and the closed-source extreme-scale simulator xSim\cite{xsim} support
 it. To the best of our knowledge, only SST Macro and
-SimGrid/SMPI are mature enough to faithfully emulate 
+SimGrid/SMPI are mature enough to emulate faithfully 
 HPL. For our work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
@@ -1777,7 +1777,7 @@ predictions with results from real experiments to confirm or debunk
 network and application models.
 
 SMPI, a simulator based on SimGrid, has been developed
-and used to faithfully simulate unmodified MPI applications written in
+and used to simulate unmodified MPI applications written in
 C/C++ or FORTRAN\cite{smpi}. 
 The complex network optimizations done in real MPI implementations
 need to be considered when predicting performance of MPI applications.
@@ -2259,7 +2259,7 @@ rank at startup and, when context switching to another rank, to remap
 the =data= segment via =mmap= to the private copy of that rank.  SMPI also
 implements another mechanism relying on the =dlopen= function that
 allows to project several times the global variables in the =data=
-segment and to significantly save calls to =mmap= when context
+segment and to avoid costly calls to =mmap= when context
 switching. The main advantage of this second approach is that caches
 do not need to be flushed as is the case for the =mmap= approach,
 because data consistency can always be guaranteed. 
@@ -2316,7 +2316,7 @@ $N$. SimGrid's fluid models, used to simulate communications, do not
 depend on $N$. Therefore, the time to simulate a step of HPL should mostly depend on $P$ and
 $Q$. Yet, some memory operations on the panel that are related to pivoting
 are intertwined in HPL with collective communications, meaning that it
-is impossible to completely get rid of the $\O(N)$ complexity without
+is impossible to get rid of the $\O(N)$ complexity without
 modifying HPL more profoundly. 
 
 To evaluate the efficiency of our proposal, we conduct a first
@@ -2932,10 +2932,10 @@ STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
 ** Modeling MPI communications
 Prior to this work, the standard way of accounting for protocol
-changes in SMPI was to visually estimate breakpoints and to manually
-conduct linear regression for each range. The expectation duration was
-then used in the simulation with no particular effort for the noise
-and the default model was thus \modelp{1}\noise{0}. Yet, as illustrated
+changes in SMPI was to estimate breakpoints visually and to
+conduct a linear regression for each range. The expected duration was
+then used directly in the simulation with no particular effort with
+respect to the temporal variability (\modelp{1}\noise{0}). Yet, as illustrated 
 on Figure\ref{fig:nw_var}, the variability of high speed networks 
 quite particular. We
 therefore took care of correctly estimating all the parameters for
@@ -2969,7 +2969,7 @@ for this spatial heterogeneity is likely to be rather important for
 HPL. Likewise, it is also common that the cores of two CPUs of the
 same node have a significantly different performance. Second, the
 range of values for $M$, $N$, and $K$ is uniform over ??? and it is
-interesting to note that $M.N.K$ is not sufficient to fully describe
+interesting to note that $M.N.K$ is not sufficient to describe correctly
 the performance of =dgemm=. Indeed, for $M.N.K \approx \num{4.5E9}$ some
 duration are systematically quite slow regardless of the node. This
 happens for some particular (e.g., tall and skinny) matrix geometries,
@@ -3976,10 +3976,9 @@ leading to the current performance depicted in
 Figure\ref{fig:validation_performance}. By replacing the few currently
 slow nodes by "average" nodes in our model, we have been able to
 re-estimate the overall performance of HPL and to obtain a (higher)
-prediction that is consistent with the performance obtained a few
-months ago.
+prediction matching the performance obtained a few months ago.
 
-We have thus shown it is possible to consistently predict the
+We have thus shown it is possible to predict consistently the
 performance of HPL within a few percents of reality provided a
 faithful model of each individual resource is realized. Again, we
 insist on the fact that modeling both spatial and temporal variability
