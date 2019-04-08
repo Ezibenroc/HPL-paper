@@ -1231,6 +1231,7 @@ zlib 1.0
 #+LATEX_HEADER: \usepackage[mode=buildnew]{standalone}
 #+LATEX_HEADER: \usepackage[ruled,vlined,english]{algorithm2e}
 #+LATEX_HEADER: \DontPrintSemicolon
+#+LATEX_HEADER: \sloppy
 
 #+LaTeX: \newcommand\myemph[1]{\color{colorfuncall}\textbf{#1}}%
 
@@ -1298,25 +1299,25 @@ zlib 1.0
 #+Latex:\begin{abstract}
 With a power consumption of several MW per hour on a TOP500 machine,
 running applications on supercomputers at scale solely to optimize
-their performance is extremely expensive. High-Performance Linpack,
+their performance is extremely expensive. High-Performance Linpack (HPL),
 the benchmark used to rank supercomputers in the TOP500, requires a
 careful tuning of many parameters (problem size, grid arrangement,
 granularity, collective operation algorithms, etc.) and supports
 exploration of the most common and fundamental performance issues and
 their solutions. In this article, we explain how we both extended the
 SimGrid's SMPI simulator and slightly modified the open-source version
-of HPL to allow a fast emulation on a single commodity computer at the
+of HPL to allow a fast emulation on a single commodity server at the
 scale of a supercomputer. We explain how to model the different
 components (network, BLAS, ...) and show that a careful modeling of
-both spatial and temporal node variability allows to obtain faithful
-simulation predictions within a few percents of real experiments.
+both spatial and temporal node variability allows us to obtain faithful
+predictions within a few percents of real experiments.
 #+LaTeX: \end{abstract}
 
 #+LaTeX: \maketitle              % typeset the title of the contribution
 * Introduction
 Today, machines with 100,000\nbsp{}cores and more are common and several
 machines beyond the 1,000,000\nbsp{}cores mark are already in
-production. This high density of computation units requires diligent
+production. This high density of computation units requires a diligent
 optimization of application parameters, such as problem size, process
 organization or choice of algorithm, as these have a huge impact on
 load distribution and network utilization. Scientific application
@@ -1331,19 +1332,19 @@ presents a decisive step in this direction.
 
 The world's largest and fastest machines are ranked twice a year in
 the TOP500 list using the High-Performance Linpack (HPL) benchmark. To
-reach a good performance, a very large input is needed and it takes
-typically several hours to run HPL on the list's number one
+get near to the peak performance, a very large input is needed and it
+typically takes several hours to run HPL on the list's number one
 system. HPL implements several algorithmic optimizations that should
 be carefully optimized and it is thus quite representative of many
 other scientific applications in terms of potential performance issues
-and their solutions. Although in the case of HPL, machine vendors know
-how to estimate the performance using simple mathematical performance
-models, these models provide trends but are not particularly accurate
-as they underestimate the impact of the network congestion and of
-system noise. Whenever actual
+and their solutions. In the case of HPL, machine vendors know how to
+estimate the performance using simple mathematical performance
+models. However, these models only give trends but fail to capture the
+impact of the network congestion and of system noise and are thus not
+particularly accurate. Whenever actual
 performance do not match expectations, it can be very difficult to
 understand whether the mismatch originates from model imperfections or
-from machine misconfiguration.
+machine misconfiguration.
 
 # \TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
 
@@ -1365,16 +1366,14 @@ from machine misconfiguration.
 
 In this article, we explain how to predict the performance of HPL on a
 supercomputer through simulation with the SimGrid/SMPI simulator. We
-detail how we obtained faithful models for several functions (\eg
-=dgemm= and =dtrsm=) and how we managed to reduce the memory consumption
-from more than a hundred terabytes to several gigabytes, allowing us
-to emulate HPL on a single commodity node. We evaluate the
-effectiveness of our solution by simulating scenarios similar to the
-run conducted on the Stampede cluster (TACC) in 2013 for the
-TOP500. We manage to simulate such a scenario in details on a single
-node in about two days. We are also able to predict the performance of
-a controlled cluster (with a thousand of MPI processes) within a few
-percents of reality.
+detail how we obtained faithful models for several key functions (\eg
+=dgemm= and =dtrsm=) and managed to reduce the memory consumption from
+more than a hundred terabytes to several gigabytes. This allowed us to
+emulate detailed scenarios similar to the HPL run conducted on the
+Stampede cluster (TACC) in 2013 for the TOP500 on a single commodity
+sever and in less than two days. More importantly, we manage to
+predict the performance of HPL on a controlled cluster (with a thousand of
+MPI ranks) within a few percents of reality.
 
 This article is organized as follows: Section\ref{sec:con} presents
 the main characteristics of the HPL application and provides detail on
@@ -1385,17 +1384,16 @@ as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
 simulator we used for this work, SimGrid/SMPI, followed by an
 extensive discussion in Section\ref{sec:em} about the optimizations on
 all levels (\ie simulator, application, system) that were necessary to
-make a large-scale run tractable. The scalability of our approach is
+keep a large-scale run tractable. The scalability of our approach is
 evaluated in Section\ref{sec:scalabilityevol}. In
 Section\ref{sec:modeling}, we explain how the different resources of
 the supercomputer (network, BLAS kernels, ...) can be modeled to
-account faithfully for the performance of HPL. In particular, we
-discuss about the usefulness and relevance of different degrees of
+reflect faithfully the performance of HPL. In particular, we
+discuss the usefulness and relevance of different degrees of
 modeling complexity. In Section\ref{sec:validation}, we compare
 simulation results with real experiments and illustrate the importance
-of modeling both spatial and temporal variability. Lastly,
-Section\ref{sec:cl} concludes this article by discussing perspectives
-and future work.
+of modeling both spatial and temporal variability. Section\ref{sec:cl}
+concludes this article by discussing perspectives and future work.
 ** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{2}
 * Context
@@ -1456,21 +1454,21 @@ and future work.
 \end{figure}
 #+END_EXPORT
 
-For this work, we use the freely-available reference-implementation of
-the High-Performance Linpack benchmark\cite{HPL}, HPL, which is 
-used to benchmark systems for the TOP500\cite{TOP500} list. HPL
-requires MPI to be available and implements
-a LU decomposition. HPL checks the correctness of this factorization by
+In this work, we use the freely-available reference-implementation of
+the High-Performance Linpack benchmark\cite{HPL}, HPL, as a research
+vehicle. HPL is used to benchmark systems for the TOP500\cite{TOP500}
+list and implements a LU decomposition using MPI. 
+HPL checks the correctness of this factorization by
 solving a linear system $A\cdot{}x=b$, but only the factorization step is
 benchmarked.  The factorization is based on a right-looking variant of
 the LU factorization with row partial pivoting and allows multiple
 look-ahead depths. The working principle of the factorization is depicted in
-Figure\ref{fig:hpl_overview} and consists of a series of panel
+Figure\ref{fig:hpl_overview}. It consists of a series of panel
 factorizations followed by an update of the trailing sub-matrix.
 HPL uses a two-dimensional block-cyclic data distribution of $A$ and implements several custom
-collective communication algorithms to overlap efficiently communications 
+MPI collective communication algorithms to overlap efficiently communications 
 with computations.
-The main parameters of HPL are listed subsequently:
+The main parameters of HPL are:
 - $N$ is the order of the square matrix $A$.
 - =NB= is the ``blocking factor'', \ie the granularity at
   which HPL operates when panels are distributed or worked on.
@@ -1481,24 +1479,24 @@ The main parameters of HPL are listed subsequently:
   algorithms are available: one based on /binary exchange/ (along a virtual tree topology) and the other one based on
   a /spread-and-roll/ (with a higher number of parallel communications). HPL
   also provides a panel-size threshold triggering a switch from one variant to the other.
-- =BCAST= sets the algorithm used to broadcast the
-  panel of columns to the other process columns. Legacy versions of
-  the MPI standard only supported non-blocking point-to-point communications but did
-  not support non-blocking collective communications, which is why HPL
+- =BCAST= sets the algorithm used to broadcast a
+  panel of columns over the process columns. Legacy versions of
+  the MPI standard only supported non-blocking point-to-point
+  communications, which is why HPL
   ships with in total 6 self-implemented variants to 
   overlap the time spent waiting for an incoming panel with updates to
   the trailing matrix: =ring=, =ring-modified=, =2-ring=, =2-ring-modified=,
   =long=, and =long-modified=. The =modified= versions guarantee that
   the process right after the root (\ie the process that will become the root
-  in the next iteration) receives data first and does not participate
-  further in the broadcast. This process can thereby start working on the
-  panel as soon as possible. The =ring= and =2-ring= versions correspond
-  to the name-giving two virtual topologies while the =long= version
+  in the next iteration) receives data first and does not further
+  participate in the broadcast. This process can thereby start working on the
+  panel as soon as possible. The =ring= and =2-ring= versions each broadcast
+  along the corresponding virtual topologies while the =long= version
   is a /spread and roll/ algorithm where messages are chopped into $Q$
   pieces. This generally leads to better bandwidth exploitation. The =ring= and
   =2-ring= variants rely on =MPI_Iprobe=, meaning they
-  return control if no message has been fully received yet and hence
-  facilitate partial overlapping of communication with computations. In HPL 2.2 and 2.1, this capability
+  return control if no message has been fully received yet, hence
+  facilitating partial overlap of communication with computations. In HPL 2.1 and 2.2, this capability
   has been deactivated for the =long= and =long-modified= algorithms. A comment in the source code states that some
   machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
@@ -1540,7 +1538,10 @@ used for each of these runs.
 % correspond le fichier HPL.dat que l'on a. J'ai reporté la perf de novembre
 % 2017.}
 
-\begin{figure}[t]
+\begin{table}[b]
+\vspace{-1em}
+\caption{Typical runs of HPL}\vspace{-1em}
+\label{fig:typical_run}
 \scalebox{.9}{\begin{tabular}{l|lll}
 \multicolumn{1}{l|}{} & Stampede@TACC & Theta@ANL & Dahu@G5K\\
 \hline
@@ -1558,9 +1559,7 @@ Duration   & 2 hours                  & 28 hours                 & 1 hour       
 Memory    & \NSI{120}{\tera\byte}     & \NSI{559}{\tera\byte}     & \NSI{2}{\tera\byte} \\
 MPI ranks & 1/node                & 1/node                   & 1/core             \\
 \end{tabular}}\vspace{-1em}
-\caption{Typical runs of HPL}\vspace{-1.5em}
-\label{fig:typical_run}
-\end{figure}
+\end{table}
 #+END_EXPORT
 
 *** Hidden information about the Stampede execution              :noexport:
@@ -1714,12 +1713,12 @@ the underlying hardware, simple performance models (analytic expressions based
 on $N, P, Q$ and estimations of platform characteristics as presented in
 Section\ref{sec:hpl}) may be able to provide trends but can by no means
 accurately predict the performance for each configuration (\ie consider the
-exact effect of HPL's 6 different broadcast algorithms on network
+exact effect of HPL's six different broadcast algorithms on network
 contention). Additionally, these expressions do not allow
 engineers to improve the performance through actively identifying performance bottlenecks.
 For complex optimizations such as partially non-blocking
 collective communication algorithms intertwined with computations,
-very faithful modeling of both the application and the platform is
+a very faithful modeling of both the application and the platform is
 required. Our goal in this article is to simulate
 systems at the scale of Stampede. Given the scale of this scenario
 (3,785\nbsp{}steps on 6,006 nodes in two hours), detailed
@@ -1732,11 +1731,11 @@ simulations quickly become intractable without significant effort.
 # with computations. Its adaptive behavior is thus particularly
 # challenging to simulate and representative of what can be found in
 # many MPI applications.
-Performance prediction of MPI application through simulation has been
+Performance prediction of MPI applications through simulation has been
 widely studied over the last decades but two approaches can be
 distinguished in the literature: offline and online simulation.
 
-With the most common approach, /offline simulation/, a time-independent
+With the most common approach, /offline simulation/, a 
 trace of the application is first obtained on a real platform. This
 trace comprises sequences of MPI operations and CPU bursts and is
 given as an input to a simulator that implements performance models
@@ -1752,7 +1751,7 @@ compressed trace of a few iterations (out of several thousands)
 of HPL typically weights a few hundreds of MB, which quickly becomes 
 impractical\cite{suter}. Even worse, tracing an application provides
 only information about
-its behavior at the time of the run. Even light modifications 
+its behavior at the time of the run. Even slight modifications 
 (\eg to communication patterns) may make the trace inaccurate. For
 simple applications (\eg =stencil=) it is
 possible to extrapolate behavior from small-scale
@@ -1771,7 +1770,7 @@ SimGrid/SMPI\cite{simgrid}
 and the closed-source extreme-scale simulator xSim\cite{xsim} support
 it. To the best of our knowledge, only SST Macro and
 SimGrid/SMPI are mature enough to emulate faithfully 
-HPL. For our work, we decided to rely on SimGrid as 
+HPL. In this work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
 * SimGrid/SMPI in a Nutshell
@@ -1791,11 +1790,11 @@ SMPI, a simulator based on SimGrid, has been developed
 and used to simulate unmodified MPI applications written in
 C/C++ or FORTRAN\cite{smpi}. 
 The complex network optimizations done in real MPI implementations
-need to be considered when predicting performance of MPI applications.
-For instance, the protocol used, such as ``eager'' or ``rendez-vous''
-are selected based on the message size, with each protocol having its
+need to be considered when predicting the performance of MPI applications.
+For instance the "eager" and "rendez-vous" protocols are
+selected based on the message size, with each protocol having its
 own synchronization semantics, which stronly impact performance.
-To deal with this, SMPI relies on a generalization of the LogGPS.
+To deal with this, SMPI relies on a generalization of the LogGPS model.
 Modeling network topologies and contention is also difficult.  SMPI
 relies on SimGrid's communication models where each ongoing
 communication is represented as a whole (as opposed to single packets)
@@ -1821,9 +1820,8 @@ spent computing (isolated from the other threads) since the previous
 MPI call is injected into the simulator as a virtual delay.  This
 time may be scaled up or down depending on the simulated machine with
 respect to the simulation machine.
-Recent results report consistent predictions within a
-few percent of both performance and energy consumption for standard
-benchmarks on small-scale clusters (up to $12\times12$ cores
+Recent results report consistent performance predictions within a few
+percent for standard benchmarks on small-scale clusters (up to $12\times12$ cores
 in\cite{heinrich:hal-01523608} and up to $128\times1$ cores
 in\cite{smpi}). In this article, we validate this approach at a much
 larger scale with HPL, whose emulation comes with at least two challenges:
@@ -1856,16 +1854,16 @@ modifications and refer the reader interested in details
 to\cite{cornebize:hal-01544827} and \cite{cornebize:github_notebook}.
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
-\NSI{32}{\giga\byte} RAM, two 8-core Intel Xeon E5-2620 v4
-CPUs processors and Debian Stretch (Linux 4.9). 
+\NSI{32}{\giga\byte} of RAM, two 8-core Intel Xeon E5-2620 v4
+CPUs processors and a Debian Stretch OS (Linux 4.9). 
 ** Speeding Up the Emulation
 *** Kernel Modeling
-Given its complexity, a faithful prediction of HPL requires emulation,
-\ie to execute the code.  HPL relies heavily
+Given its complexity, a faithful prediction of HPL requires the
+emulation of its code.  HPL heavily relies 
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
-=dtrsm= (for solving an equation of the form $Ax=b$). An analysis of an
+=dtrsm= (for solving an equation of the form $A\cdot x=b$). Analyzing an
 HPL simulation with $64$ processes and a very small matrix of order
-$30,000$ showed that roughly \NSI{96}{\percent} of the time is spent in
+$30,000$ shows that roughly \NSI{96}{\percent} of the time is spent in
 these two kernels. Since
 these kernels do not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
@@ -1877,7 +1875,7 @@ Figure\ref{fig:macro_simple} shows an example of this macro-based
 mechanism that allows us to keep HPL code modifications to an absolute
 minimum. The =(1.029e-11)= value represents the inverse of the flop rate
 for this computation kernel and was obtained through calibration. The
-estimated time for the real kernel is calculated based on the
+estimated time for the real kernel is calculated based on the given
 parameters and eventually passed on to =smpi_execute_benched= that
 advances the clock of the executing rank by this estimate.
 The effect on simulation time for a small scenario is
@@ -1895,7 +1893,7 @@ albeit slightly more optimistic, estimation of the performance.
     \begin{minipage}[b]{\linewidth}
       \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
     \end{minipage}}\vspace{-1em}
-  \subfigure[Gain in term of simulation time.\label{fig:kernel_sampling}]{
+  \subfigure[Gain in terms of simulation time.\label{fig:kernel_sampling}]{
     \begin{minipage}[b]{\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
     \end{minipage}}\vspace{-1em}
@@ -1975,13 +1973,13 @@ plot1 = generic_do_plot(ggplot(results, aes(x=size, y=Gflops, color=kernel_sampl
     labs(linetype="Kernel modeling") +
     xlab('Matrix order') +
     ylab('Performance [Gflop/s]') +
-    ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI process)")
+    ggtitle("Performance estimation\n(P=Q=8, i.e., 64 MPI processes)")
 plot2 = generic_do_plot(ggplot(results, aes(x=size, y=simulation_time, color=kernel_sampling, linetype=kernel_sampling))) +
     labs(colour="Kernel modeling") +
     labs(linetype="Kernel modeling") +
     xlab('Matrix order') +
     ylab('Time [seconds]') +
-    ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI process)")
+    ggtitle("Simulation time\n(P=Q=8, i.e., 64 MPI processes)")
 
 grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 #+end_src
@@ -2047,10 +2045,10 @@ correctness verification, is not considered in the reported
 performance.  Since both phases have no impact on the reported
 performance, we can safely skip them.
 
-In addition to the main computation kernels =dgemm= and =dtrsm=, 
+In addition to the main computation kernels, 
 we identified seven other BLAS functions through
 profiling as computationally expensive enough to justify a specific
-handling: =dtrsm=, =dgemv=, =dswap=, =daxpy=,
+handling: =dgemv=, =dswap=, =daxpy=,
 =dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
 spent in fifteen functions implemented in HPL: 
 =HPL_dlaswp*N=, =HPL_dlaswp*T=, =HPL_dlacpy= and =HPL_dlatcpy=.
@@ -2058,17 +2056,17 @@ All these functions are called during the
 LU factorization and hence impact the performance measured by HPL; however, because of
 the removal of the =dgemm= and =dtrsm= computations, they all operate on
 bogus data and hence also produce bogus data. To study their impact on
-overal performance, we handled them similarly to =dgemm= and
+the overall performance, we handled them similarly to =dgemm= and
 =dtrsm=, through performance models and macro substitution.
 
 Last, note that HPL
 implements an LU factorization with partial pivoting and a special
 treatment of the =idamax= function that returns the index of the first
 element equaling the maximum absolute value. Although we ignored the
-cost of this function as well, we set its return value to an random (but controlled)
+cost of this function as well, we set its return value to a random (but controlled)
 value to make the simulation unbiased (but fully deterministic).
 We confirmed that this modification is harmless in terms of performance prediction while it
-speeds up the simulation by an additional factor of $\approx3$ to $4$
+speeds up the simulation by an additional factor of $3$ to $4$
 on small ($N=30,000$) and even more on large scenarios.
 ** Scaling Down Memory Consumption
 #+BEGIN_EXPORT latex
@@ -2210,14 +2208,14 @@ classic invalid memory accesses. Since \texttt{int}s and \texttt{double}s are st
 non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism that preserves the process-specific
 content. We have thus introduced the 
-=SMPI_PARTIAL_SHARED_MALLOC= macro that allows to specify which ranges of the
+=SMPI_PARTIAL_SHARED_MALLOC= macro that allows us to specify which ranges of the
 allocation should be preserved (\ie private to each process) and
-which ones may be corrupted (\ie shared between process). 
+which ones may be corrupted (\ie shared between processes). 
 For a matrix of order $40,000$ and $64$ MPI processes,
-memory consumption decreased from about \NSI{13.5}{\giga\byte} to
+memory consumption decreases from about \NSI{13.5}{\giga\byte} to
 less than \NSI{40}{\mega\byte}.
 
-We also leveraged the information on which memory area is private, shared or
+We also leveraged this information on which memory area is private, shared or
 partially shared to improve the overall performance. 
 By making SMPI internally aware of the memory's
 visibility, it can now avoid calling =memcopy= when large messages
@@ -2226,9 +2224,8 @@ For fully private or partially shared segments, SMPI
 identifies and copies only those parts that are process-dependent
 (private) into the corresponding buffers on the receiver side.
 HPL simulation times and memory consumption were considerably improved
-in our experiments because the =panel= as the most frequently
-transferred datastructure is partially shared with only a small part
-being private. 
+in our experiments because the =panel= is the most frequently
+transferred data structure but only a small part of it is actually private.
 
 HPL \texttt{malloc}s/\texttt{free}s panels in each
 iteration, with the size of the panel strictly decreasing from
@@ -2258,19 +2255,20 @@ copy of the =data= segment (containing all global variables) per MPI
 rank at startup and, when context switching to another rank, to remap
 the =data= segment via =mmap= to the private copy of that rank.  SMPI also
 implements another mechanism relying on the =dlopen= function that
-allows to load several times =data= segment and to avoid costly
+allows to load several times the =data= segment (which contains global
+variables) in memory and to avoid costly
 calls (and cache flushing) to =mmap= when context switching. For a
 matrix of order $80,000$ and $32$ MPI processes, the number of minor
 page faults drops from \Num{4412047} (with =mmap=) to \Num{6880} (with
 =dlopen=), which results in a reduction of system time from
-\NSI{10.64}{\sec} (out of \NSI{51.47}{\sec} in total) to
+\NSI{10.64}{\sec} (out of \NSI{51.47}{\sec}) to
 \NSI{2.12}{\sec}.
 # The main advantage of this second approach is that caches do not need
 # to be flushed as is the case for the =mmap= approach, because data
 # consistency can always be guaranteed.
 
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
-thousand), the performance of the simulation quickly deteriorates as
+thousands), the performance of the simulation quickly deteriorates as
 the memory consumption rises rapidly. Indeed, folding the memory
 allows to reduce the /physical/ memory usage. The /virtual/ memory, on the
 other hand, is still allocated for every process since the allocation
@@ -2799,7 +2797,7 @@ time is spent in a dozen of specific functions for which a performance
 model has to be designed. Most computation kernels have several
 parameters from which a very simple model can generally easily be
 identified (e.g., proportional to the product of the parameters) but
-refinements including the contribution of each parameter individually
+refinements including the individual contribution of each parameter
 as well as the spatial and temporal variability of the operation are
 also possible. Likewise, communications between two nodes are mostly
 linear with message size but the actual performance can wildly vary
@@ -2819,7 +2817,7 @@ illustrated on HPL as a whole in Section\ref{sec:validation}.
 #+LaTeX: \newcommand{\norm}{\ensuremath{N}\xspace}
 #+LaTeX: \newcommand{\mcdots}{\ensuremath{\!\cdot\!\cdot\!\cdot\!}\xspace}
 We denote as $T$ the duration of an operation whose parameters are
-$M$, $N$, $K$, \dots In the case of the =dgemm= (matrix-matrix product)
+$M$, $N$, $K$. In the case of the =dgemm=
 operation, these parameters describe the geometry of the input
 matrices. We first consider the three following modeling options:
 - Modeling option \model{0}: For simple and stable
@@ -2841,8 +2839,8 @@ considered:
 - The platform may be slightly heterogeneous (spatial variability) and
   the previous models should then be built for each host
   individually. We denote this modeling option as \model[H]{}.
-- The behavior of the operation may be mosly linear but solely on
-  particular parameter ranges. This is for example the case for
+- The behavior of the operation may be mostly linear but only for
+  specific parameter ranges. This is for example the case for
   networking operations or for computing nodes on Stampede where the
   MKL will use the Xeon Phi accelerator only when the input is large
   enough to compensate for the data transfer. In such situations, the
@@ -2862,17 +2860,19 @@ homoscedasticity, \ie that the variability is independent on the
 parameters. 
 
 The residual (temporal) variability may be an important phenomenon to
-account for, as "system noise" is known to be detrimental to overall
-performance of parallel applications like HPL. We therefore consider
+account for, as "system noise" is known to be detrimental to the overall
+performance of parallel applications like HPL. Then, we consider
 different modeling options for this temporal variability.
-- Noise option \noise{0} (no noise): The simplest option consists in simply
-  injecting the value predicted by the model, \ie $T \sim \model{}(M,N,K) + 0$.
+- Noise option \noise{0} (no noise): This is the simplest option. It consists in simply
+  injecting the value predicted by the model
+  # , \ie $T \sim \model{}(M,N,K) + 0$.
 - Noise option \noise{1} (homoscedastic): The simplest probability family to model
   variability is the normal distribution, hence $T \sim \model{}(M,N,K) +
   \norm(0,\sigma^2)$, where $\sigma^2$ is the sample variance of the model
   residuals.
-- Noise option \noise{2} (heteroscedastic): The residuals (\ie the previous $\sigma^2$ term)
-  is modeled by polynomial function of the input parameters.
+- Noise option \noise{2} (heteroscedastic): The conditional variance
+  of the residuals (\ie $\sigma^2$ given $M,N,K$) are modeled by polynomial
+  function of the input parameters.
   # ($M,N,K$).
 Finally, even sophisticated normal distribution from \noise{2} may be
 too simple to describe the noise observed on real platforms where it
@@ -4109,7 +4109,7 @@ Each node of the Stampede cluster comprises two 8-core Intel Xeon
 E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
 (KNC) \NSI{1.1}{\GHz} accelerator that is roughly three times more
 powerful than the two CPUs. The HPL output submitted to the TOP500
-(Figure\ref{fig:typical_run}) does not indicate how the KNC was
+(Table\ref{fig:typical_run}) does not indicate how the KNC was
 used. However, because of the values assigned to $P$ and $Q$, we are
 certain that only a single MPI process per node was run. For this
 reason, it is likely that the KNC was used as an accelerator, which is
@@ -4493,7 +4493,7 @@ for the first five iterations can be obtained in about 10 minutes on a
 commodity computer and is about \NSI{175}{\mega\byte} large once
 compressed). Figure\ref{fig:hpl_gantt} illustrates the very
 synchronous and iterative nature of the first iterations with the
-HPL configuration of Figure\ref{fig:typical_run}: One can
+HPL configuration of Table\ref{fig:typical_run}: One can
 identify first a factorization of the panel, then a broadcast to all
 the nodes, and finally an update of trailing matrix.  More than one
 fifth of each iteration is spent communicating (although the first

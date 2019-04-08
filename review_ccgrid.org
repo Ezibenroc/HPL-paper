@@ -217,132 +217,132 @@ validation results yet.
 * Fred Suter review
 ** Typos and style
 *** General
-    + \sloppy 
+    + +\sloppy+
     + Maybe s/process/rank/, it's more in the MPI jargon
 *** Abstract
-    + 10: add (HPL)
-    + 18: computer -> server
-    + 21: allows + us
-    + 21: simulation -> simulated
+    + +10: add (HPL)+
+    + +18: computer -> server+
+    + +21: allows + us+
+    + +21: simulation -> simulated+
 *** Introduction
-    + 33: a diligent
-    + 47: reach a good performance -> get near to the peak performance
-    + 48: takes typically -> typically takes
-    + 67-71: Rephrase
+    + +33: a diligent+
+    + +47: reach a good performance -> get near to the peak performance+
+    + +48: takes typically -> typically takes+
+    + +67-71: Rephrase+
       + In the case of HPL, machine vendors know how to estimate the performance
 	using simple mathematical performance models. However, these models only
 	give trends but fail to capture the impact of the network congestion and
 	of system noise and are thus not particularly accurate.
-    + 73: originates from -> originates in
+    + +73: originates from -> originates in+ https://www.quora.com/Which-is-proper-grammar-originated-from-or-originated-in
     + 74: or +from+ machine
-    + 77: several +key
+    + +77: several +key+
     + 78: +how we+ managed
-    + 80-84: rephrase
+    + +80-84: rephrase+
       + several gigabytes. This allowed us to emulate detailed scenarios similar
 	to the HPL run conducted on the Stampede cluster (TACC) in 2013 for the
 	TOP500 on a single commodity sever and in less than two days.
-    + 85: performance of *HPL on* a controlled
-    + 86: processes -> ranks
-    + 95: make -> keep
-    + 99: account faithfully for -> faithfully reflect
+    + +85: performance of *HPL on* a controlled+
+    + +86: processes -> ranks+
+    + +95: make -> keep+
+    + +99: account faithfully for -> faithfully reflect+
     + 100: discuss +about+
     + 103: +Lastly,+
 *** Context
 **** HPL
-     + 110: For this -> In this
-     + 111: of the High-Performance Linpack benchmark [1], HPL, -> HPL [1]
+     + +110: For this -> In this+
+     + +111: of the High-Performance Linpack benchmark [1], HPL, -> HPL [1]+
        + acronyme déjà explicité dans l'intro.
      + 112-115: Rephrase
        + HPL solves a linear system A · x = b, but only the LU decomposition
-         step is benchmarked.  
-       + (Maybe (or not) keep the remark on MPI for later), sounds akwards there.
-     + 131: Figure 1 and consists -> Figure 1. It consists
-     + 135: *MPI* collective
-     + 135: overlap efficiently -> efficiently overlap
+         step is benchmarked.  /Ben non, elle est bien la formulation actuelle/
+       + +(Maybe (or not) keep the remark on MPI for later), sounds akwards there.+
+     + +131: Figure 1 and consists -> Figure 1. It consists+
+     + +135: *MPI* collective+
+     + 135: overlap efficiently -> efficiently overlap /split infinitive/
      + 137: +listed subsequently+
      + 151-152: to broadcast a panel over the process columns
      + 154: +, but did not support non-blocking collective communications+
        + if it supports only p2p comm, this becomes obvious (space saving mode)
      + 155: +in total+ 
-     + 155: 6 -> six
-     + 161: participate further -> further participate
-     + 164; name-giving two virtual topologies
+     + +155: 6 -> six+
+     + +161: participate further -> further participate+
+     + +164; name-giving two virtual topologies+
        + pas compris la phrase ...
-     + 169: and hence facilitate partial overlapping -> , hence facilitating the
-       partial overlap of
-     + 170: 2.2 and 2.1 -> 2.1 and 2.2
-     + 188: Remark, try to have DEPTH on the left column with the other
-       parameters for the sake of readability
+     + +169: and hence facilitate partial overlapping -> , hence
+       facilitating the partial overlap of+
+     + +170: 2.2 and 2.1 -> 2.1 and 2.2+
+     + +188: Remark, try to have DEPTH on the left column with the
+       other parameters for the sake of readability+
 **** Typical runs
-     + 175: move Figure 2 (which is a table BTW) to the bottom of right column
-     + 215: figure -> Table
-     + 236: *a* very faithful
+     + +175: move Figure 2 (which is a table BTW) to the bottom of right column+
+     + +215: figure -> Table+
+     + +236: *a* very faithful+
 *** Related Work 
-    + 243: MPI application*s*
+    + +243: MPI application*s*+
     + 247-248: +time-independent+
       + SMPI est le seul outil à faire du time-independent, tous les autres ont
 	des timestamps de partout
-    + 260: broken ref
-    + 262: *s*ligth
-    + 270: study direcly -> directly study
-    + 275: emulate faithfully -> faithfully emulate
-    + 276: For our work -> In this work
+    + +260: broken ref+
+    + +262: *s*ligth+
+    + 270: study direcly -> directly study /split infinitive/
+    + +275: emulate faithfully -> faithfully emulate+ /split infinitive/
+    + +276: For our work -> In this work+
 *** SMPI
-   + 295: predicting *the* performance
-   + 295-296: Rephrase
+   + +295: predicting *the* performance+
+   + +295-296: Rephrase+
      + For instance the "eager" and "rendez-vous" protocols are
-   + 299: either "LogGPS" or "the LogGPS model"
-   + 323-324: Rephrase
+   + +299: either "LogGPS" or "the LogGPS model"+
+   + +323-324: Rephrase+
      + Recent results report consistent performance predictions within a few
        percent for standard benchmarks
      + L'énergie est pas pertinente ici, ça prend juste de la place
 *** Emulating HPL
-    + 346: 32GB *of* RAM
-    + 347: *a* Debian Stretch *OS*
+    + +346: 32GB *of* RAM+
+    + +347: *a* Debian Stretch *OS*+
     + 350: Who needs subsubsections? 
-    + 351: Rephrase
+    + +351: Rephrase+
       + requires the emulation of its code.
       + L'émulation a été introduite et justifiée avant.
-    + 351: HPL heavily relies
-    + 353: Ax = b or A . x = b ?
-    + 354: a HPL 
-    + 366: based on the *given*
-    + 384: either Processes (plural) or Ranks
-    + 393: in term*s*
+    + +351: HPL heavily relies+
+    + +353: Ax = b or A . x = b ?+
+    + 354: a HPL /ben, non an HPL/ 
+    + +366: based on the *given*+
+    + +384: either Processes (plural) or Ranks+
+    + +393: in term*s*+
     + 397: Who needs subsubsections? (Replace by "Then, " here)
-    + 402: +dgemm and dtrsm+
+    + +402: +dgemm and dtrsm++
       + On vient d'en parler, le lecteur s'en souviendra encore
-    + 404: +dtrsm+
+    + +404: +dtrsm++
     + 413: on *the* overall 
-    + 420: a+n+ random
-    + 423: remove the \approx (3 to 4 is already an approximation) 
+    + +420: a+n+ random+
+    + +423: remove the \approx (3 to 4 is already an approximation)+
 *** Scaling down
-    + 485: that allows *us* to 
-    + 487-488: shared between process -> shared across processes (or ranks)
-    + 489: decreased -> decreases
-    + 490: the -> this information
-    + 499-500: Rephrase:
+    + +485: that allows *us* to+
+    + +487-488: shared between process -> shared across processes (or ranks)+
+    + +489: decreased -> decreases+
+    + +490: the -> this information+
+    + +499-500: Rephrase:+
       + panel is the mos frequently transferred datastructure but  only a small
 	part of it is actually private.
-    + 538: to load several times data segment
+    + +538: to load several times data segment+
       + pas compris la phrase
-    + 545: thousand*s*
+    + +545: thousand*s*+
 *** Scalability Evaluation
 *** Modeling kernels and communications
-    + 588: including the *individual* contribution of each parameter +individually+
+    + +588: including the *individual* contribution of each parameter +individually++
 **** Modeling notation
-     + 604: why ldots?
-     + 604: +(matrix-matrix product)+
+     + +604: why ldots?+
+     + +604: +(matrix-matrix product)++
        + dgemm was mentioned several times before
-     + 627: mos*t*ly
-     + 627: solely on -> only for
-     + 639-654: Figure
+     + +627: mos*t*ly+
+     + +627: solely on -> only for+
+     + +639-654: Figure+ /Tom s'en occupe/
        + ya ptet moyen de gratter un peu d'espace en virant les tics et les
          labels sur l'axe des x des figures du haut. Les graphes sont alignés,
          c'est la même info, on peut se permettre.
-     + 662: *the* overall
-     + 662: We therefore -> Then, we 
-     + 665: The simplest option -> It 
+     + +662: *the* overall+
+     + +662: We therefore -> Then, we+
+     + +665: The simplest option -> It+
        + Objectif: tenir en 2 lignes (le +0 est pas forcément utile BTW)
      + 673: is modeled by -> are modeled by a 
      + 675: even *the* sophisticated
