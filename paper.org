@@ -3370,14 +3370,14 @@ dgemm2 %>%
     mutate(type = fct_recode(
                fct_relevel(type, "duration", "fake", "prediction", "pred_noise"),
                "Reality"="duration", 
-               "M1 (linear)"="fake", 
-               "M2 (polynomial)"="prediction",
-               "M3 (polynomial + noise)"="pred_noise")) -> dgemm2
+               "M1/N0 (linear)"="fake", 
+               "M2/N0 (polynomial)"="prediction",
+               "M2/N2 (polynomial + noise)"="pred_noise")) -> dgemm2
 dgemm2 %>% mutate(mnk=m*n*k, mnk_id = floor(mnk/329334390)) %>% filter(mnk_id %%2==1) -> dgemm2
 dgemm2 %>% 
     group_by(type) %>% 
-    mutate(mnk= mnk + ifelse(type=="M2 (polynomial)",1.5E8,ifelse(type=="M3 (polynomial + noise)",3E8,0)),
-           duration = ifelse(type %in% c("M2 (polynomial)","M3 (polynomial + noise)"),duration/1.05,duration)) %>% # This is because this prediction uses the HPL correction
+    mutate(mnk= mnk + ifelse(type=="M2/N0 (polynomial)",1.5E8,ifelse(type=="M2/N2 (polynomial + noise)",3E8,0)),
+           duration = ifelse(type %in% c("M2/N0 (polynomial)","M2/N2 (polynomial + noise)"),duration/1.05,duration)) %>% # This is because this prediction uses the HPL correction
     ungroup() -> dgemm2
 dgemm2 %>% tail(n=10)
 dgemm2 %>% str()
@@ -3386,19 +3386,19 @@ dgemm2 %>% str()
 #+RESULTS:
 #+begin_example
 # A tibble: 10 x 11
-   func      m     n     k  node  core   cpu type        duration     mnk mnk_id
-   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>          <dbl>   <dbl>  <dbl>
- 1 dgemm  1306  3172  2011     1     0     2 M3 (polyno~   0.605   8.63e9     25
- 2 dgemm   259  1215  1047     1     6     2 M3 (polyno~   0.0252  6.29e8      1
- 3 dgemm   640  1160  9441     1    24     2 M3 (polyno~   0.492   7.31e9     21
- 4 dgemm   547  3908  3279     1    24     2 M3 (polyno~   0.487   7.31e9     21
- 5 dgemm  1047  1215   259     1    10     2 M3 (polyno~   0.0226  6.29e8      1
- 6 dgemm  1841  2133  1615     1    26     2 M3 (polyno~   0.469   6.64e9     19
- 7 dgemm  1442   912  2781     1    12     2 M3 (polyno~   0.253   3.96e9     11
- 8 dgemm  3136  9602   321     1     8     2 M3 (polyno~   0.629   9.97e9     29
- 9 dgemm  4287   416  1304     1    20     2 M3 (polyno~   0.160   2.63e9      7
-10 dgemm  1475   917  1719     1     8     2 M3 (polyno~   0.162   2.63e9      7
-Classes 'tbl_df', 'tbl' and 'data.frame':	2290 obs. of  11 variables:
+   func      m     n     k  node  core   cpu type        duration    mnk mnk_id
+   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>          <dbl>  <dbl>  <dbl>
+ 1 dgemm  1306  3172  2011     1     0     2 M2/N2 (pol…   0.605  8.63e9     25
+ 2 dgemm   259  1215  1047     1     6     2 M2/N2 (pol…   0.0252 6.29e8      1
+ 3 dgemm   640  1160  9441     1    24     2 M2/N2 (pol…   0.492  7.31e9     21
+ 4 dgemm   547  3908  3279     1    24     2 M2/N2 (pol…   0.487  7.31e9     21
+ 5 dgemm  1047  1215   259     1    10     2 M2/N2 (pol…   0.0226 6.29e8      1
+ 6 dgemm  1841  2133  1615     1    26     2 M2/N2 (pol…   0.469  6.64e9     19
+ 7 dgemm  1442   912  2781     1    12     2 M2/N2 (pol…   0.253  3.96e9     11
+ 8 dgemm  3136  9602   321     1     8     2 M2/N2 (pol…   0.629  9.97e9     29
+ 9 dgemm  4287   416  1304     1    20     2 M2/N2 (pol…   0.160  2.63e9      7
+10 dgemm  1475   917  1719     1     8     2 M2/N2 (pol…   0.162  2.63e9      7
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	2290 obs. of  11 variables:
  $ func    : Factor w/ 1 level "dgemm": 1 1 1 1 1 1 1 1 1 1 ...
  $ m       : num  695 7359 1313 1887 547 ...
  $ n       : num  695 311 6716 987 3279 ...
@@ -3406,7 +3406,7 @@ Classes 'tbl_df', 'tbl' and 'data.frame':	2290 obs. of  11 variables:
  $ node    : int  1 1 1 1 1 1 1 1 1 1 ...
  $ core    : int  18 24 16 4 12 26 30 28 30 12 ...
  $ cpu     : int  2 2 2 2 2 2 2 2 2 2 ...
- $ type    : Factor w/ 4 levels "Reality","M1 (linear)",..: 2 1 1 1 1 1 1 1 1 1 ...
+ $ type    : Factor w/ 4 levels "Reality","M1/N0 (linear)",..: 2 1 1 1 1 1 1 1 1 1 ...
  $ duration: num  0 0.0737 0.3824 0.2065 0.5059 ...
  $ mnk     : num  3.36e+08 1.01e+09 5.66e+09 3.00e+09 7.01e+09 ...
  $ mnk_id  : num  1 3 17 9 21 9 27 7 5 1 ...
@@ -3421,8 +3421,9 @@ plot = ggplot(dgemm2, aes(x=mnk, y=duration,color=type)) +
     ## geom_point(aes(x=m*n*k+1E8, y=pred_noise/1.05),alpha=0.3, color="green")
 plot = plot + theme_bw() + ylab('Duration (s)') + 
         scale_x_continuous(name = 'M.N.K', breaks = (0:4)*3E9, limits=c(0,1.2E10)) 
-plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='(M2 and M3 are shifted to the right\n to improve readability)') + #    scale_color_brewer(palette="Set1")
-    theme(legend.position = c(0.7,0.21), legend.title=element_text(size = 7, face = "italic")) +
+plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='(Both M2 models are shifted to\n the right to improve readability)') + #    scale_color_brewer(palette="Set1")
+    theme(legend.position = c(1, 0), legend.justification=c(1, 0), legend.text=element_text(size=8), legend.box.background=element_rect(colour = "black"),
+          panel.border=element_rect(colour = "black", fill=NA), legend.title=element_text(size = 7, face = "italic")) +
     geom_smooth(data=dgemm2[dgemm2$type=="Reality",], size=.2,
                 color="black", method='lm', se=F, fullrange=T) +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
@@ -3431,7 +3432,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-M9BfMg/figure4A1UiG.png]]
+[[file:/tmp/babel-sfW1Yb/figureTu01UX.png]]
 **** DGEMM from HPL  (DEPRECATED, DO NOT RUN)                   :noexport:
 #+begin_src R :results output :session *R* :exports both
 dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),]
@@ -3608,26 +3609,28 @@ behavior. Let's get rid of it.
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R2*
 library(ggplot2)
 func = df[(df$func == 'HPL_dlatcpy') & (df$cpu!=13),]
-func$mode_name = factor(ifelse(func$mode=='reality', 'Reality', 'M1 (linear + noise)'))
+func$duration = func$duration*1e3
+func$mode_name = factor(ifelse(func$mode=='reality', 'Reality', 'M1/N2 (linear + noise)'))
 func$mode_name = relevel(func$mode_name, 'Reality')
 plot = ggplot(func, aes(x=m*n, y=duration, color=mode_name)) +
     geom_smooth(data = func[func$mode == "reality",], aes(group=factor(cpu)), method='lm', 
                 se=F, size=.2, color="blue", alpha=.2, fullrange=T) + 
     geom_point(alpha=.5,size=.5) + 
     geom_smooth(data = func[func$mode == "reality",], method='lm', se=F, fullrange=T, linetype=4, color="black")
-plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N') +
+plot = plot + theme_bw() + ylab('Duration (ms)') + xlab('M.N') +
     xlim(0,max(func$m*func$n)*1.1) +     
     scale_color_brewer(palette="Set1")  +
     theme(legend.position = c(0.3,0.85), legend.title=element_blank()) +
     guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-    theme(legend.position = c(0.67,0.17), legend.title=element_blank())
+    theme(legend.position = c(1, 0), legend.justification=c(1, 0), legend.text=element_text(size=8), legend.box.background=element_rect(colour = "black"),
+          panel.border = element_rect(colour = "black", fill=NA), legend.title=element_blank())
 
 ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=3.9,height=4, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-M9BfMg/figurezYIQjh.png]]
+[[file:/tmp/babel-sfW1Yb/figurenXJnMq.png]]
 
 * Validation at Scale
 #+LaTeX: \label{sec:validation}
