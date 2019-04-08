@@ -2901,17 +2901,16 @@ estimations are denoted by \noise[H]{}.
 
 #+BEGIN_EXPORT latex
 \begin{figure*}[!b]
-  \begin{minipage}[t]{.6\linewidth}\null\vspace{-.75em}
-    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}\vspace{-1em}%
-    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.45\linewidth]{figures/kernels/dgemm_model_calib.png}}\vspace{-1em}
-    \caption{Illustrating the realism of modeling for BLAS functions.}\vspace{-1em}
+  \vspace{-1em}
+  \begin{minipage}[t]{\linewidth}\null\vspace{-.75em}
+    \centering
+    \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.33\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}%
+    \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.33\linewidth]{figures/kernels/dgemm_model_calib.png}}%
+    \subfigure[\texttt{HPL\_dlatcpy} model\label{fig:HPL_var}]{\includegraphics[width=0.33\linewidth]{figures/kernels/dlatcpy_model.png}}
+    \vspace{-1em}
+    \caption{Illustrating the realism of modeling for BLAS and HPL functions.}
     \label{fig:blas_var}
   \end{minipage}\hfill%
-  \begin{minipage}[t]{.39\linewidth}
-    \subfigure[\texttt{HPL\_dlatcpy} model]{\includegraphics[width=\linewidth]{figures/kernels/dlatcpy_model.png}}\vspace{-1em}
-    \caption{Illustrating the realism of modeling for HPL functions.}\vspace{-1em}
-    \label{fig:HPL_var}
-  \end{minipage}%\vspace{-1em}
 \end{figure*}
 #+END_EXPORT
 Linear regression is a standard tool in R\cite{R} or in
@@ -3298,7 +3297,7 @@ I(m * n * k):factor(cpu)63 6.565e-11  1.315e-13  499.12   <2e-16 ***
 I(m * n * k):factor(cpu)64 6.543e-11  1.297e-13  504.30   <2e-16 ***
 I(m * n * k):factor(cpu)65 6.557e-11  1.267e-13  517.44   <2e-16 ***
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 0.02932 on 99772 degrees of freedom
 Multiple R-squared:  0.9783,	Adjusted R-squared:  0.9783 
@@ -3315,13 +3314,13 @@ plot = ggplot(dgemm, aes(x=m*n*k, y=duration, color=factor(cpu%%9))) +
 plot = plot + theme_bw() + ylab('Duration (s)') + 
     scale_x_continuous(name = 'M.N.K', breaks = (0:4)*3E9, limits=c(0,1.2E10)) + 
     labs(color='CPU') 
-ggsave(filename='figures/kernels/dgemm_heterogeneity_calib.png', plot=plot, width=3.4,height=4, dpi=200)
+ggsave(filename='figures/kernels/dgemm_heterogeneity_calib.png', plot=plot, width=3.9,height=4, dpi=200)
 ## ggsave(filename="figures/kernels/dgemm_heterogeneity.pdf", plot=plot, width=4,height=4)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19053_Jy/figure19053gme.png]]
+[[file:/tmp/babel-M9BfMg/figureyWAkEb.png]]
 
 
 #+begin_src R :results output :session *R* :exports both
@@ -3357,19 +3356,19 @@ dgemm2 %>% str()
 #+RESULTS:
 #+begin_example
 # A tibble: 10 x 11
-   func      m     n     k  node  core   cpu type       duration    mnk type_num
-   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>         <dbl>  <dbl>    <dbl>
- 1 dgemm   900   879  7582     1    28     2 M3 (poly~   4.09e-1 6.28e9        4
- 2 dgemm  3136  9602   321     1     8     2 M3 (poly~   6.29e-1 9.95e9        4
- 3 dgemm  4272   483  2258     1     8     2 M3 (poly~   3.30e-1 4.94e9        4
- 4 dgemm   646 13690  1056     1    16     2 M3 (poly~   6.47e-1 9.62e9        4
- 5 dgemm 10411   257   498     1    20     2 M3 (poly~   9.95e-2 1.61e9        4
- 6 dgemm     1     1     1     1     8     2 M3 (poly~   7.39e-7 2.80e8        4
- 7 dgemm  1623   619  5316     1     8     2 M3 (poly~   3.82e-1 5.62e9        4
- 8 dgemm  1241  1033  5196     1    30     2 M3 (poly~   4.63e-1 6.94e9        4
- 9 dgemm  4287   416  1304     1    20     2 M3 (poly~   1.60e-1 2.61e9        4
-10 dgemm  1475   917  1719     1     8     2 M3 (poly~   1.62e-1 2.61e9        4
-Classes 'tbl_df', 'tbl' and 'data.frame':	4627 obs. of  11 variables:
+   func      m     n     k  node  core   cpu type      duration    mnk type_num
+   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>        <dbl>  <dbl>    <dbl>
+ 1 dgemm   900   879  7582     1    28     2 M3 (pol…   4.09e-1 6.28e9        4
+ 2 dgemm  3136  9602   321     1     8     2 M3 (pol…   6.29e-1 9.95e9        4
+ 3 dgemm  4272   483  2258     1     8     2 M3 (pol…   3.30e-1 4.94e9        4
+ 4 dgemm   646 13690  1056     1    16     2 M3 (pol…   6.47e-1 9.62e9        4
+ 5 dgemm 10411   257   498     1    20     2 M3 (pol…   9.95e-2 1.61e9        4
+ 6 dgemm     1     1     1     1     8     2 M3 (pol…   7.39e-7 2.80e8        4
+ 7 dgemm  1623   619  5316     1     8     2 M3 (pol…   3.82e-1 5.62e9        4
+ 8 dgemm  1241  1033  5196     1    30     2 M3 (pol…   4.63e-1 6.94e9        4
+ 9 dgemm  4287   416  1304     1    20     2 M3 (pol…   1.60e-1 2.61e9        4
+10 dgemm  1475   917  1719     1     8     2 M3 (pol…   1.62e-1 2.61e9        4
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	4627 obs. of  11 variables:
  $ func    : Factor w/ 1 level "dgemm": 1 1 1 1 1 1 1 1 1 1 ...
  $ m       : num  0 11141 7359 3434 518 ...
  $ n       : num  0 591 311 1891 4523 ...
@@ -3397,12 +3396,12 @@ plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='Mode') + #
     geom_smooth(data=dgemm2[dgemm2$type=="Reality",], size=.2,
                 color="black", method='lm', se=F, fullrange=T) +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
-ggsave(filename="figures/kernels/dgemm_model_calib.png", plot=plot, width=3.4,height=4, dpi=200)
+ggsave(filename="figures/kernels/dgemm_model_calib.png", plot=plot, width=3.9,height=4, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19053_Jy/figure19053TcY.png]]
+[[file:/tmp/babel-M9BfMg/figure4A1UiG.png]]
 **** DGEMM from HPL  (DEPRECATED, DO NOT RUN)                   :noexport:
 #+begin_src R :results output :session *R* :exports both
 dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),]
@@ -3520,7 +3519,7 @@ head(df)
 #+begin_example
 [1] dtrsm         dgemm         HPL_dlatcpy   HPL_dlaswp03T HPL_dlaswp02N
 [6] ion          
-Levels: HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy dgemm dtrsm ion
+Levels: dgemm dtrsm HPL_dlaswp02N HPL_dlaswp03T HPL_dlatcpy ion
          func     m n  k   start        end    duration rank    mode node cpu
 1       dtrsm     2 2 NA 0.01674 0.01678434 0.000044337    0 reality    1   2
 2       dgemm 50046 2  2 0.01678 0.01698043 0.000200426    0 reality    1   2
@@ -3566,7 +3565,7 @@ I(m * n):factor(cpu)10 4.795e-09  1.022e-11 469.275   <2e-16 ***
 I(m * n):factor(cpu)11 4.760e-09  1.046e-11 455.167   <2e-16 ***
 I(m * n):factor(cpu)13 3.295e-09  3.937e-09   0.837    0.403    
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 9.619e-05 on 21086 degrees of freedom
 Multiple R-squared:  0.991,	Adjusted R-squared:  0.991 
@@ -3577,24 +3576,25 @@ OK. cpu 13, is the one with very few measurements and a weird
 behavior. Let's get rid of it.
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R2*
+library(ggplot2)
 func = df[(df$func == 'HPL_dlatcpy') & (df$cpu!=13),]
 plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) + 
     geom_smooth(data = func[func$mode == "reality",], aes(group=factor(cpu)), method='lm', 
                 se=F, size=.2, color="blue", alpha=.2, fullrange=T) + 
     geom_point(alpha=.5,size=.5) + 
     geom_smooth(data = func[func$mode == "reality",], method='lm', se=F, fullrange=T, linetype=4, color="black")
-plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N')
+plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N') +
     xlim(0,max(func$m*func$n)*1.1) +     
     scale_color_brewer(palette="Set1")  +
     theme(legend.position = c(0.3,0.85), legend.title=element_blank()) +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 
-ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=5,height=4, dpi=200)
+ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=3.9,height=4, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19053_Jy/figure19053OQB.png]]
+[[file:/tmp/babel-M9BfMg/figurezYIQjh.png]]
 
 * Validation at Scale
 #+LaTeX: \label{sec:validation}
