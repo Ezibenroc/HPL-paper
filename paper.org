@@ -2871,15 +2871,15 @@ different modeling options for this temporal variability.
   \norm(0,\sigma^2)$, where $\sigma^2$ is the sample variance of the model
   residuals.
 - Noise option \noise{2} (heteroscedastic): The conditional variance
-  of the residuals (\ie $\sigma^2$ given $M,N,K$) are modeled by polynomial
+  of the residuals (\ie $\sigma^2$ given $M,N,K$) is modeled by polynomial
   function of the input parameters.
   # ($M,N,K$).
-Finally, even sophisticated normal distribution from \noise{2} may be
+Finally, even the sophisticated normal distribution from \noise{2} may be
 too simple to describe the noise observed on real platforms where it
 may be common for a same parameter set to have a few operations being
 one order of magnitude slower than all the other ones. In this case, a
 reasonable option consists in modeling noise with a mixture of normal
-distribution whose parameters $\pi_1 , \dots, \pi_k$, should be estimated. We
+distributions whose parameters $\pi_1 , \dots, \pi_k$, should be estimated. We
 denote this kind of model as \noisep{}. Likewise the per-host
 estimations are denoted by \noise[H]{}.
 
@@ -2892,7 +2892,7 @@ estimations are denoted by \noise[H]{}.
 \begin{figure}[!t]
   \vspace{-1em}
   \centering \includegraphics[width=\linewidth]{./figures/network/calibration.png}
-  \vspace{-1em}
+  \vspace{-2em}
   \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-2em}
   \label{fig:nw_var}
 \end{figure}
@@ -2914,8 +2914,8 @@ estimations are denoted by \noise[H]{}.
 #+END_EXPORT
 Linear regression is a standard tool in R\cite{R} or in
 python/statsmodels\cite{statsmodels} and models \model[H]{0\mcdots2} are
-thus easy to fit assuming \noise{1}. Model \modelp{0} assuming
-\noise{1} (piece-wise constant) can easily be fit using the
+thus easy to fit assuming \noise{1}. Model \modelp{0} (piece-wise
+constant) assuming \noise{1} can easily be fit using the
 =cubist=\cite{cubist} library. We could not find any implementation
 allowing to fit \modelp{1} (piece-wise linear, possibly discontinuous)
 assuming \noise{1} so we implemented a method based on model trees
@@ -2931,16 +2931,15 @@ available (e.g., clustering with =mclust=\cite{mclust} for
 Bayesian estimation could be made with frameworks like
 STAN\cite{stan}. Such effort is underway but the previous libraries
 were sufficient for our needs.
-
+#+LaTeX: \AL[]{Moving these 3 lines on the previous page would be nice.}
 ** Modeling MPI communications
 Prior to this work, the standard way of accounting for protocol
 changes in SMPI was to estimate breakpoints visually and to
 conduct a linear regression for each range. The expected duration was
 then used directly in the simulation with no particular effort with
 respect to the temporal variability (\modelp{1}\noise{0}). Yet, as illustrated 
-on Figure\ref{fig:nw_var}, the variability of high speed networks 
-quite particular. We
-therefore took care of correctly estimating all the parameters for
+on Figure\ref{fig:nw_var}, the variability of high speed networks is
+quite particular. Therefore, we took care of correctly estimating all the parameters for
 \modelp{1}\noisep{1}, where each message size range is automatically estimated with
 =pytree=, as well as of the 2 to 4 modes of the Gaussian mixture for each
 range. Such temporal variability could explain some (overall bad)
@@ -3007,11 +3006,11 @@ variability from a node to an other (one blue regression lines per
 CPU) but it remains quite limited (black dotted line for the platform
 as a whole), especially since these kernels are very short and
 infrequently called compared to =dgemm=. Last, since variability clearly
-increases with input parameters, a \noise{2} is clearly required. The
-blue dots in Figure\ref{fig:HPL_var} therefore represent the outcome
-of a \model{1}\noise{2} model and are hardly distinguishable from the
-real behavior. It turns out that for all these kernels similar
-results could be obtained with such kind of model.
+increases with input parameters, a \noise{2} model is clearly
+required. The blue dots in Figure\ref{fig:HPL_var} represent
+the outcome of a \model{1}\noise{2} model and are hardly
+distinguishable from the real behavior. For all these kernels, similar
+results can be obtained with this category of model.
 ** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{8}
 ** Network plots                                                  :noexport:
@@ -4010,7 +4009,7 @@ of collective operations.
     \centering
     \resizebox{0.95\linewidth}{!}{\input{figures/validation_performance.tex}}\vspace{-1em}
     % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
-    \caption{Comparison of HPL performance prediction with the reality}\vspace{-2em}
+    \caption{HPL performance: predictions vs. reality}\vspace{-2em}
     \label{fig:validation_performance}
     \labspace
 \end{figure}
@@ -4065,9 +4064,9 @@ slow nodes by "average" nodes in our model, we have been able to
 re-estimate the overall performance of HPL and to obtain a (higher)
 prediction matching the performance obtained a few months ago.
 
-We have thus shown it is possible to predict consistently the
+We have shown it is possible to predict consistently the
 performance of HPL within a few percents of reality provided a
-faithful model of each individual resource is realized. Again, we
+faithful model of each individual resource is used. Again, we
 insist on the fact that modeling both spatial and temporal variability
 is crucial.
 ** \scalebox{.92}{Comparing With the Stampede Qualification Run}
@@ -4116,10 +4115,10 @@ E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
 powerful than the two CPUs. The HPL output submitted to the TOP500
 (Table\ref{fig:typical_run}) does not indicate how the KNC was
 used. However, because of the values assigned to $P$ and $Q$, we are
-certain that only a single MPI process per node was run. For this
+certain that that there were only one MPI rank per node. For this
 reason, it is likely that the KNC was used as an accelerator, which is
 effortless with Intel's Math Kernel Library (MKL) as it support
-automatic offloading for selected BLAS functions.  Although, we cannot
+automatic offloading for selected BLAS functions.  While we cannot
 know precisely which MKL version was used in 2013, we measured the
 default version (version 11.1.1) used on Stampede in the beginning
 of 2017. The MKL documentation states that, depending on the matrix
@@ -4131,7 +4130,7 @@ larger than $1280$ while $K$ is simultaneously larger than $256$,
 which calls for a \modelp model. Similarly, offloading for =dtrsm= is
 used when both $M$ and $N$ are larger than $512$, which results in a
 better throughput but incurs a higher latency. The measured
-performance was close to the peak performance: \eg for =DGEMM= on the
+performance was close to the peak performance: \eg for =dgemm= on the
 Phi reached $2/\Num{1.981e-12} = \NSI{1.009}{\tera\flops}$. Since the
 block size used in HPL is \Num{1024}, all calls (except for maybe the
 very last iteration) are offloaded to the KNC. Therefore, we decided
@@ -4398,7 +4397,7 @@ huge difference between our prediction results and reality.
   \centering
 %  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
   \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
-  \caption{Performance prediction of HPL on Stampede using SimGrid.}\vspace{-2em}
+  \caption{HPL on Stampede: predictions vs. reality}\vspace{-2em}
   \label{fig:stampede_prediction}
   \labspace
 \end{figure}
@@ -4507,7 +4506,7 @@ ratio), which prevents HPL from reaching the TOP500 performance.
 Overlapping these heavy communication phases with computation would
 significantly improve performance. The fact that this is almost not
 happening can be explained by the look-ahead ~DEPTH~ parameter that was
-supposedly set to =0=. This is quite
+allegedly set to =0=. This is quite
 surprising as even the tuning section of the HPL documentation
 indicates that a =depth= of =1= is supposed to yield the best results,
 even though a large problem size could be needed to see some
@@ -4528,9 +4527,9 @@ hardcoded to enforce an overlap of iterations with others and that
 they should not be trusted. The broadcast and swapping algorithms use
 very heavy communication patterns. This is not at all surprising since
 for a matrix of this order, several hundred megabytes need to be
-broadcast.  Although the output states that the =blongM= algorithm was
+broadcast.  Although the output states that the =long-modified= algorithm was
 used it is likely that another algorithm has been used.  We tried the
-the 6 other broadcast algorithms provided by HPL but could not
+six other broadcast algorithms provided by HPL but could not
 obtain significantly better overall performance.  An analysis of the
 symbols in the Intel binary revealed that another broadcast algorithm
 named =HPL_bcast_bpush= was available. Unlike the others, this new
@@ -4550,9 +4549,9 @@ side with respect to asynchrony and to the broadcast algorithm.
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth,page=1]{./figures/fullscale_unzoomed.png}
+  \includegraphics[width=.9\linewidth,page=1]{./figures/fullscale_unzoomed.png}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
-      red while computations are in cyan. Each communication between two process
+      red while computations are in cyan. Each communication 
       is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
   \label{fig:hpl_gantt}
   \labspace
@@ -4587,7 +4586,9 @@ More specifically, we tried to reproduce the execution of HPL on the
 Stampede supercomputer conducted in $2013$ for the TOP500, which
 involved a \NSI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
 Our emulation of a similar configuration ran on a single machine for
-about $62$ hours and required less than \NSI{19}{\giga\byte} of RAM. This emulation
+about $62$ hours and required less than \NSI{19}{\giga\byte} of RAM. 
+#+LaTeX: \AL[]{Inconsistent values}
+This emulation
 employed several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have since been
 integrated into the last version of SimGrid/SMPI.
@@ -4660,7 +4661,7 @@ DE-AC02-06CH11357.
 We thank our Cray colleagues for providing us with information about the TOP500
 run of Theta.
 ** References                                                       :ignore:
-
+\AL[]{Ajouter des refs pour nous cacher un peu. ;)}
 # See next section to understand how refs.bib file is created.
 
 #+LATEX: \bibliographystyle{IEEEtran}

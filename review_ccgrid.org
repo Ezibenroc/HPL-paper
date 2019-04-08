@@ -344,53 +344,55 @@ validation results yet.
      + +662: We therefore -> Then, we+
      + +665: The simplest option -> It+
        + Objectif: tenir en 2 lignes (le +0 est pas forcément utile BTW)
-     + 673: is modeled by -> are modeled by a 
-     + 675: even *the* sophisticated
-     + 680: normal distribution*s*
-     + 685: piece-wise constant -> homoscedastic 
+     + +673: is modeled by -> are modeled by a+
+     + +675: even *the* sophisticated+
+     + +680: normal distribution*s*+
+     + +685: piece-wise constant -> homoscedastic+
        + it was the description of (N-1)
-     + 689: broken ref
-     + Objectif: faire remonter les 3 lignes de la fin de 6.1 en page 6.
+     + +689: broken ref+
+     + +Objectif: faire remonter les 3 lignes de la fin de 6.1 en page 6.+
        + Option possible: ne pas forcément citer les noms de packages mais juste
          les refs pour R, pythos/statsmodels, cubist, mclust, flexmix (ca doit
          bien gagner une ligne)
 **** Modeling MPI comm
-     + 708: networks *is* quite
-     + 709:  We therefore -> Then, we 
+     + +708: networks *is* quite+
+     + +709:  We therefore -> Then, we+
 **** Modeling dgemm
      + Cette section là et ses figures elle est pas simple à suivre du tout dans
        sa forme actuelle :-/
 **** Modeling BLAS
-     + 783: a N-2 *model*
-     + 787-788: Rephrase
+     + +783: a N-2 *model*+
+     + +787-788: Rephrase+
        + For all these kernels, similar results can be obtained with this
          category of model.
-     + 794-812 : Figure
+     + +794-812 : Figure+ /Tom gère/
        + passe y-axis en ms
 *** Validation at scale
 **** Comparing simulations
-     + Figure 10 can be safely squeezed a bit
-     + Figure 11 title: HPL performance predictions vs. Reality. (one line)
-     + 965: We +have just+ shown (save a line too)
-     + 967: realized -> used
+     + +Figure 10 can be safely squeezed a bit+
+     + +Figure 11 title: HPL performance predictions vs. Reality. (one line)+
+     + +965: We +have just+ shown (save a line too)+
+     + +967: realized -> used+
 **** Stampede
-     + Figure 12 title: +using SimGrid+
-     + 977-978: Rephrase
+     + +Figure 12 title: +using SimGrid++
+     + +977-978: Rephrase+
        + We are certain that there were only one MPI rank per node.
-     + 981: Although, we -> while we
-     + 1009: DGEMM ->dgemm
-     + 1049: supposedly -> allegedly
-     + 1070: blongM -> long-modified (consistency)
-     + 1071: the +the+
-     + Figure 13 can be squeezed a bit
-     + Figure 13 title: +between two process+ (save a line)
+     + +981: Although, we -> while we+
+     + +1009: DGEMM ->dgemm+
+     + +1049: supposedly -> allegedly+
+     + +1070: blongM -> long-modified (consistency)+
+     + +1071: the +the++
+     + +Figure 13 can be squeezed a bit+
+     + +Figure 13 title: +between two process+ (save a line)+
 *** Conclusions
-    + 1127-1128: not the same values as in Fig 6 ??
+    + +1127-1128: not the same values as in Fig 6 ??+ /bien noté/
 *** Biblio
-    + ya du grattage possible
+    + ya du grattage possible /on s'en fiche, ça compte pas/
       + [6] ACM PPoPP
       + [online] ou Available: mais pas les deux
-    + [1] Feb 2016 -> Apr 2019, v2.2
-    + La ref G5k est pas la bonne (c'est celle pour le cloud ça) 
-    + Vous pouvez aussi mettre du 'et al.' de partout, dans une double blind, ça
-      peut aider. 
+    + [1] Feb 2016 -> Apr 2019, v2.2 /non, la 2.2 date bien de Février 2016/
+    + La ref G5k est pas la bonne (c'est celle pour le cloud ça)
+      /C'est celle que G5K recommande/
+    + Vous pouvez aussi mettre du 'et al.' de partout, dans une double
+      blind, ça peut aider. /pas faux mais c'est pas nous qui gérons
+      ça, il vaut mieux en rajouter pour se cacher ;)/
