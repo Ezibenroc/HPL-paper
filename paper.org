@@ -1224,6 +1224,7 @@ zlib 1.0
 #+LATEX_HEADER:\usetikzlibrary{arrows,shapes,positioning,shadows,trees,calc}
 #+LATEX_HEADER:\usepackage{pgfplots}
 #+LATEX_HEADER:\pgfplotsset{compat=1.13}
+#+LATEX_HEADER:\tikzset{every picture/.style={/utils/exec={\sffamily}}}  % use sans-serif fonts for tikz figures
 
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \setlist[itemize,1]{leftmargin=\dimexpr 26pt-.2in}
@@ -3722,6 +3723,7 @@ dfsim = rbind(
     read.csv('data/validation_performance/hpl_simulation_heterogeneous.csv'),
     read.csv('data/validation_performance/hpl_simulation_homogeneous.csv')
 )
+dfsim$model = gsub("_het", "het", dfsim$model)  # tikzdevice fails if there are underscores in the node names...
 head(dfreal)
 head(dfsim)
 #+end_src
@@ -3742,18 +3744,18 @@ head(dfsim)
 4       75000  15930   17.65 simulation           True               True
 5      175000  19690  181.49 simulation           True               True
 6      350000  21470 1331.50 simulation           True               True
-  polynomial_dgemm heterogeneous_dgemm  model
-1            False                True B1_het
-2            False                True B1_het
-3            False                True B1_het
-4             True                True D2_het
-5             True                True D2_het
-6             True                True D2_het
+  polynomial_dgemm heterogeneous_dgemm model
+1            False                True B1het
+2            False                True B1het
+3            False                True B1het
+4             True                True D2het
+5             True                True D2het
+6             True                True D2het
 #+end_example
 
 Keeping only a subset of the models, to have a readable plot.
 #+begin_src R :results output :session *R* :exports both
-dfsim = dfsim %>% filter(model %in% c('A1', 'A2', 'A1_het', 'C1_het', 'D1_het', 'D2_het'))
+dfsim = dfsim %>% filter(model %in% c('A1', 'A2', 'A1het', 'C1het', 'D1het', 'D2het'))
 #+end_src
 
 #+RESULTS:
@@ -3808,18 +3810,18 @@ text_size = 3
 lab = dfsim %>% filter(
     (model == 'A1'     & matrix_size == 300000) |
     (model == 'A2'     & matrix_size == 300000) |
-    (model == 'A1_het' & matrix_size == 250000) |
-    (model == 'C1_het' & matrix_size == 250000) |
-    (model == 'D1_het' & matrix_size == 500000) |
-    (model == 'D2_het' & matrix_size == 500000)
+    (model == 'A1het' & matrix_size == 250000) |
+    (model == 'C1het' & matrix_size == 250000) |
+    (model == 'D1het' & matrix_size == 500000) |
+    (model == 'D2het' & matrix_size == 500000)
 ) 
 lab = lab %>% select(gflops, matrix_size, model) %>% distinct()
 lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
                                        model == 'A2'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
-                                       model == 'A1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'C1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D1_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D2_het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+                                       model == 'A1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'C1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D2het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
                                        T             ~ as.character(model)))
 lab$x = lab$matrix_size
 lab$y = lab$gflops
@@ -3831,17 +3833,17 @@ max_x = max(dfsim$matrix_size)
 max_y = max(dfsim$gflops)
 lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ 0.25*max_x,
                                     model == 'A2'     ~ 0.8*max_x,
-                                    model == 'A1_het' ~ 0.3*max_x,
-                                    model == 'C1_het' ~ 0.6*max_x,
-                                    model == 'D1_het' ~ 0.38*max_x,
-                                    model == 'D2_het' ~ 0.8*max_x,
+                                    model == 'A1het' ~ 0.3*max_x,
+                                    model == 'C1het' ~ 0.6*max_x,
+                                    model == 'D1het' ~ 0.38*max_x,
+                                    model == 'D2het' ~ 0.8*max_x,
                                        T             ~ xl))
 lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ 0.95*max_y,
                                     model == 'A2'     ~ 0.9*max_y,
-                                    model == 'A1_het' ~ 0.4*max_y,
-                                    model == 'C1_het' ~ 0.4*max_y,
-                                    model == 'D1_het' ~ 0.1*max_y,
-                                    model == 'D2_het' ~ 0.1*max_y,
+                                    model == 'A1het' ~ 0.4*max_y,
+                                    model == 'C1het' ~ 0.4*max_y,
+                                    model == 'D1het' ~ 0.1*max_y,
+                                    model == 'D2het' ~ 0.1*max_y,
                                        T             ~ yl))
 
 # Plot drawing
@@ -3853,10 +3855,15 @@ plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
 plot = plot + theme(text=element_text(size=12))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
 plot = plot + geom_segment(data=lab, aes(x=xl, xend=x, y=yl, yend=y, color=model), linetype="solid")
-plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, color=model), size=text_size)
+# the two following lines are a dirty hack, apparently we cannot modify the lightness of an existing color palette
+# so I have to use a small alpha, but I did not want to see the background, thus I put white squares behind
+plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, group=model), size=text_size, color='white')
+plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, group=model, fill=model), alpha=0.3, size=text_size)
+plot = plot + scale_fill_brewer(type='qual', palette='Dark2', guide=F)
 plot = plot + geom_segment(data=lab, x=max_x*0.75, xend=4.5e5, y=max_y*0.6, yend=mean((dfreal %>% filter(matrix_size == 450000))$gflops), linetype="solid")
 plot = plot + geom_label(data=lab, aes(x=max_x*0.75, y=max_y*0.6), label='\\textbf{reality}', size=text_size)
 plot
+tikzTest("A1het")
 dev.off()
 print(plot)
 #ggsave(filename='figures/validation_performance.pdf', plot=plot)
@@ -3881,10 +3888,21 @@ print(plot)
 [1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
+
+Active compiler:
+	/usr/bin/pdflatex
+	pdfTeX 3.14159265-2.6-1.40.19 (TeX Live 2018)
+	kpathsea version 6.3.0
+
+Measuring dimensions of: A1het
+Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmptXgnmn/tikzDevice1e116a18e595' '/tmp/RtmptXgnmn/tikzDevice1e116a18e595/tikzStringWidthCalc.tex'
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+[1] 26.38245
 null device 
           1
 #+end_example
-
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with the reality. We instrumented HPL to collect the start
