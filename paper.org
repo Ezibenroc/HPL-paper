@@ -3058,7 +3058,7 @@ draw_reg <- function(df, calibration_df) {
     # Basic plot
     plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(size=.5, alpha=0.1)
     plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
-    plot = plot + xlab('Message size (bytes)')  + ylab('duration\n (seconds)') # + ylab(paste(unique(df$func), 'duration\n (seconds)'))
+    plot = plot + xlab('Message size (bytes)')  + ylab('Duration (seconds)') # + ylab(paste(unique(df$func), 'duration\n (seconds)'))
     
     # Computing and plotting the regressions
     df$pred = -1
@@ -3127,7 +3127,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-M9BfMg/figure20woXK.png]]
+[[file:/tmp/babel-M9BfMg/figureOycP2O.png]]
 
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
