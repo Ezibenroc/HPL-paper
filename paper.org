@@ -1299,7 +1299,7 @@ zlib 1.0
 #+Latex:\begin{abstract}
 With a power consumption of several MW per hour on a TOP500 machine,
 running applications on supercomputers at scale solely to optimize
-their performance is extremely expensive. High-Performance Linpack (HPL),
+their performance is extremely expensive. Likewise, High-Performance Linpack (HPL),
 the benchmark used to rank supercomputers in the TOP500, requires a
 careful tuning of many parameters (problem size, grid arrangement,
 granularity, collective operation algorithms, etc.) and supports
@@ -1329,6 +1329,7 @@ machines, makes it financially expensive to test-run applications. A
 large part of this tuning work could be simplified if a generic and
 faithful performance prediction tool was available. This article
 presents a decisive step in this direction.
+#+LaTeX: \AL[]{We should talk about dev and vendors at once}
 
 The world's largest and fastest machines are ranked twice a year in
 the TOP500 list using the High-Performance Linpack (HPL) benchmark. To
@@ -1358,7 +1359,7 @@ machine misconfiguration.
 # estimating performance of specific functions) or by a simulation based approach.
 # \CH{Furthermore, simulations can be used to validate/check that the execution went well (operated near the peak performance) but can also help to find the right parameters for the application, runtime and network.}
 
-# #+LaTeX: \AL[]{Clearly list contributions?}
+#+LaTeX: \AL[]{Clearly list contributions?}
 # 1) Explain how to obtain Scalable simulation 2) Explain how to model
 # resources 3) Detailed comparison with RL experiments that show the
 # importance of carefully modeling spatial and temporal variability 4)
@@ -1885,6 +1886,21 @@ the simulation will be investigated in more details in the next sections
 but it can already be observed that this kernel model leads to an accurate,
 albeit slightly more optimistic, estimation of the performance.
 
+In addition to the main computation kernels, 
+we identified seven other BLAS functions through
+profiling as computationally expensive enough to justify a specific
+handling: =dgemv=, =dswap=, =daxpy=,
+=dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
+spent in fifteen functions implemented in HPL: 
+=HPL_dlaswp*N=, =HPL_dlaswp*T=, =HPL_dlacpy= and =HPL_dlatcpy=.
+All these functions are called during the
+LU factorization and hence impact the performance measured by HPL; however, because of
+the removal of the =dgemm= and =dtrsm= computations, they all operate on
+bogus data and hence also produce bogus data. To study their impact on
+the overall performance, we handled them similarly to =dgemm= and
+=dtrsm=, through performance models and macro substitution, which
+speeds up the simulation by an additional factor of $3$ to $4$
+on small ($N=30,000$) and even more on large scenarios.
 #+BEGIN_EXPORT latex
 \begin{figure}[!htb]
 %  \null\vspace{-1cm}
@@ -2044,30 +2060,14 @@ HPL is executed. This initialization, just like the factorization
 correctness verification, is not considered in the reported
 performance.  Since both phases have no impact on the reported
 performance, we can safely skip them.
-
-In addition to the main computation kernels, 
-we identified seven other BLAS functions through
-profiling as computationally expensive enough to justify a specific
-handling: =dgemv=, =dswap=, =daxpy=,
-=dscal=, =dtrsv=, =dger= and =idamax=. Similarly, a significant amount of time was
-spent in fifteen functions implemented in HPL: 
-=HPL_dlaswp*N=, =HPL_dlaswp*T=, =HPL_dlacpy= and =HPL_dlatcpy=.
-All these functions are called during the
-LU factorization and hence impact the performance measured by HPL; however, because of
-the removal of the =dgemm= and =dtrsm= computations, they all operate on
-bogus data and hence also produce bogus data. To study their impact on
-the overall performance, we handled them similarly to =dgemm= and
-=dtrsm=, through performance models and macro substitution.
-
 Last, note that HPL
 implements an LU factorization with partial pivoting and a special
 treatment of the =idamax= function that returns the index of the first
 element equaling the maximum absolute value. Although we ignored the
 cost of this function as well, we set its return value to a random (but controlled)
 value to make the simulation unbiased (but fully deterministic).
-We confirmed that this modification is harmless in terms of performance prediction while it
-speeds up the simulation by an additional factor of $3$ to $4$
-on small ($N=30,000$) and even more on large scenarios.
+We confirmed that this modification is harmless in terms of
+performance prediction.
 ** Scaling Down Memory Consumption
 #+BEGIN_EXPORT latex
 \tikzset{draw half paths/.style 2 args={%
@@ -2215,19 +2215,8 @@ For a matrix of order $40,000$ and $64$ MPI processes,
 memory consumption decreases from about \NSI{13.5}{\giga\byte} to
 less than \NSI{40}{\mega\byte}.
 
-We also leveraged this information on which memory area is private, shared or
-partially shared to improve the overall performance. 
-By making SMPI internally aware of the memory's
-visibility, it can now avoid calling =memcopy= when large messages
-containing shared segments are sent from one MPI rank to another.
-For fully private or partially shared segments, SMPI
-identifies and copies only those parts that are process-dependent
-(private) into the corresponding buffers on the receiver side.
-HPL simulation times and memory consumption were considerably improved
-in our experiments because the =panel= is the most frequently
-transferred data structure but only a small part of it is actually private.
-
-HPL \texttt{malloc}s/\texttt{free}s panels in each
+Another HPL specific optimization is related to the systematic
+allocation and deallocation of panels in each
 iteration, with the size of the panel strictly decreasing from
 iteration to iteration. As we explained above, the partial sharing of
 panels requires many calls to =mmap= and introduces an overhead that
@@ -2244,6 +2233,19 @@ allocations/deallocations would have at scale.
 # Responsible for this
 # is a reduction of system time, namely from \NSI{5.9}{\sec} to
 # \NSI{1.7}{\sec}.
+
+The last three optimizations we describe are not specific to HPL. 
+We also leveraged the information on which memory area is private, shared or
+partially shared to improve the overall performance. 
+By making SMPI internally aware of the memory's
+visibility, it can now avoid calling =memcopy= when large messages
+containing shared segments are sent from one MPI rank to another.
+For fully private or partially shared segments, SMPI
+identifies and copies only those parts that are process-dependent
+(private) into the corresponding buffers on the receiver side.
+HPL simulation times and memory consumption were considerably improved
+in our experiments because the =panel= is the most frequently
+transferred data structure but only a small part of it is actually private.
 
 Mapping MPI processes to threads of a single process effectively folds
 them into the same address space.  Consequently, global variables in
@@ -4573,7 +4575,13 @@ cp /home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/com
 # become the new standard
 
 Studying HPC applications at scale can be very time- and
-resource-consuming. Simulation is often an effective approach in this
+resource-consuming. 
+We believe being capable of precisely predicting an application's
+performance on a given platform will become invaluable in the future
+to aid compute centers with the decision of whether a new machine (and
+what technology) will work best for a given application or if an
+upgrade of the current machine should be considered. 
+Simulation is often an effective approach in this
 context and SMPI has previously been successfully validated in several small-scale
 studies with standard HPC applications\cite{smpi,heinrich:hal-01523608}.  In this
 article, we proposed and evaluated extensions to the SimGrid/SMPI
@@ -4617,11 +4625,7 @@ are applicable to that optimized version. In fact, while HPL comprises
 16K lines of ANSI C over 149 files, our modifications only changed 14
 files with 286 line insertions and 18 deletions.
 
-We believe being capable of precisely predicting an application's
-performance on a given platform will become invaluable in the future
-to aid compute centers with the decision of whether a new machine (and
-what technology) will work best for a given application or if an
-upgrade of the current machine should be considered. As a future work,
+As a future work,
 we intend to automate our modeling approach as much as possible and to
 conduct similar studies with other HPC benchmarks (\eg HPCG or HPGMG)
 and with other TOP500 machines. In this context, we believe that a
