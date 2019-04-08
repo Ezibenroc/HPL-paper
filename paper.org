@@ -2891,8 +2891,7 @@ estimations are denoted by \noise[H]{}.
 #+BEGIN_EXPORT latex
 \begin{figure}[!t]
   \vspace{-1em}
-  \centering \subfigure[Stampede]{\includegraphics[width=.47\linewidth]{./figures/network/stampede.png}}\hfill
-  \subfigure[Dahu]{\includegraphics[width=.47\linewidth]{./figures/network/dahu.png}}
+  \centering \includegraphics[width=\linewidth]{./figures/network/calibration.png}
   \vspace{-1em}
   \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-2em}
   \label{fig:nw_var}
@@ -3042,67 +3041,93 @@ read_csv <- function(filename) {
     return(df)
 }
 
-draw_reg <- function(df, breakpoints) {
-    i = 1
+draw_reg <- function(df, calibration_df) {
+    platforms = unique(calibration_df$platform)
+
+    # Computing the groups
     df$group = 0
-    for(bp in breakpoints) {
-        df[df$msg_size > bp,]$group = i
-        i = i+1
+    for(plat in platforms) {
+        i = 1
+        for(bp in calibration_df[calibration_df$platform == plat,]$breakpoint) {
+            df[df$platform==plat & df$msg_size > bp,]$group = i
+            i = i+1
+        }
     }
     df$group = as.factor(df$group)
-    func = unique(df$func)
+
+    # Basic plot
     plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(size=.5, alpha=0.1)
     plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
     plot = plot + xlab('Message size (bytes)')  + ylab('duration\n (seconds)') # + ylab(paste(unique(df$func), 'duration\n (seconds)'))
-    txt = data.frame(func=unique(df$func), msg_size=c(50, 50), duration=c(5e-5, 5e-5))
-    plot = plot + geom_text(aes(label=func), color='black', data=txt, size=6)
-    plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
-    plot = plot + expand_limits(y=1e-07)
+    
+    # Computing and plotting the regressions
     df$pred = -1
-    for(grp in unique(df$group)) {
-        for(func in unique(df$func)) {
-            index = df$group == grp & df$func == func
-            reg = lm(duration~msg_size, df[index,])
-            df[index,]$pred = predict(reg, df[index,])
+    for(plat in unique(df$platform)) {
+        for(grp in unique(df$group)) {
+            for(func in unique(df$func)) {
+                index = df$group == grp & df$func == func & df$platform == plat
+                reg = lm(duration~msg_size, df[index,])
+                df[index,]$pred = predict(reg, df[index,])
+            }
         }
     }
     plot = plot + geom_line(aes(y=pred, group=group), data=df, color='black')
-    for(bp in breakpoints) {
-        plot = plot + geom_vline(xintercept=bp, linetype='dashed')
-    }
-    plot = plot + facet_wrap('func', nrow=2) + theme(strip.background = element_blank(), strip.text.x = element_blank())
+
+    # Plotting the breakpoints
+    breakpoints_recv = data.frame(calibration_df)
+    breakpoints_recv$func = 'MPI_Recv'
+    breakpoints_send = data.frame(calibration_df)
+    breakpoints_send$func = 'MPI_Send'
+    plot = plot + geom_vline(aes(xintercept=breakpoint), data=rbind(breakpoints_recv, breakpoints_send), linetype='dashed')
+
+    # Plotting the labels
+    txt = data.frame(func=rep(unique(df$func), 2), msg_size=rep(c(1), 4), duration=rep(c(5e-5), 4), platform=sort(rep(unique(df$platform), 2)))
+    txt$label = paste(toupper(txt$platform), txt$func, sep='\n')
+    plot = plot + geom_label(aes(label=label), color='black', data=txt, size=4, hjust=0)
+
+    # Wrapping
+    plot = plot + facet_wrap(c('func', 'platform'), nrow=2) + theme(strip.background = element_blank(), strip.text.x = element_blank())
     return(plot)
 }
 
-draw_mpi_reg <- function(platform, breakpoints) {
-    pingpong_file = paste('data/network_calibration', platform, 'pingpong.csv', sep='/')
-    recv_file     = paste('data/network_calibration', platform, 'recv.csv',     sep='/')
-    df_pingpong = read_csv(pingpong_file)
-    df_send = df_pingpong %>% filter(func == 'MPI_Send')
-    df_recv = read_csv(recv_file)
-    return(draw_reg(rbind(df_send, df_recv), breakpoints))
+draw_mpi_reg <- function(calibration_df) {
+    df = data.frame()
+    for(platform in unique(calibration_df$platform)) {
+        pingpong_file = paste('data/network_calibration', platform, 'pingpong.csv', sep='/')
+        recv_file     = paste('data/network_calibration', platform, 'recv.csv',     sep='/')
+        df_pingpong = read_csv(pingpong_file)
+        df_send = df_pingpong %>% filter(func == 'MPI_Send')
+        df_recv = read_csv(recv_file)
+        tmp = rbind(df_send, df_recv)
+        tmp$platform = platform
+        df = rbind(df, tmp)
+    }
+    return(draw_reg(df, calibration_df))
 }
 #+end_src
 
 #+RESULTS:
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
-plot = draw_mpi_reg('dahu', c(8133, 15831, 33956, 64000))
-ggsave(filename='figures/network/dahu.png', plot=plot, width=3,height=4, dpi=200)
+#+NAME: table_mpi_calibration
+| platform | breakpoint |
+|----------+------------|
+| dahu     |       8133 |
+| dahu     |      15831 |
+| dahu     |      33956 |
+| dahu     |      64000 |
+| stampede |        150 |
+| stampede |       5000 |
+| stampede |      17420 |
+| stampede |     110000 |
+
+#+begin_src R :results output graphics :var calibrations=table_mpi_calibration :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R*
+plot = draw_mpi_reg(calibrations)
+ggsave(filename='figures/network/calibration.png', plot=plot, width=6,height=4, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-M9BfMg/figurelsniX8.png]]
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
-plot = draw_mpi_reg('stampede', c(150, 5000, 17420, 110000))
-ggsave(filename='figures/network/stampede.png', plot=plot, width=3,height=4, dpi=200)
-plot
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-M9BfMg/figurefAnk6i.png]]
+[[file:/tmp/babel-M9BfMg/figure20woXK.png]]
 
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
