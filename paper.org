@@ -3054,18 +3054,23 @@ draw_reg <- function(df, breakpoints) {
     plot = ggplot(df, aes(x=msg_size, y=duration, color=group)) + geom_point(size=.5, alpha=0.1)
     plot = plot + scale_x_log10() + scale_y_log10() + theme_bw() + scale_color_discrete(guide=F)
     plot = plot + xlab('Message size (bytes)')  + ylab('duration\n (seconds)') # + ylab(paste(unique(df$func), 'duration\n (seconds)'))
-    plot = plot + annotate(geom='text', label=func, size=5, x=50, y=5e-5)
+    txt = data.frame(func=unique(df$func), msg_size=c(50, 50), duration=c(5e-5, 5e-5))
+    plot = plot + geom_text(aes(label=func), color='black', data=txt, size=6)
     plot = plot + expand_limits(y=0.00022)  # to get the same scale on all plots
     plot = plot + expand_limits(y=1e-07)
+    df$pred = -1
     for(grp in unique(df$group)) {
-        tmp = df[df$group == grp,]
-        reg = lm(duration~msg_size, tmp)
-        tmp$pred = predict(reg, tmp)
-        plot = plot + geom_line(aes(y=pred), data=tmp, color='black')
+        for(func in unique(df$func)) {
+            index = df$group == grp & df$func == func
+            reg = lm(duration~msg_size, df[index,])
+            df[index,]$pred = predict(reg, df[index,])
+        }
     }
+    plot = plot + geom_line(aes(y=pred, group=group), data=df, color='black')
     for(bp in breakpoints) {
         plot = plot + geom_vline(xintercept=bp, linetype='dashed')
     }
+    plot = plot + facet_wrap('func', nrow=2) + theme(strip.background = element_blank(), strip.text.x = element_blank())
     return(plot)
 }
 
@@ -3075,9 +3080,7 @@ draw_mpi_reg <- function(platform, breakpoints) {
     df_pingpong = read_csv(pingpong_file)
     df_send = df_pingpong %>% filter(func == 'MPI_Send')
     df_recv = read_csv(recv_file)
-    plot_send = draw_reg(df_send, breakpoints)
-    plot_recv = draw_reg(df_recv, breakpoints)
-    return(grid.arrange(plot_send, plot_recv, nrow=2))
+    return(draw_reg(rbind(df_send, df_recv), breakpoints))
 }
 #+end_src
 
@@ -3090,7 +3093,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19053_Jy/figure19053CHC.png]]
+[[file:/tmp/babel-M9BfMg/figurelsniX8.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
 plot = draw_mpi_reg('stampede', c(150, 5000, 17420, 110000))
@@ -3099,7 +3102,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-19053_Jy/figure19053PRI.png]]
+[[file:/tmp/babel-M9BfMg/figurefAnk6i.png]]
 
 ** Kernels plots                                                  :noexport:
 *** Downloading the CSV
