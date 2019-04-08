@@ -1,0 +1,396 @@
+
+
+* CCgrid reviews
+These are the review we received from an earlier version of this
+article submitted to CCgrid and where we did not have any positive
+validation results yet.
+** REVIEW 1 
+ PAPER: 255
+ TITLE: Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer
+ AUTHORS: Tom Cornebize, Franz Christian Heinrich, Arnaud Legrand and Jérôme Vienne
+*** Grades
+ - Novelty / Originality: 3 (Fair (This work extends existing work, but
+   provides significant new contributions))
+ - Quality of the Presentation: 3 (Fair (The presentation is suitable,
+   but could be improved))
+ - Technical Strength: 4 (Good (The work in this paper is solid and is
+   coupled with a good evaluation))
+ - Significance of Work: 3 (Fair (Attendees will find this work
+   interesting and may build upon it))
+ - Relevance to the Conference: 4 (Good (The topic is fully covered by
+   the CFP and the paper will be interesting to a wide majority of
+   CCGrid attendees))
+ - Reviewer's familiarity with the work: 4 (High (I work in a very
+   closely related field/topic and I have in-depth knowledge))
+ - Overall evaluation: 1 (Weak Accept (I like the paper, but I could be
+   convinced to reject this paper))
+*** Overall evaluation
+ This paper presents a methodology to simulate large systems on small
+ ones. The methodology is presented through a case study of simulating
+ the HPL run on Stampede. The paper is reasonably interesting in that
+ it explores several issues that make such simulations difficult and
+ provides reasonable solutions to those difficulties. The paper has two
+ key weaknesses. 
+ - First, *the presentation of the methodology is tightly intertwined* in
+   the case study, which forces the reader to extract the key aspects
+   of the methodology from the details of the case study.
+ - Second, the results of the case study, specifically the HPL result
+   for Stampede, is substantially under the documented result of the
+   real run, i.e., the case study fails to validate the
+   methodology. The second issue is the most significant as the paper
+   makes a large number of simplifying assumptions that the lack of
+   agreement draws into question. However, as the paper states, those
+   assumptions should lead the result to predict higher performance,
+   while the result is much lower. Overall, many of the details are
+   interesting but the flaws make the paper borderline.
+
+ The claim that HPL cannot be optimized based on simple mathematical
+ performance models is not convincing as that is how the work is
+ typically performed. While one might try to argue that fact does not
+ imply that it is a good way to perform the work, experts involved in
+ optimizing HPL for large system TOP500 runs do not report that the
+ models are inadequate. While the work in this paper could be useful
+ and form the basis of an interesting paper, *the stated motivation is
+ not convincing*. The paper would be greatly improved if instead the
+ case study were cast *as reasonable step in establishing a methodology
+ for simulating complex applications on large scale systems*. HPL,
+ being a relatively simple application, supports exploration of the
+ most fundamental issues and their solutions. One could argue whether
+ those solutions are broadly applicable or if more complex applications
+ would present additional issues that would need to be solved. However,
+ if large-scale runs of HPL could not be simulated then we would
+ clearly have no hope to simulate the more complex applications (for
+ which simple mathematical models are clearly impossible, let alone
+ sufficient).
+
+ The conclusion of the work -- that *TOP500 runs should include
+ complete details of compiling options*, library versions and such --
+ is *unrealistic*. The request would require details of the low-level
+ optimizations that are performed to achieve the highest possible
+ result for the TOP500. The optimizations are often of little value
+ outside of the HPL run but reveal critical hardware details that
+ manufacturers will not release.
+
+ The biggest issue with the presentation is that *the paper fails to
+ characterize the techniques as a general methodology*. THe paper
+ really needs to be rewritten so that the general issues and techniques
+ are clearly enumerated, with the specific solutions to the issues for
+ HPL being additional information. This change probably would require
+ adding an overview of the issues and techniques but otherwise could be
+ made with little change to the specific discussions (just enough
+ changes to state the issue as broader than the specifics in
+ HPL). While this additional text would require trimming the existing
+ text in the paper, that text is currently rather wordy so a good
+ proofreading pass should be able to make it much more concise. Some
+ low-level issues that should be addressed in the final paper (or a
+ resubmission if the paper is rejected):
+
+  # 1. HPL is not the "de facto benchmark" used "to rank supercomputers
+  #    in the TOP500." It is the benchmark used to rank supercomputers in
+  #    that list. Either "de facto" or "the TOP500" should be deleted in
+  #    that sentence in the abstract.
+
+  # 2. Why is Figure 3 referenced in the text before Figure 2? In other
+  #    words, why do the figures appear out of order? 
+
+  3. Including the Xeons in the peak performance against which the HPL
+     run is measured seems inappropriate. AS the paper eventually
+     discusses, the bulk of the work is almost exclusively performed on
+     the KNCs.
+
+  # 4. The phrase on page 3 "just as cloud and HPC infrastructures" does
+  #    not parse correctly. Should it be "just as cloud and HPC
+  #    infrastructures deploy"?
+
+  # 5. The paper has many split infinitives (e.g., "to faithfully
+  #    emulate") and dangling prepositions (e.g., "to be dealt
+  #    with."). The text also tends to use pronouns (specifically "it",
+  #    "there" and "this") without clear antecedents (these pronouns
+  #    often indicate a verbose style). The proofreading pass should
+  #    methodically address these problems.
+
+  6. Do not use citations as body text (e.g., "in [13]" and "in [12]").
+
+  7. The verb "believe" should not be used in technical
+     writing. Hopefully, whatever you believe state in the paper. When
+     you preface a statement with "We believe", you cast doubt on how
+     strongly you believe it -- or you create questions about how much
+     you believe the statements that are not prefaced by the phrase.
+
+  # 8. Please use a consistent case (either title case, as in reference
+  #    4, or sentence case, as in reference 5) for article titles.
+
+  # 9. Do not use "et al." in references in general but in particular
+  #    after listing more than one author; it means "and others" so only
+  #    the first author should be listed in a ny context in which it is
+  #    used. Also, it should never be used for articles with just two
+  #    authors (just to be clear; you did not use it for any two author
+  #    articles).
+
+** REVIEW 2
+ PAPER: 255
+ TITLE: Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer
+ AUTHORS: Tom Cornebize, Franz Christian Heinrich, Arnaud Legrand and Jérôme Vienne
+
+*** Grades
+  - Novelty / Originality: 3 (Fair (This work extends existing work, but provides significant new contributions))
+  - Quality of the Presentation: 3 (Fair (The presentation is suitable, but could be improved))
+  - Technical Strength: 3 (Fair (The work in this paper is correct, but its validation methodology is limited or flawed))
+  - Significance of Work: 2 (Poor (Future use of this work will be quite limited))
+  - Relevance to the Conference: 4 (Good (The topic is fully covered by the CFP and the paper will be interesting to a wide majority of CCGrid attendees))
+  - Reviewer's familiarity with the work: 4 (High (I work in a very closely related field/topic and I have in-depth knowledge))
+  - Overall evaluation: -1 (Weak Reject (I don't like the paper, but I could be convinced to accept this paper))
+
+*** Overall evaluation
+  The goal of the paper is to simulate HPC codes on a single node to
+  predict the performance on a supercomputer for different variants of
+  the code, and to pick the faster one to actually run on the
+  supercomputer.
+
+  The approach attempts to take many complex performance contributors
+  into consideration.  However, it is unclear whether those
+  contributions were insufficiently treated, or if there are other
+  contributors to the performance that the approach has not considered.
+  The approach fails at predicting the runtime for the known runs on
+  the supercomputer, and (due to lack of data from the supercomputer?)
+  the predictions of the different variants are not discussed.  This
+  makes it unclear whether the approach would be at all useful at
+  discriminating between the different variants of the application on a
+  specified supercomputer, limiting the stated usefulness of the
+  approach.
+
+  Overall, the paper presents interesting but inconclusive discussions.
+** REVIEW 3
+ PAPER: 255
+ TITLE: Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer
+ AUTHORS: Tom Cornebize, Franz Christian Heinrich, Arnaud Legrand and Jérôme Vienne
+*** Grades
+  - Novelty / Originality: 3 (Fair (This work extends existing work, but provides significant new contributions))
+  - Quality of the Presentation: 4 (Good (The presentation is very clear and easy to follow))
+  - Technical Strength: 3 (Fair (The work in this paper is correct, but its validation methodology is limited or flawed))
+  - Significance of Work: 3 (Fair (Attendees will find this work interesting and may build upon it))
+  - Relevance to the Conference: 4 (Good (The topic is fully covered by the CFP and the paper will be interesting to a wide majority of CCGrid attendees))
+  - Reviewer's familiarity with the work: 4 (High (I work in a very closely related field/topic and I have in-depth knowledge))
+  - Overall evaluation: -2 (Reject (I will argue against accepting this paper))
+*** Overall evaluation
+ This paper describes a methodology to emulate High Performance Linpack
+ on a commodity server at the scale of a supercomputer. The methodology
+ is based on a Simgrid / SMPI framework and applied to the open HPL 2.2
+ version. In the paper, the authors tried to simulate the execution of
+ the HPL on the Stampede machine in 2013.
+
+ This paper is well written and easy to read. Nevertheless, there are
+ some issues/limitation into the methodology presented:
+
+ 1) Regarding the V.E. part "MPI process representation" SMPI provides a "mmap" and a "dlopen" approach that have some drawback and the author didn't mention the compiler assisted "automatic privatization" like in MPC[1] or source-to-source transformation like in AMPI[2].
+ 2) There are a lot of modifications in the HPL execution model. Almost all the time consuming function where replaced with emulated functions. Thus, it is really hard to see if the methodology presented can be applied to larger applications. HPL is a synthetic benchmark and not a real workload.
+ 3) The simulation was not able to match the real execution. The authors mention that is was really hard to know the modification provided by Intel in the HPL benchmark. These modifications may explain the differences between the simulation and the real execution. Nevertheless the author are not able to explain that the reasons of those differences.
+
+ In the end, I'm disappointed because I'm not convinced by the
+ methodology as I don't know if this approach allows to match between
+ simulation and real execution. If the author can add a medium size
+ execution with the regular HPL on Stampede to illustrate that the
+ simulation can match the real execution even on a smaller dataset, it
+ will probably convince me.
+
+  [1] Carribault, P., Pérache, M., & Jourdren, H. (2011). Thread-local storage extension to support thread-based MPI/openMP applications. OpenMP in the Petascale Era, 80-93.
+  [2] Negara, S., Zheng, G., Pan, K. C., Negara, N., Johnson, R. E., Kal, L. V., & Ricker, P. M. (2010, August). Automatic MPI to AMPI Program Transformation Using Photran. In Euro-Par Workshops (pp. 531-539).
+
+** REVIEW 4
+ PAPER: 255
+ TITLE: Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer
+ AUTHORS: Tom Cornebize, Franz Christian Heinrich, Arnaud Legrand and Jérôme Vienne
+
+ Novelty / Originality: 4 (Good (This is new work and provides novel contributions, but is not groundbreaking))
+ Quality of the Presentation: 4 (Good (The presentation is very clear and easy to follow))
+ Technical Strength: 3 (Fair (The work in this paper is correct, but its validation methodology is limited or flawed))
+ Significance of Work: 4 (Good (This work is an important stepping stone for future work or has large practical value))
+ Relevance to the Conference: 4 (Good (The topic is fully covered by the CFP and the paper will be interesting to a wide majority of CCGrid attendees))
+ Reviewer's familiarity with the work: 2 (Low (I have only passing familiarity with this field/topic))
+ Overall evaluation: 2 (Accept (This would be a good addition to the CCGrid program))
+
+ ----------- Overall evaluation -----------
+ This was an interesting paper but the work was unfortunately unable to be fully verified/evaluated due to a lack of available details for an earlier Top500 qualification run made several years ago on the TACC Stampede system.  The authors make a valiant effort to speculate why their model significantly underpredicts the actual data published in the Top500 entry, but the actual factors are ultimately unable to be determined.  Nonetheless, it was an interesting read.  In the future, I hope that the authors can work in direct partnership with staff evaluating HPL runs on current systems to gain further insight/calibration into their approach.
+
+ My only observation on the actual text is that the manuscript reads somewhat informally in places; a technical editor may help improve things in this regard.
+
+* Fred Suter review
+** Typos and style
+*** General
+    + \sloppy 
+    + Maybe s/process/rank/, it's more in the MPI jargon
+*** Abstract
+    + 10: add (HPL)
+    + 18: computer -> server
+    + 21: allows + us
+    + 21: simulation -> simulated
+*** Introduction
+    + 33: a diligent
+    + 47: reach a good performance -> get near to the peak performance
+    + 48: takes typically -> typically takes
+    + 67-71: Rephrase
+      + In the case of HPL, machine vendors know how to estimate the performance
+	using simple mathematical performance models. However, these models only
+	give trends but fail to capture the impact of the network congestion and
+	of system noise and are thus not particularly accurate.
+    + 73: originates from -> originates in
+    + 74: or +from+ machine
+    + 77: several +key
+    + 78: +how we+ managed
+    + 80-84: rephrase
+      + several gigabytes. This allowed us to emulate detailed scenarios similar
+	to the HPL run conducted on the Stampede cluster (TACC) in 2013 for the
+	TOP500 on a single commodity sever and in less than two days.
+    + 85: performance of *HPL on* a controlled
+    + 86: processes -> ranks
+    + 95: make -> keep
+    + 99: account faithfully for -> faithfully reflect
+    + 100: discuss +about+
+    + 103: +Lastly,+
+*** Context
+**** HPL
+     + 110: For this -> In this
+     + 111: of the High-Performance Linpack benchmark [1], HPL, -> HPL [1]
+       + acronyme déjà explicité dans l'intro.
+     + 112-115: Rephrase
+       + HPL solves a linear system A · x = b, but only the LU decomposition
+         step is benchmarked.  
+       + (Maybe (or not) keep the remark on MPI for later), sounds akwards there.
+     + 131: Figure 1 and consists -> Figure 1. It consists
+     + 135: *MPI* collective
+     + 135: overlap efficiently -> efficiently overlap
+     + 137: +listed subsequently+
+     + 151-152: to broadcast a panel over the process columns
+     + 154: +, but did not support non-blocking collective communications+
+       + if it supports only p2p comm, this becomes obvious (space saving mode)
+     + 155: +in total+ 
+     + 155: 6 -> six
+     + 161: participate further -> further participate
+     + 164; name-giving two virtual topologies
+       + pas compris la phrase ...
+     + 169: and hence facilitate partial overlapping -> , hence facilitating the
+       partial overlap of
+     + 170: 2.2 and 2.1 -> 2.1 and 2.2
+     + 188: Remark, try to have DEPTH on the left column with the other
+       parameters for the sake of readability
+**** Typical runs
+     + 175: move Figure 2 (which is a table BTW) to the bottom of right column
+     + 215: figure -> Table
+     + 236: *a* very faithful
+*** Related Work 
+    + 243: MPI application*s*
+    + 247-248: +time-independent+
+      + SMPI est le seul outil à faire du time-independent, tous les autres ont
+	des timestamps de partout
+    + 260: broken ref
+    + 262: *s*ligth
+    + 270: study direcly -> directly study
+    + 275: emulate faithfully -> faithfully emulate
+    + 276: For our work -> In this work
+*** SMPI
+   + 295: predicting *the* performance
+   + 295-296: Rephrase
+     + For instance the "eager" and "rendez-vous" protocols are
+   + 299: either "LogGPS" or "the LogGPS model"
+   + 323-324: Rephrase
+     + Recent results report consistent performance predictions within a few
+       percent for standard benchmarks
+     + L'énergie est pas pertinente ici, ça prend juste de la place
+*** Emulating HPL
+    + 346: 32GB *of* RAM
+    + 347: *a* Debian Stretch *OS*
+    + 350: Who needs subsubsections? 
+    + 351: Rephrase
+      + requires the emulation of its code.
+      + L'émulation a été introduite et justifiée avant.
+    + 351: HPL heavily relies
+    + 353: Ax = b or A . x = b ?
+    + 354: a HPL 
+    + 366: based on the *given*
+    + 384: either Processes (plural) or Ranks
+    + 393: in term*s*
+    + 397: Who needs subsubsections? (Replace by "Then, " here)
+    + 402: +dgemm and dtrsm+
+      + On vient d'en parler, le lecteur s'en souviendra encore
+    + 404: +dtrsm+
+    + 413: on *the* overall 
+    + 420: a+n+ random
+    + 423: remove the \approx (3 to 4 is already an approximation) 
+*** Scaling down
+    + 485: that allows *us* to 
+    + 487-488: shared between process -> shared across processes (or ranks)
+    + 489: decreased -> decreases
+    + 490: the -> this information
+    + 499-500: Rephrase:
+      + panel is the mos frequently transferred datastructure but  only a small
+	part of it is actually private.
+    + 538: to load several times data segment
+      + pas compris la phrase
+    + 545: thousand*s*
+*** Scalability Evaluation
+*** Modeling kernels and communications
+    + 588: including the *individual* contribution of each parameter +individually+
+**** Modeling notation
+     + 604: why ldots?
+     + 604: +(matrix-matrix product)+
+       + dgemm was mentioned several times before
+     + 627: mos*t*ly
+     + 627: solely on -> only for
+     + 639-654: Figure
+       + ya ptet moyen de gratter un peu d'espace en virant les tics et les
+         labels sur l'axe des x des figures du haut. Les graphes sont alignés,
+         c'est la même info, on peut se permettre.
+     + 662: *the* overall
+     + 662: We therefore -> Then, we 
+     + 665: The simplest option -> It 
+       + Objectif: tenir en 2 lignes (le +0 est pas forcément utile BTW)
+     + 673: is modeled by -> are modeled by a 
+     + 675: even *the* sophisticated
+     + 680: normal distribution*s*
+     + 685: piece-wise constant -> homoscedastic 
+       + it was the description of (N-1)
+     + 689: broken ref
+     + Objectif: faire remonter les 3 lignes de la fin de 6.1 en page 6.
+       + Option possible: ne pas forcément citer les noms de packages mais juste
+         les refs pour R, pythos/statsmodels, cubist, mclust, flexmix (ca doit
+         bien gagner une ligne)
+**** Modeling MPI comm
+     + 708: networks *is* quite
+     + 709:  We therefore -> Then, we 
+**** Modeling dgemm
+     + Cette section là et ses figures elle est pas simple à suivre du tout dans
+       sa forme actuelle :-/
+**** Modeling BLAS
+     + 783: a N-2 *model*
+     + 787-788: Rephrase
+       + For all these kernels, similar results can be obtained with this
+         category of model.
+     + 794-812 : Figure
+       + passe y-axis en ms
+*** Validation at scale
+**** Comparing simulations
+     + Figure 10 can be safely squeezed a bit
+     + Figure 11 title: HPL performance predictions vs. Reality. (one line)
+     + 965: We +have just+ shown (save a line too)
+     + 967: realized -> used
+**** Stampede
+     + Figure 12 title: +using SimGrid+
+     + 977-978: Rephrase
+       + We are certain that there were only one MPI rank per node.
+     + 981: Although, we -> while we
+     + 1009: DGEMM ->dgemm
+     + 1049: supposedly -> allegedly
+     + 1070: blongM -> long-modified (consistency)
+     + 1071: the +the+
+     + Figure 13 can be squeezed a bit
+     + Figure 13 title: +between two process+ (save a line)
+*** Conclusions
+    + 1127-1128: not the same values as in Fig 6 ??
+*** Biblio
+    + ya du grattage possible
+      + [6] ACM PPoPP
+      + [online] ou Available: mais pas les deux
+    + [1] Feb 2016 -> Apr 2019, v2.2
+    + La ref G5k est pas la bonne (c'est celle pour le cloud ça) 
+    + Vous pouvez aussi mettre du 'et al.' de partout, dans une double blind, ça
+      peut aider. 
