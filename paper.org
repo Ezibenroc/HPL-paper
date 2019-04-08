@@ -3352,6 +3352,7 @@ plot
 
 
 #+begin_src R :results output :session *R* :exports both
+library(dplyr)
 library(tidyr)
 library(forcats)
 
@@ -3359,9 +3360,9 @@ dgemm2 = dgemm[(dgemm$cpu ==2),]
 dgemm2 %>% select(func,m,n,k,duration,prediction,pred_noise,node,core,cpu) %>%
     gather(duration,prediction,pred_noise,key=type,value=duration) -> dgemm2
 fake_dgemm = dgemm2[1,] # This is just to add a black legend for geom_smooth
-fake_dgemm$m = 0
-fake_dgemm$n = 0
-fake_dgemm$k = 0
+fake_dgemm$m = 695 # 0 if even values of mnk_id are selected
+fake_dgemm$n = 695 # 0
+fake_dgemm$k = 695 # 0 
 fake_dgemm$type = "fake"
 fake_dgemm$duration = 0
 dgemm2 = rbind(fake_dgemm, dgemm2)
@@ -3372,10 +3373,11 @@ dgemm2 %>%
                "M1 (linear)"="fake", 
                "M2 (polynomial)"="prediction",
                "M3 (polynomial + noise)"="pred_noise")) -> dgemm2
-dgemm2 %>% mutate(mnk=m*n*k) %>% mutate(type_num = as.numeric(type)) %>%
+dgemm2 %>% mutate(mnk=m*n*k, mnk_id = floor(mnk/329334390)) %>% filter(mnk_id %%2==1) -> dgemm2
+dgemm2 %>% 
     group_by(type) %>% 
-    mutate(mnk= mnk + type_num*.7E8,
-           duration = ifelse(type_num==1,duration,duration/1.05)) %>% # This is because this prediction uses the HPL correction
+    mutate(mnk= mnk + ifelse(type=="M2 (polynomial)",1.5E8,ifelse(type=="M3 (polynomial + noise)",3E8,0)),
+           duration = ifelse(type %in% c("M2 (polynomial)","M3 (polynomial + noise)"),duration/1.05,duration)) %>% # This is because this prediction uses the HPL correction
     ungroup() -> dgemm2
 dgemm2 %>% tail(n=10)
 dgemm2 %>% str()
@@ -3384,30 +3386,30 @@ dgemm2 %>% str()
 #+RESULTS:
 #+begin_example
 # A tibble: 10 x 11
-   func      m     n     k  node  core   cpu type      duration    mnk type_num
-   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>        <dbl>  <dbl>    <dbl>
- 1 dgemm   900   879  7582     1    28     2 M3 (pol…   4.09e-1 6.28e9        4
- 2 dgemm  3136  9602   321     1     8     2 M3 (pol…   6.29e-1 9.95e9        4
- 3 dgemm  4272   483  2258     1     8     2 M3 (pol…   3.30e-1 4.94e9        4
- 4 dgemm   646 13690  1056     1    16     2 M3 (pol…   6.47e-1 9.62e9        4
- 5 dgemm 10411   257   498     1    20     2 M3 (pol…   9.95e-2 1.61e9        4
- 6 dgemm     1     1     1     1     8     2 M3 (pol…   7.39e-7 2.80e8        4
- 7 dgemm  1623   619  5316     1     8     2 M3 (pol…   3.82e-1 5.62e9        4
- 8 dgemm  1241  1033  5196     1    30     2 M3 (pol…   4.63e-1 6.94e9        4
- 9 dgemm  4287   416  1304     1    20     2 M3 (pol…   1.60e-1 2.61e9        4
-10 dgemm  1475   917  1719     1     8     2 M3 (pol…   1.62e-1 2.61e9        4
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	4627 obs. of  11 variables:
+   func      m     n     k  node  core   cpu type        duration     mnk mnk_id
+   <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>          <dbl>   <dbl>  <dbl>
+ 1 dgemm  1306  3172  2011     1     0     2 M3 (polyno~   0.605   8.63e9     25
+ 2 dgemm   259  1215  1047     1     6     2 M3 (polyno~   0.0252  6.29e8      1
+ 3 dgemm   640  1160  9441     1    24     2 M3 (polyno~   0.492   7.31e9     21
+ 4 dgemm   547  3908  3279     1    24     2 M3 (polyno~   0.487   7.31e9     21
+ 5 dgemm  1047  1215   259     1    10     2 M3 (polyno~   0.0226  6.29e8      1
+ 6 dgemm  1841  2133  1615     1    26     2 M3 (polyno~   0.469   6.64e9     19
+ 7 dgemm  1442   912  2781     1    12     2 M3 (polyno~   0.253   3.96e9     11
+ 8 dgemm  3136  9602   321     1     8     2 M3 (polyno~   0.629   9.97e9     29
+ 9 dgemm  4287   416  1304     1    20     2 M3 (polyno~   0.160   2.63e9      7
+10 dgemm  1475   917  1719     1     8     2 M3 (polyno~   0.162   2.63e9      7
+Classes 'tbl_df', 'tbl' and 'data.frame':	2290 obs. of  11 variables:
  $ func    : Factor w/ 1 level "dgemm": 1 1 1 1 1 1 1 1 1 1 ...
- $ m       : num  0 11141 7359 3434 518 ...
- $ n       : num  0 591 311 1891 4523 ...
- $ k       : num  0 1115 441 1231 3700 ...
+ $ m       : num  695 7359 1313 1887 547 ...
+ $ n       : num  695 311 6716 987 3279 ...
+ $ k       : num  695 441 642 1610 3908 ...
  $ node    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ core    : int  18 18 24 20 16 24 16 4 12 26 ...
+ $ core    : int  18 24 16 4 12 26 30 28 30 12 ...
  $ cpu     : int  2 2 2 2 2 2 2 2 2 2 ...
  $ type    : Factor w/ 4 levels "Reality","M1 (linear)",..: 2 1 1 1 1 1 1 1 1 1 ...
- $ duration: num  0 0.4987 0.0737 0.5331 0.618 ...
- $ mnk     : num  1.40e+08 7.41e+09 1.08e+09 8.06e+09 8.74e+09 ...
- $ type_num: num  2 1 1 1 1 1 1 1 1 1 ...
+ $ duration: num  0 0.0737 0.3824 0.2065 0.5059 ...
+ $ mnk     : num  3.36e+08 1.01e+09 5.66e+09 3.00e+09 7.01e+09 ...
+ $ mnk_id  : num  1 3 17 9 21 9 27 7 5 1 ...
 #+end_example
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 300 :height 400 :session *R*
@@ -3419,8 +3421,8 @@ plot = ggplot(dgemm2, aes(x=mnk, y=duration,color=type)) +
     ## geom_point(aes(x=m*n*k+1E8, y=pred_noise/1.05),alpha=0.3, color="green")
 plot = plot + theme_bw() + ylab('Duration (s)') + 
         scale_x_continuous(name = 'M.N.K', breaks = (0:4)*3E9, limits=c(0,1.2E10)) 
-plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='Mode') + #    scale_color_brewer(palette="Set1")
-    theme(legend.position = c(0.67,0.17), legend.title=element_blank()) +
+plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='(M2 and M3 are shifted to the right\n to improve readability)') + #    scale_color_brewer(palette="Set1")
+    theme(legend.position = c(0.7,0.21), legend.title=element_text(size = 7, face = "italic")) +
     geom_smooth(data=dgemm2[dgemm2$type=="Reality",], size=.2,
                 color="black", method='lm', se=F, fullrange=T) +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
