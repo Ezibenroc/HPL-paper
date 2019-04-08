@@ -3606,7 +3606,9 @@ behavior. Let's get rid of it.
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R2*
 library(ggplot2)
 func = df[(df$func == 'HPL_dlatcpy') & (df$cpu!=13),]
-plot = ggplot(func, aes(x=m*n, y=duration, color=mode)) + 
+func$mode_name = factor(ifelse(func$mode=='reality', 'Reality', 'M1 (linear + noise)'))
+func$mode_name = relevel(func$mode_name, 'Reality')
+plot = ggplot(func, aes(x=m*n, y=duration, color=mode_name)) +
     geom_smooth(data = func[func$mode == "reality",], aes(group=factor(cpu)), method='lm', 
                 se=F, size=.2, color="blue", alpha=.2, fullrange=T) + 
     geom_point(alpha=.5,size=.5) + 
@@ -3615,7 +3617,8 @@ plot = plot + theme_bw() + ylab('Duration (s)') + xlab('M.N') +
     xlim(0,max(func$m*func$n)*1.1) +     
     scale_color_brewer(palette="Set1")  +
     theme(legend.position = c(0.3,0.85), legend.title=element_blank()) +
-    guides(colour = guide_legend(override.aes = list(alpha = 1)))
+    guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+    theme(legend.position = c(0.67,0.17), legend.title=element_blank())
 
 ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=3.9,height=4, dpi=200)
 plot
