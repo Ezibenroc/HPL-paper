@@ -2902,7 +2902,7 @@ estimations are denoted by \noise[H]{}.
     \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.33\linewidth]{figures/kernels/dgemm_model_calib.png}}\hfill%
     \subfigure[\texttt{HPL\_dlatcpy} model\label{fig:HPL_var}]{\includegraphics[width=0.33\linewidth]{figures/kernels/dlatcpy_model.png}}
     \vspace{-1em}
-    \caption{Illustrating the realism of modeling for BLAS and HPL functions.}
+    \caption{Illustrating the realism of modeling for BLAS and HPL functions.}\vspace{-1em}
     \label{fig:blas_var}
   \end{minipage}\hfill%
 \end{figure*}
@@ -3986,7 +3986,7 @@ of collective operations.
     \ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\
     \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
     \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
-    \end{tabular}
+    \end{tabular}\vspace{-1em}
     \caption{Gantt charts of HPL first iterations in simulation}\vspace{-1em}
     \label{fig:gantt_simulation}
     \labspace
@@ -4482,7 +4482,8 @@ ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geo
 #+BEGIN_EXPORT latex
 \begin{figure}[!b]
   \centering
-  \includegraphics[width=.9\linewidth,page=1]{./figures/fullscale_unzoomed.png}
+  \vspace{-.5em}
+  \includegraphics[width=.9\linewidth,page=1]{./figures/fullscale_unzoomed.png}\vspace{-.5em}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
       red while computations are in cyan. Each communication 
       is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
@@ -4553,7 +4554,6 @@ cp /home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/com
 #+end_src
 
 #+RESULTS:
-
 * Conclusions
 #+LaTeX: \label{sec:cl}
 
@@ -4614,22 +4614,21 @@ files with 286 line insertions and 18 deletions.
 As we explained, a careful modeling of networking and computing
 resources is crucial but requires a combination of statistical
 libraries. We intend to automate our benchmarking and modeling
-approach as much as possible using a full and unified Bayesian
-estimation could be made with frameworks like STAN\cite{stan}. The
-MCMC sampling technique used in STAN would also allow to easily inject
-uncertainty (in particular the platform heterogeneity which should be
-estimated from only a few sample nodes) in the simulation. This
-integration effort is thus underway.
-
-As a future work, building on the effort of SimGrid developers on
+approach as much as possible using a generic and unified Bayesian
+estimation framework like STAN\cite{stan}. The MCMC sampling technique
+used in STAN would be particularly helpful to inject uncertainty (in
+particular the platform heterogeneity which should be estimated from
+only a few sample nodes) in the simulation. This integration effort is
+underway.
+As an other future work, building on the effort of SimGrid developers on
 supporting the emulation of a wide variety of applications with
 SMPI\cite{smpi_proxy_apps}, we also intend to conduct similar studies with
 other HPC benchmarks (\eg HPCG\cite{HPCG} or HPGMG\cite{HPGMG}), and
 real applications (\eg BigDFT\cite{bigdft}) with other TOP500 machines.
-In this context, we believe that a faithful and
+In this context, we believe that improving reproducibility through a faithful and
 public reporting of the experimental conditions (compiler options,
-library versions, HPL output, etc.) would be invaluable and allows
-researchers to better understand how these platforms actually behave.
+library versions, input parameters, HPL output, etc.) would be invaluable and allow
+researchers to better understand how to correctly model these platforms.
 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
@@ -4645,9 +4644,11 @@ researchers to better understand how these platforms actually behave.
 
 # #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
 
+\vspace{-1em}
+#+LaTeX: \def\subsection#1{\osubsection*{#1}}
 ** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{11}
-* Acknowledgements
+** Acknowledgements
 
 Experiments presented in this paper were carried out using the Grid'5000
 testbed, supported by a scientific interest group hosted by Inria and including
