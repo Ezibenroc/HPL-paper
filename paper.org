@@ -1260,12 +1260,12 @@ zlib 1.0
 \def\ie{i.e.,\xspace}
 \def\eg{e.g.,\xspace}
 \def\etal{~\textit{et al.\xspace}}
-\newcommand{\AL}[2][inline]{\todo[caption={},color=green!50,#1]{\small\sf\textbf{AL:} #2}}
-\newcommand{\TC}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
-\newcommand{\CH}[2][inline]{\todo[color=red!30,#1]{\small\sf \textbf{CH:} #2}}
-%\newcommand{\AL}[2][inline]{}
-%\newcommand{\TC}[2][inline]{}
-%\newcommand{\CH}[2][inline]{}
+%\newcommand{\AL}[2][inline]{\todo[caption={},color=green!50,#1]{\small\sf\textbf{AL:} #2}}
+%\newcommand{\TC}[2][inline]{\todo[caption={},color=blue!50,#1]{\small\sf\textbf{TOM:} #2}}
+%\newcommand{\CH}[2][inline]{\todo[color=red!30,#1]{\small\sf \textbf{CH:} #2}}
+\newcommand{\AL}[2][inline]{}
+\newcommand{\TC}[2][inline]{}
+\newcommand{\CH}[2][inline]{}
 
 \title{Faithful and Efficient Simulation of High Performance Linpack}
 
