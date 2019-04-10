@@ -396,3 +396,82 @@ validation results yet.
     + Vous pouvez aussi mettre du 'et al.' de partout, dans une double
       blind, ça peut aider. /pas faux mais c'est pas nous qui gérons
       ça, il vaut mieux en rajouter pour se cacher ;)/
+* Clement Mommessin review
+Outline of the paper:
+"Section 2 presents ... and provides detail" -> details?
+
+"In Section 6 we explain how the different resources of the supercomputer be modeled ..." -> can be modeled? (le be modeled me parait bizarre)
+
+Section 2.1
+"... variant of the LU factorization with row partial pivoting" -> c'est le bon ordre des mots pour "row partial pivoting" ?
+
+Section 2.2:
+"we have personally performed a run of HPL on a Gridd5000 cluster named Dahu ..." -> ca ne casse pas l'anonymité des auteurs ça ?
+
+"we report in figure 1" -> Figure 1
+
+La Table 1 n'est citée que dans la page 9, alors qu'elle apparait en page 2.
+Est-ce qu'il manque une réf dans la section 2 ?
+
+Section 4:
+"(up to 12 x 12 cores in [14] and up to 128 x 1 cores in [12]" -> When citing references, it is better to say "in the work of <author> et al. [11]" instead of  "in [11]". Technically, references are not nouns, and the sentence should make sense even when removing a reference.
+
+Même remarque dans la section 5 "and refer the reader interested in details to [15] and [16]."
+
+Section 5:
+"we used a single core from node of the Nova cluster" -> vous parlez de Dahu dans l'intro
++ Peut-etre qu'il faut parler (en plus de la ram, type de CPU et OS) du network de la machine, je ne sais pas si c'est relevant pour votre expérience mais ça ne coute pas grand chose.
+
+Section 5.1.1
+"and a very small matrix of order 30, 000" -> j'enlèverai l'espace au milieu de 30,000 vu qu'il y a la virgule. (Idem à la toute fin de la section 5.1.1)
+Idem "For a matrix of order 40, 000" dans la section 5.2, et un peu plus loin aussi dans la section.
+En fait, un peu partout où il y a des valeurs plus grandes que 1000 il y a parfois écrit "80,000" et d'autres fois "80, 000".
+J'ai vu aussi des "6880" sans la virgule
+
+
+"...function calls with a performance model for the respective kernel" -> kernels?
+
+Figure 2(b) : je n'ai pas compris le kernel modeling TRUE/FALSE. Ce n'est mentionné nulle part dans la section qui cite la figure, mais peut-être que c'est moi qui n'ai pas les bonnes connaissances.
+
+A la fin de la section 5.1.1, le terme "bogus" est peut-être un peu fort, ça risque de faire peur aux reviewers (même si c'est clairement dit que "not the correctness of computation results are of concern").
+
+End of Section 5.1.2:
+"We confirmed that this modification is harmless in terms of performance prediction." -> je pense que confirmed et is ne vont pas. Je mettrais plutôt "was harmless".
+
+Section 6.1:
+"where the MKL will use the Xeon Phi..." -> what is MKL?
+If it's "Intel’s Math Kernel Library", it is said only in Section 7.3.
+
+Section 7.1:
+Dahu and Grid5000 are in italic here, not in the previous sections. And an apostrophe is missing in Grid'5000. (idem in conclusion)
+
+Pourquoi des bullet points à la fin de la section 7.1 ?
++ Le 3ème bullet point n'est pas de la même classe gramaticale/whatever the name is (je veux dire, les 2 premiers commencent par "we simulated, we used" mais pas le 3ème).
+
+
+Section 7.2 (et aussi avant, j'avais pas réagi sur le coup)
+GFlop s^-1 il manque le point de la multiplication.
+
+Quand vous parlez de la courbe en jaune dans la figure 9 vous dites "does not yield any significant change in HPL perfomance prediction".
+Moi je vois la courbe jaune collée à la courbe réelle en noir, et donc elle est vachement mieux que la courbe en vert qui surestime à 30%. (changer jaune en violet ici ?)
+
+Il faut vérifier aussi les autres couleurs, je pense qu'il y a mismatch entre le texte et la figure 9.
++ Is it colorblind-proof? (or Denis-proof as we say in the Datamove team)
+
+"As shown by figure 7" -> Figure 7.
+
+Section 7.3:
+"we are certain that that there were only one MPI rank per node" -> too much "that"
+
+"Intel’s Math Kernel Library (MKL) as it support automatic" -> supports
+
+"e.g., for dgemm on the Phi reached 1 TFlop s −1 $" -> un dollar en trop. Manque aussi le point de la multiplication pour les TFlop s-1 (idem plus loin dans la section 7)
+
+"several hundred megabytes need to be broadcast" -> Broacasted ? Il y a peut-être controverse entre les anglais et les américains pour celui-là...
+
+"with respect to asynchrony" -> asynchrony?
+
+A la fin de la section il y a une liste avec "1)" et "2)" mais plus haut dans la section il y a aussi une liste dans le texte avec "(1)" et "(2)".
+
+Conclusion:
+"The downside of scaling this high" -> j'aurais plutôt mis "that high".
