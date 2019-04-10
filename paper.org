@@ -1786,8 +1786,8 @@ framework that was originally designed in 2000 to study scheduling
 heuristics tailored to heterogeneous grid computing environments but
 has later been extended to study cloud and HPC infrastructures. The
 main development goal for SimGrid has been to provide validated
-performance models particularly for scenarios leveraging the network.
-Such a validation usually consists in comparing simulation
+performance models particularly for scenarios making heavy use of the network.
+Such a validation usually consists of comparing simulation
 predictions with results from real experiments to confirm or debunk
 network and application models.
 
@@ -1796,29 +1796,29 @@ and used to simulate unmodified MPI applications written in
 C/C++ or FORTRAN\cite{smpi}. 
 The complex network optimizations done in real MPI implementations
 need to be considered when predicting the performance of MPI applications.
-For instance the "eager" and "rendez-vous" protocols are
+For instance, the "eager" and "rendez-vous" protocols are
 selected based on the message size, with each protocol having its
 own synchronization semantics, which stronly impact performance.
-To deal with this, SMPI relies on a generalization of the LogGPS model.
-Modeling network topologies and contention is also difficult.  SMPI
+SMPI supports different performance modes through a generalization of the LogGPS model.
+Another difficult issue is to model network topologies and contention. SMPI
 relies on SimGrid's communication models where each ongoing
 communication is represented as a whole (as opposed to single packets)
 by a /flow/. Assuming steady-state, contention between active
-communications can be modeled as a bandwidth sharing problem that
+communications can then be modeled as a bandwidth sharing problem that
 accounts for non-trivial phenomena (\eg cross-traffic interference or network
-heterogeneity\cite{Velho_TOMACS13}). Communications that start or end
-trigger re-computation of the bandwidth sharing if needed.  In this
+heterogeneity\cite{Velho_TOMACS13}). If needed, communications that start or end
+trigger a re-computation of the bandwidth share.  In this
 model, the time to simulate a message passing through the network is
 independent of its size, which is advantageous for large-scale
 applications frequently sending large messages.  SimGrid does not
 model transient phenomena incurred by the network protocol but
 accounts for network topology and heterogeneity. Special attention to
 the modeling of collective communication algorithms has also been
-taken in SMPI, but this is of little significance in this article as HPL
+paid in SMPI, but this is of little significance in this article as HPL
 ships with its own implementation of collective operations.
 
 SMPI maps every MPI rank
-of the application onto a lightweight simulation thread, which
+of the application onto a lightweight simulation thread. These threads
 are then run one at a time, \ie in mutual exclusion.  Every time a
 thread enters an MPI call, SMPI takes control and the time that was
 spent computing (isolated from the other threads) since the previous
@@ -1840,6 +1840,7 @@ larger scale with HPL, whose emulation comes with at least two challenges:
   # be done in parallel, we want to use as little computing resources as possible.
 - The tremendous memory consumption and amount of memory accesses need
   to be drastically reduced.
+\CH{Maybe use 1. / 2. instead of bullet points?}
 
 # Real execution:
 # - Matrix of order 3,875,000
