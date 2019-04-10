@@ -1321,10 +1321,10 @@ production. This high density of computation units requires a diligent
 optimization of application parameters, such as problem size, process
 organization or choice of algorithm, as these have a huge impact on
 load distribution and network utilization. Scientific application
-developers and users often spend considerable amount of time and
-efforts running their application at different scales solely to tweak
-parameters and optimize their performance. This duration, combined
-with the power consumption that often reaches several MW for TOP500
+developers and users often spend a considerable amount of time and
+effort running their application at different scales solely to tweak
+parameters and therefore optimize their performance. This expenditure
+of time, combined with the power consumption that often reaches several MW for TOP500
 machines, makes it financially expensive to test-run
 applications. Similar difficulties are encountered when (co-)designing
 supercomputers for specific applications. A
@@ -1335,17 +1335,20 @@ presents a decisive step in this direction.
 The world's largest and fastest machines are ranked twice a year in
 the TOP500\cite{TOP500} list using the High-Performance Linpack (HPL) benchmark. To
 get near to the peak performance, a very large input is needed and it
+\CH{very large vs. sizeable}
 typically takes several hours to run HPL on the list's number one
 system. HPL implements several algorithmic optimizations that should
 be carefully optimized and it is thus quite representative of many
+\CH{Optimizations need to be optimized? - 2x optimization}
 other scientific applications in terms of potential performance issues
 and their solutions. In the case of HPL, machine vendors know how to
 estimate the performance using simple mathematical performance
+\CH{2x performance; isn't it ... by using?}
 models. However, these models only give trends but fail to capture the
 impact of the network congestion and of system noise and are thus not
 particularly accurate. Whenever actual
-performance do not match expectations, it can be very difficult to
-understand whether the mismatch originates from model imperfections or
+performance does not match expectations, it can be very difficult to
+understand whether the mismatch originates from model inaccuracy or
 machine misconfiguration.
 
 # \TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
@@ -1366,30 +1369,33 @@ machine misconfiguration.
 # Compare with a top 500 qualification run }
 
 In this article, we explain how to predict the performance of HPL on a
-supercomputer with the SimGrid/SMPI simulator. We
+supercomputer with the SimGrid/SMPI\cite{simgrid,smpi} simulator. We
 detail how we obtained faithful models for several key functions (\eg
 =dgemm= and =dtrsm=) and managed to reduce the memory consumption from
-more than a hundred terabytes to several gigabytes. This allows us to
-emulate in details scenarios similar to the HPL run conducted on the
-Stampede cluster (TACC) in 2013 for the TOP500 on a single commodity
-server in 1-2 days. More importantly, we manage to
-predict the performance of HPL on a recent cluster (with a thousand of
-MPI ranks) within a few percents of reality.
+more than a hundred terabytes to several gigabytes. This allowed us to
+emulate on a single commodity server within 1-2 days a scenario
+similar to the HPL run that was carried out on the 
+Stampede cluster (hosted at TACC) in 2013 for the TOP500.
+More importantly, we managed to
+predict the performance of HPL on a recent cluster (running a thousand
+MPI ranks) within a few percent of reality.
+\CH{Why is the small cluster "more important"? I would start this sentence using "Moreover, ..". As a reader, I ask myself: The cluster was within a few percent, and the precision for the stampede run was ...?}
 
 This article is organized as follows: Section\ref{sec:con} presents
 the main characteristics of the HPL application and provides detail on
 the run that was conducted at TACC in 2013. Section\ref{sec:relwork}
-discusses existing related work and explains why emulation (or /online
+discusses related work and explains why emulation (or /online
 simulation/) is the only relevant approach when studying an application
+\CH{relevant = possible? Possible has a stronger emphasis.}
 as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
 simulator we used for this work, SimGrid/SMPI, followed by an
 extensive discussion in Section\ref{sec:em} about the optimizations on
 all levels (\ie simulator, application, operating system) that were necessary to
-keep a large-scale run tractable. The scalability of our approach is
+make a large-scale run tractable. The scalability of our approach is
 evaluated in Section\ref{sec:scalabilityevol}. In
 Section\ref{sec:modeling}, we explain how the different resources of
-the supercomputer (network, compute kernels) be modeled to
-reflect faithfully the performance of HPL. In particular, we
+the supercomputer (network, compute kernels) are modeled to
+predict the performance of HPL faithfully. We particularly
 discuss the usefulness and relevance of different degrees of
 modeling complexity. In Section\ref{sec:validation}, we compare
 simulation results with real experiments and illustrate the importance
