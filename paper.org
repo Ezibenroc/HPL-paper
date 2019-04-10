@@ -1334,7 +1334,7 @@ presents a decisive step in this direction.
 
 The world's largest and fastest machines are ranked twice a year in
 the TOP500\cite{TOP500} list using the High-Performance Linpack (HPL) benchmark. To
-get near to the peak performance, a sizeable input is needed and it
+get near to the peak performance, a sizable input is needed and it
 typically takes several hours to run HPL on the list's number one
 system. HPL implements several algorithmic optimizations that should
 be carefully tuned and it is thus quite representative of many
@@ -1793,7 +1793,7 @@ The complex network optimizations done in real MPI implementations
 need to be considered when predicting the performance of MPI applications.
 For instance, the "eager" and "rendez-vous" protocols are
 selected based on the message size, with each protocol having its
-own synchronization semantics, which stronly impact performance.
+own synchronization semantics, which strongly impact performance.
 SMPI supports different performance modes through a generalization of the LogGPS model.
 Another difficult issue is to model network topologies and contention. SMPI
 relies on SimGrid's communication models where each ongoing
@@ -2976,7 +2976,7 @@ which strongly suggests using the full polynomial
 model. Figure\ref{fig:dgemm_poly} depicts the performance (red dots)
 of a given node as well as the prediction using a simple linear model
 (\model[H]{1}, black line), a full polynomial model (\model[H]{2},
-blue dots) and a full polynomial model with heroscedastic noise
+blue dots) and a full polynomial model with heteroscedastic noise
 (\model[H]{2}\noise{2}, orange dots). A close inspection reveals that
 all experimental variability is actually very well explained by both the
 polynomial model (better fit for particular 
@@ -3666,7 +3666,7 @@ is as challenging as a typical TOP500 qualification run.
 - We simulated one rank per core to obtain a higher number
   (\Num{1024}) of MPI process. This is more difficult than simulating
   one rank per node, as this (1) increases the amount of data
-  transfered through MPI and (2) the performance is then subject to
+  transferred through MPI and (2) the performance is then subject to
   memory interference and network
   heterogeneity (which we modeled through different models for
   local and remote communications).
@@ -4026,7 +4026,7 @@ of collective operations.
 \end{figure}
 #+END_EXPORT
 
-We now provide a more quantative comparison using the whole cluster and varying
+We now provide a more quantitative comparison using the whole cluster and varying
 matrix sizes, focusing on the \si{\giga\flops} rate reported by HPL (see Figure\ref{fig:validation_performance}).
 The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
@@ -4051,7 +4051,7 @@ beginning but becomes equivalent to the previous model for larger matrices.
 We found that adding the temporal variability noise (\noise{2} for all
 kernels, \noise[H]{2} for \texttt{dgemm}) is the key ingredient to
 obtain the last bit of realism. The prediction (the line (e)) is now
-extremly close to reality as it slightly underestimates the performance by
+extremely close to reality as it slightly underestimates the performance by
 less than \SI{5}{\percent} and even as little as \SI{2}{\percent} for the larger matrices. Adding back temporal variability
 to the network model (\noisep{1}, line (f)) still has no significant
 effect but this can be explained by the fact that HPL mostly
@@ -4416,7 +4416,7 @@ huge difference between our prediction results and reality.
 
 *** HPL prediction                                               :noexport:
 
-Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic desabled"
+Starting from Tom's journal, entry "2017-09-27 Wednesday : Complete experiments with the crosstraffic disabled"
 #+begin_src R :results output :session *R* :exports both
 library(ggplot2)
 # files <- dir('/home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/simulation/8', pattern = '\\.csv', full.names = TRUE)
@@ -4668,13 +4668,13 @@ and would allow researchers to better understand how to correctly model these pl
 # library. 
 # #+LaTeX: \CH{Problem here: HPL uses \texttt{HPL\_dtrsm()} wrappers.}
 
-# #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the ressources}
+# #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the resources}
 
 \vspace{-1em}
 #+LaTeX: \def\subsection#1{\osubsection*{#1}}
 ** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{11}
-** Acknowledgements
+** Acknowledgments
 
 Experiments presented in this paper were carried out using the Grid'5000
 testbed, supported by a scientific interest group hosted by Inria and including
