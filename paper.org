@@ -1469,7 +1469,7 @@ look-ahead depths. The principle of the factorization is depicted in
 Figure\ref{fig:hpl_overview}. It consists of a series of panel
 factorizations followed by an update of the trailing sub-matrix.
 HPL uses a two-dimensional block-cyclic data distribution of $A$ and implements several custom
-MPI collective communication algorithms to overlap efficiently communications 
+MPI collective communication algorithms to efficiently overlap communications 
 with computations.
 The main parameters of HPL are:
 - $N$ is the order of the square matrix $A$.
@@ -1511,7 +1511,7 @@ approximated by
 $$T(N) \approx \frac{\left(\frac{2}{3}N^3 + 2N^2\right)}{P\cdot{}Q\cdot{}w} + \Theta((P+Q)\cdot{}N^2),$$ where
 $w$ is the flop rate of a single node and 
 the second term corresponds to the communication overhead which is
-influenced by the network capacity and by the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
+influenced by the network capacity and the previously listed parameters (=RFACT=, =SWAP=, =BCAST=,
 =DEPTH=, \ldots) and is very difficult to predict.
 # After each run, HPL reports the overall flop
 # rate $\mathrm{flop}(N)/T(N)$ (expressed in \si{\giga\flops}) for
@@ -1526,12 +1526,12 @@ performance was achieved. Some colleagues agreed to provide us with
 the HPL configuration they used and the output they submitted for
 ranking. In June 2013, the Stampede supercomputer at TACC was ranked
 6th in the TOP500 by achieving \NSI{5168.1}{\tera\flops}. In November
-2017, a performance of \NSI{5884.6}{\tera\flops} gave the 18th place to
-the Theta supercomputer at ANL but required a 28 hours run on the
-whole machine. Finally, we have personally performed
-a run of HPL on a Grid5000 cluster named Dahu and on which we have a
-full control. We report in figure\ref{fig:typical_run} the parameters
-used for each of these runs. 
+2017, the Theta supercomputer at ANL was ranked 18th with a performance of \NSI{5884.6}{\tera\flops}
+but required a 28-hour run on the
+whole machine. Finally, we ran HPL ourselves on a Grid'5000 cluster
+named Dahu that we could fully control. 
+Figure\ref{fig:typical_run} shows the parameters that were used for each of
+these runs.
 
 #+BEGIN_EXPORT latex
 % \TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
@@ -1705,10 +1705,10 @@ HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
 
 The performance typically achieved by supercomputers (=Rmax=) needs to
 be compared to the much larger peak performance (=Rpeak=). This difference may be attributed to the node
+\CH{may or may not? I think we should say: It can!}
 usage, to the MPI library, to the network topology that
-may be unable to deal with the very intensive communication workload, to
-load imbalance among nodes because some node happens to be slower for some
-reason (defect, system noise, \ldots), to the algorithmic structure of
+may be unable to deal with the intense communication workload, to
+load imbalance among nodes (\eg due to a defect, system noise, \ldots), to the algorithmic structure of
 HPL, etc. All these factors make it difficult to know precisely what
 performance to expect without running the application at scale.
 It is clear that due to the level of complexity of both HPL and
