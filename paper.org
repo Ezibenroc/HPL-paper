@@ -12,7 +12,7 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) | DONE(d!) CANCELLED(c@) DEFERRED(@) FLAWED(f@)
 #+LATEX_CLASS: acmart
-#+LATEX_CLASS_OPTIONS: [sigconf,review]
+#+LATEX_CLASS_OPTIONS: [sigconf,review,anonymous]
 #+PROPERTY: header-args :eval never-export
 
 * R and Python dependencies and versions                           :noexport:
