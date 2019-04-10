@@ -2,12 +2,12 @@
 We ran the HPL benchmark on a cluster named dahu, which is part of Grid'5000, an
 open access testbed.
 
-We made successful predictions of HPL performance with Simgrid, an open-source
+We made successful predictions of HPL performance with SimGrid, an open-source
 simulator. This required to run different calibration codes on the cluster
 nodes, to build a model for the network and HPL computation kernels.
 
 All our software contributions are open-source. The new features implemented in
-Simgrid have been integrated. All the HPL modifications as well as our
+SimGrid have been integrated. All the HPL modifications as well as our
 experiment scripts and notebooks are available in public repositories with
 open-source licenses.
 * (a) Performed verification and validation studies:
@@ -43,7 +43,7 @@ One goal of the paper was to show that a different model could lead to important
 changes in the prediction. For instance, we identified four nodes of our cluster
 that were significantly slower than the others (~10%), which led to a
 significant performance drop of the whole application. We have shown how to take
-this heterogeneity into account in our models, which allow us to successfuly
+this heterogeneity into account in our models, which allow us to successfully
 predict the performance of HPL on the cluster despite the heterogeneity.
 * (e) Describe controls, statistics, or other steps taken to make the measurements and analyses robust to variability and unknowns in the system
 All the scripts, data and notebooks to run and analyze the required experiments
