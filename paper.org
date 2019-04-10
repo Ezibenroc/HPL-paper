@@ -1334,16 +1334,13 @@ presents a decisive step in this direction.
 
 The world's largest and fastest machines are ranked twice a year in
 the TOP500\cite{TOP500} list using the High-Performance Linpack (HPL) benchmark. To
-get near to the peak performance, a very large input is needed and it
-\CH{very large vs. sizeable}
+get near to the peak performance, a sizeable input is needed and it
 typically takes several hours to run HPL on the list's number one
 system. HPL implements several algorithmic optimizations that should
-be carefully optimized and it is thus quite representative of many
-\CH{Optimizations need to be optimized? - 2x optimization}
+be carefully tuned and it is thus quite representative of many
 other scientific applications in terms of potential performance issues
 and their solutions. In the case of HPL, machine vendors know how to
-estimate the performance using simple mathematical performance
-\CH{2x performance; isn't it ... by using?}
+estimate the performance by using simple mathematical
 models. However, these models only give trends but fail to capture the
 impact of the network congestion and of system noise and are thus not
 particularly accurate. Whenever actual
@@ -1385,8 +1382,7 @@ This article is organized as follows: Section\ref{sec:con} presents
 the main characteristics of the HPL application and provides details on
 the run that was conducted at TACC in 2013. Section\ref{sec:relwork}
 discusses related work and explains why emulation (or /online
-simulation/) is the only relevant approach when studying an application
-\CH{relevant = possible? Possible has a stronger emphasis.}
+simulation/) is the only possible approach when studying an application
 as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
 simulator we used for this work, SimGrid/SMPI, followed by an
 extensive discussion in Section\ref{sec:em} about the optimizations on
@@ -1704,8 +1700,7 @@ HPL_pdgesv() end time   Wed Oct 10 16:08:26 2018
 #+LaTeX: \label{sec:con:diff}
 
 The performance typically achieved by supercomputers (=Rmax=) needs to
-be compared to the much larger peak performance (=Rpeak=). This difference may be attributed to the node
-\CH{may or may not? I think we should say: It can!}
+be compared to the much larger peak performance (=Rpeak=). This difference can be attributed to the node
 usage, to the MPI library, to the network topology that
 may be unable to deal with the intense communication workload, to
 load imbalance among nodes (\eg due to a defect, system noise, \ldots), to the algorithmic structure of
@@ -2812,9 +2807,8 @@ introduce some notations to describe the complexity of the models we
 have investigated. We then briefly compare the prediction of these
 models with individual measurements of both computations and
 communications to illustrate the importance of the model
-complexity. The consequence of using simpler modeling options is
-illustrated on HPL as a whole in Section\ref{sec:validation}.
-\CH{I am not sure what this last sentence is supposed to mean. on hpl? with hpl? what does "hpl as a whole" mean? What consequence - lacking accuracy? We finally show in Section... that reducing the complexity of the models by removing parameters leads to a serious inaccuracy of the model.}
+complexity. We finally show in Section\ref{sec:validation} that using simpler
+modeling options leads to a serious inaccuracy of the simulation.
 ** Modeling Notations
 #+LaTeX: \newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
 #+LaTeX: \newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
@@ -2941,7 +2935,6 @@ Prior to this work, the standard way of accounting for protocol
 changes in SMPI was to estimate breakpoints visually and to
 conduct a linear regression for each range. The expected duration was
 then used directly in the simulation with no particular effort with
-\CH{Maybe: used effortlessly directly ... ? avoid 2x with}
 respect to the temporal variability (\modelp{1}\noise{0}). Yet, as illustrated 
 in Figure\ref{fig:nw_var}, the variability of high speed networks is
 quite particular. We therefore diligently estimated all the parameters of
@@ -2962,8 +2955,7 @@ in our observations called for such complexity on classical multi-core
 machines. Figure\ref{fig:blas_var} illustrates various models and
 their respective quality for the =dgemm= function. In these figures, the
 performance of =dgemm= is evaluated by calling =dgemm= with randomized
-sizes over the whole node (to reproduce experimental conditions
-\CH{Over the whole node = on all nodes? What conditions are reproduced?}
+sizes over all the cores of each node (to reproduce experimental conditions
 similar to the one of HPL). The first observation
 (Figure\ref{fig:dgemm_het}) is that a few nodes exhibit quite a
 different behavior (each color and each regression line under model
@@ -2978,11 +2970,9 @@ same node have a significantly different performance. Second, we took
 care of covering a wide variety of combinations for $M$, $N$, and $K$
 and it can be observed that $M.N.K$ is not sufficient to describe correctly
 the performance of =dgemm=. Indeed, for $M.N.K \approx \num{4.5E9}$ some
-duration are systematically quite slow regardless of the node. This
-\CH{Not sure what this means. A duration cannot be slow, it can be long?}
+duration are systematically higher regardless of the node. This
 happens for some particular (e.g., tall and skinny) matrix geometries,
-which calls using the full polynomial
-\CH{which calls - not sure what this means here.}
+which strongly suggests using the full polynomial
 model. Figure\ref{fig:dgemm_poly} depicts the performance (red dots)
 of a given node as well as the prediction using a simple linear model
 (\model[H]{1}, black line), a full polynomial model (\model[H]{2},
@@ -3014,9 +3004,8 @@ combination explains most of the performance and there is some
 variability from one node to another (one blue regression line per
 CPU) but it remains quite limited (black dotted line for the platform
 as a whole), especially since these kernels are very short and
-infrequently called compared to =dgemm=. Finally, since variability clearly
-increases with input parameters, a \noise{2} model is clearly
-\CH{increases with number of input parameters? or the value of the input parameters? Also: Avoid clearly - it's a subjective word.}
+infrequently called compared to =dgemm=. Finally, since variability significantly
+increases with the value of the input parameters, a \noise{2} model is clearly
 required. The blue dots in Figure\ref{fig:HPL_var} represent
 the outcome of a \model{1}\noise{2} model and are hardly
 distinguishable from the real behavior. Similar
@@ -3684,8 +3673,6 @@ is as challenging as a typical TOP500 qualification run.
 - We used a smaller block size than commonly used, which leads
   to a higher number of iterations and hence more
   complex communication patterns.
-- We used a smaller matrix, hence a lower simulation time, which is
-  generally harder to predict with a good precision.
 - We used a smaller input matrix and the makespan is therefore
   reduced. This is generally harder to predict with a good precision.
 # - The network is more stable due to its smaller size.
@@ -4039,10 +4026,8 @@ of collective operations.
 \end{figure}
 #+END_EXPORT
 
-We now provide a more quantative comparison using the whole cluster
-and focus on the \si{\giga\flops} rate reported by HPL when varying
-matrix size (see Figure\ref{fig:validation_performance}).
-\CH{when varying matrix size - HPL reports this always, not just in this case. Not sure what this could mean.}
+We now provide a more quantative comparison using the whole cluster and varying
+matrix sizes, focusing on the \si{\giga\flops} rate reported by HPL (see Figure\ref{fig:validation_performance}).
 The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
 line (a), on the top, is our first attempt to simulate HPL. The
@@ -4535,8 +4520,7 @@ iterations of HPL to get an idea of what could be improved (the trace
 for the first five iterations can be obtained in about 10 minutes on a
 commodity computer and is about \NSI{175}{\mega\byte} large once
 compressed). Figure\ref{fig:hpl_gantt} illustrates the very
-synchronous and iterative nature of the first iterations with the
-\CH{iterative nature of an iteration? Phase-based nature?}
+synchronous and phase-based nature of the first iterations with the
 HPL configuration of Table\ref{fig:typical_run}: one can
 identify first a factorization of the panel, then a broadcast to all
 the nodes, and finally an update of the trailing matrix.  More than one
