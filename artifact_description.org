@@ -1,13 +1,39 @@
+* Summary
+We ran the HPL benchmark on a cluster named dahu, which is part of Grid'5000, an
+open access testbed.
+
+We made successful predictions of HPL performance with Simgrid, an open-source
+simulator. This required to run different calibration codes on the cluster
+nodes, to build a model for the network and HPL computation kernels.
+
+All our software contributions are open-source. The new features implemented in
+Simgrid have been integrated. All the HPL modifications as well as our
+experiment scripts and notebooks are available in public repositories with
+open-source licenses.
 * (a) Performed verification and validation studies:
-We checked extensively that our simulations were close to the reality: - We
-instrumented the code to get traces from both the simulation and the
-reality. This allowed us to visually compare the Gantt charts and check that the
-number of calls to each function and their durations was similar. - We performed
-complete executions of HPL, both in reality and in simulation, to compare their
-reported performance. This confirmed that our prediction of the performance was
-very close to the reality.
+Our article is precisely about the comparison between simulation of HPC
+applications with real experiments. Therefore, we extensively checked that our
+simulations were close to reality:
+- We instrumented the code to get traces from both the simulation and the
+  reality. This allowed us to visually compare the Gantt charts and check that
+  the number of calls to each function and their durations was similar.
+- We performed complete executions of HPL, both in reality and in simulation, to
+  compare their reported performance. This confirmed that our prediction of the
+  performance was very close to the reality.
+
+We checked extensively that our simulations were close to the reality:
+- We instrumented the code to get traces from both the simulation and the
+  reality. This allowed us to visually compare the Gantt charts and check that
+  the number of calls to each function and their durations was similar.
+- We performed complete executions of HPL, both in reality and in simulation, to
+  compare their reported performance. This confirmed that our prediction of the
+  performance was very close to the reality.
 * (b) Validated the accuracy and precision of timings
-Similar to (a).
+All timings have been measured with the function clock_gettime. The MPI trace of
+HPL has been collected with the Akypuera library that makes sure to correct any
+clock drift of the machines. All the real executions of HPL have been repeated
+several times, we report in our plot (figure 9) both the average and all the
+original values.
 * (c) Used manufactured solutions or spectral properties
 Not applicable.
 * (d) Quantified the sensitivity of your results to initial conditions and/or parameters of the computational environment
