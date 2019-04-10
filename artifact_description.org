@@ -1,0 +1,34 @@
+* (a) Performed verification and validation studies:
+We checked extensively that our simulations were close to the reality: - We
+instrumented the code to get traces from both the simulation and the
+reality. This allowed us to visually compare the Gantt charts and check that the
+number of calls to each function and their durations was similar. - We performed
+complete executions of HPL, both in reality and in simulation, to compare their
+reported performance. This confirmed that our prediction of the performance was
+very close to the reality.
+* (b) Validated the accuracy and precision of timings
+Similar to (a).
+* (c) Used manufactured solutions or spectral properties
+Not applicable.
+* (d) Quantified the sensitivity of your results to initial conditions and/or parameters of the computational environment
+For a given model, the simulation results are deterministic.
+
+One goal of the paper was to show that a different model could lead to important
+changes in the prediction. For instance, we identified four nodes of our cluster
+that were significantly slower than the others (~10%), which led to a
+significant performance drop of the whole application. We have shown how to take
+this heterogeneity into account in our models, which allow us to successfuly
+predict the performance of HPL on the cluster despite the heterogeneity.
+* (e) Describe controls, statistics, or other steps taken to make the measurements and analyses robust to variability and unknowns in the system
+All the scripts, data and notebooks to run and analyze the required experiments
+are available in the artifact : one can easily try to reproduce our results.
+
+For all the experiments we did, our custom experiment engine has automatically
+collected relevant information (e.g., software versions, environment variables,
+nodes on which the experiment was made, executed commands). It is therefore
+possible to investigate retrospectively on any experiment.
+
+Finally, to reduce the variability as much as possible, we used the same
+software versions throughout all our work (in particular, MPI, BLAS, HPL, Linux
+kernel, GCC). For each experiment, we also disabled the hyperthreading, fixed
+the core frequencies and pinned the threads to the cores.
