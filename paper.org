@@ -3900,12 +3900,12 @@ lab = dfsim %>% filter(
     (model == 'D2het' & matrix_size == 500000)
 ) 
 lab = lab %>% select(gflops, matrix_size, model) %>% distinct()
-lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'A2'     ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
-                                       model == 'A1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'C1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D1het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D2het' ~ paste(to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('(a) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'A2'     ~ paste(to_tex('(b) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+                                       model == 'A1het' ~ paste(to_tex('(c) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'C1het' ~ paste(to_tex('(d) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D1het' ~ paste(to_tex('(e) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'D2het' ~ paste(to_tex('(f) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
                                        T             ~ as.character(model)))
 lab$x = lab$matrix_size
 lab$y = lab$gflops
@@ -3918,7 +3918,7 @@ max_y = max(dfsim$gflops)
 lab = lab %>% mutate(xl = case_when(model == 'A1'     ~ 0.25*max_x,
                                     model == 'A2'     ~ 0.8*max_x,
                                     model == 'A1het' ~ 0.3*max_x,
-                                    model == 'C1het' ~ 0.6*max_x,
+                                    model == 'C1het' ~ 0.63*max_x,
                                     model == 'D1het' ~ 0.38*max_x,
                                     model == 'D2het' ~ 0.8*max_x,
                                        T             ~ xl))
@@ -3956,20 +3956,20 @@ print(plot)
 
 #+RESULTS:
 #+begin_example
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "(a) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "(b) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "(c) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "(d) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
+[1] "(e) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
+[1] "(f) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
 
@@ -3979,7 +3979,7 @@ Active compiler:
 	kpathsea version 6.3.0
 
 Measuring dimensions of: A1het
-Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmptXgnmn/tikzDevice1e116a18e595' '/tmp/RtmptXgnmn/tikzDevice1e116a18e595/tikzStringWidthCalc.tex'
+Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpDI9CkZ/tikzDevice1c2025aebbcb' '/tmp/RtmpDI9CkZ/tikzDevice1c2025aebbcb/tikzStringWidthCalc.tex'
 This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex)
  restricted \write18 enabled.
 entering extended mode
@@ -4040,31 +4040,30 @@ and focusing on the \si{\giga\flops} rate reported by HPL when varying
 matrix size (see Figure\ref{fig:validation_performance}).
 The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
-light green line, on the top, is our first tentative to simulate HPL. The
+line (a), on the top, is our first tentative to simulate HPL. The
 simulation was done with a simple model: \model{1} for the kernels and
 \modelp{1} for the network with no noise (\noise{0}) in both cases. This model
 overestimates HPL performance by more than 30%. Our initial thoughts was that
 the network model was too optimistic, so we switched to a stochastic multi-modal
-network model, \noisep{1}, shown in yellow, which unfortunately does
+network model, \noisep{1} (the line (b)), which unfortunately does
 not yield any significant change in HPL performance prediction.
 
 As shown by Figure \ref{fig:blas_var}, there is an important heterogeneity in
 the cluster. For this reason, we started using a \model[H]{1}/\noise{0} model
 for \texttt{dgemm} while keeping the models for the other kernels and the
 network as before. This increases very significantly the realism of the
-simulation as the performance is now overestimated by only 9% (shown in dark
-green in the plot).
+simulation as the performance is now overestimated by only 9% (the line (c) in the plot).
 As expected, using a polynomial model for \texttt{dgemm} instead of a linear
 model (thus switching from \model[H]{1} to \model[H]{2}) improves
 the performance prediction, in particular for smaller matrices. 
-This new model, depicted in orange, is very close to reality at the
+This new model (the line (d)), is very close to reality at the
 beginning but gets equivalent to the previous model when the matrix gets
 larger. Adding the temporal variability noise (\noise{2} for all
 kernels, \noise[H]{2} for \texttt{dgemm}) is the key ingredient to
-obtain the last bit of realism. The prediction, in blue, is now
+obtain the last bit of realism. The prediction (the line (e)) is now
 extremly close to the reality as it slightly underestimates the performance by
 less than 5%, even 2% for the larger matrices. Adding back temporal variability
-to the network model (\noisep{1}, in pink) still has no significant
+to the network model (\noisep{1}, line (f)) still has no significant
 effect but this can be explained by the fact that HPL mostly
 communicates very large amount of data in bulk. Network temporal
 variability may be a very important aspect to model for applications
