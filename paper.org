@@ -1267,7 +1267,7 @@ zlib 1.0
 %\newcommand{\TC}[2][inline]{}
 %\newcommand{\CH}[2][inline]{}
 
-\title{Faitfhful and Efficient Simulation of High Performance Linpack}
+\title{Faithful and Efficient Simulation of High Performance Linpack}
 
 % \author{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
 \author{Anonymous PhD Student, His Advisor, An Other PhD Student}
