@@ -1749,15 +1749,16 @@ will with different platform models.
 Most HPC simulators available today, notably BigSim\cite{bigsim_04},
 Dimemas\cite{dimemas} and CODES\cite{CODES}, rely on this approach.
 The main limitation of this approach comes from the trace
-acquisition requirement. Not only a large machine is required but the
+acquisition requirement. Not only is a large machine required but the
 compressed trace of a few iterations (out of several thousands)
-of HPL typically weights a few hundreds of MB, which quickly becomes 
+of HPL typically reaches a few hundred MB, making this approach
+quickly 
 impractical\cite{suter}. Even worse, tracing an application provides
 only information about
 its behavior at the time of the run. Even slight modifications 
-(\eg to communication patterns) may make the trace inaccurate. For
-simple applications (\eg =stencil=) it is
-possible to extrapolate behavior from small-scale
+(\eg to communication patterns) may make the trace inaccurate. It is
+possible for simple applications (\eg =stencil=)
+to extrapolate behavior from small-scale
 traces\cite{scalaextrap,pmac_lspp13} but this fails if the execution is
 non-deterministic, \ie whenever the application relies on
 non-blocking communication patterns, which is unfortunately the
@@ -1765,17 +1766,18 @@ case for HPL.
 
 The second approach discussed in the literature is /online simulation/.
 Here, the application is executed (emulated) on top of a simulator
-that is responsible for determining when each process
+that is responsible to determine when each process
 is run. This approach allows researchers
 to study directly the behavior of MPI applications but only a few
 recent simulators such as SST Macro\cite{sstmacro},
 SimGrid/SMPI\cite{simgrid} 
 and the closed-source xSim\cite{xsim} support
 it. To the best of our knowledge, only SST Macro and
-SimGrid/SMPI are mature enough to emulate faithfully 
+SimGrid/SMPI are mature enough to faithfully emulate
 HPL. In this work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
+\CH{seemed quite solid? Using another simulator was never up for debate - we are the developers of this simulator. I would delete this part and just say ... SimGrid, but our proposed approach is a priori also possible with SST}
 * SimGrid/SMPI in a Nutshell
 #+LATEX: \label{sec:smpi}
 
