@@ -3658,9 +3658,9 @@ plot
 To evaluate the soundness of our approach, we compare several real
 executions of HPL with simulations using the previous models.
 We used the Dahu cluster from the Grid'5000 testbed. It has 32 nodes connected
-through a single switch by 100 Gbps Omnipath links. Each node has two Intel Xeon
-Gold 6130 CPU with 16 cores per CPU. We took care of disabling hyperthreading
-and fixing the core frequencies to 3.7 GHz. We used HPL version 2.2 compiled
+through a single switch by \SI{100}{\giga\bit\per\second} Omnipath links. Each node has two Intel Xeon
+Gold 6130 CPU with 16 cores per CPU. We disabled hyperthreading
+and fixed the frequency to \SI{3.7}{\giga\hertz}. We used HPL version 2.2 compiled
 with GCC version 6.3.0. We also used the libraries OpenMPI version 2.0.2 and
 OpenBLAS version 0.3.1.
 HPL executions were done using a block size of 128 and a matrix of varying size
@@ -3676,15 +3676,18 @@ think that faithfully simulating an HPL execution with such settings
 is as challenging as a typical TOP500 qualification run.
 - We simulated one rank per core to obtain a higher number
   (\Num{1024}) of MPI process. This is more difficult than simulating
-  one rank per node, as (1) this increases the amount of data
-  transfered through MPI (2) the performance is more subject to network
-  heterogeneity (which we model by having a different model for
-  local and remote communications) and memory interference.
-- We used a smaller block size than what is usually done, which leads
-  to a higher number of iterations, hence a larger amount of
+  one rank per node, as this (1) increases the amount of data
+  transfered through MPI and (2) the performance is then subject to
+  memory interference and network
+  heterogeneity (which we modeled through different models for
+  local and remote communications).
+- We used a smaller block size than commonly used, which leads
+  to a higher number of iterations and hence more
   complex communication patterns.
 - We used a smaller matrix, hence a lower simulation time, which is
   generally harder to predict with a good precision.
+- We used a smaller input matrix and the makespan is therefore
+  reduced. This is generally harder to predict with a good precision.
 # - The network is more stable due to its smaller size.
 ** Gantt Chart generation                                         :noexport:
 *** Downloading the CSV
@@ -3989,23 +3992,24 @@ null device
 #+end_example
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
-simulations with the reality. We instrumented HPL to collect the start
-and end timestamps of each kernel and MPI call. We limit the
+simulations with reality. We instrumented HPL to collect the start
+and end timestamps of each kernel and MPI call. We limited the
 execution to 256 ranks and the first five iterations.
 A first qualitative validation can be done by visually
-comparing the Gantt charts of the simulations with the reality (see
-figure\ref{fig:gantt_simulation}). In the charts, calls to
-\texttt{dgemm} are in yellow, \texttt{MPI\_Send} in red,
+comparing the Gantt charts of the simulations with reality (see
+Figure\ref{fig:gantt_simulation}). Calls to
+\texttt{dgemm} are depicted in yellow, \texttt{MPI\_Send} in red,
 \texttt{MPI\_Recv} in blue. Although the structure is similar in all
 charts, the shape and the duration of the communication phases can be
-way too optimistic in simulations compared to reality.  The charts
+overly optimistic in simulations compared to reality.  The charts
 show that, at this scale, using a deterministic or a stochastic model
 for the network has no noticeable impact on HPL simulation. However,
 having a more complex model for the kernels leads to much more
 realistic traces. The variability in the computation durations leads
+\CH{I haven't understand what traces you compare. Do you obtain real traces of the simulation? Why are the traces more realistic - can't we just say that the execution is more realistic?}
 to an increase of the time spent in communications and an overall
 slightly longer execution. In HPL, computation variability directly
-translates in late senders/receivers that destroy the efficiency
+translates to late senders/receivers that destroy the efficiency
 of collective operations.
 
 #+BEGIN_EXPORT latex
@@ -4036,57 +4040,57 @@ of collective operations.
 #+END_EXPORT
 
 We now provide a more quantative comparison using the whole cluster
-and focusing on the \si{\giga\flops} rate reported by HPL when varying
+and focus on the \si{\giga\flops} rate reported by HPL when varying
 matrix size (see Figure\ref{fig:validation_performance}).
+\CH{when varying matrix size - HPL reports this always, not just in this case. Not sure what this could mean.}
 The real executions are depicted in black. For each matrix size, we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
-line (a), on the top, is our first tentative to simulate HPL. The
+line (a), on the top, is our first attempt to simulate HPL. The
 simulation was done with a simple model: \model{1} for the kernels and
 \modelp{1} for the network with no noise (\noise{0}) in both cases. This model
-overestimates HPL performance by more than 30%. Our initial thoughts was that
-the network model was too optimistic, so we switched to a stochastic multi-modal
-network model, \noisep{1} (the line (b)), which unfortunately does
-not yield any significant change in HPL performance prediction.
+overestimates HPL performance by more than \SI{30}{\percent}. We initially thought that
+the network model was too optimistic, however, switching to a stochastic multi-modal
+network model (\noisep{1}, the line (b)), does not significantly improve the
+prediction precision.
 
-As shown by Figure \ref{fig:blas_var}, there is an important heterogeneity in
+Figure \ref{fig:blas_var} shows that there is an important heterogeneity in
 the cluster. For this reason, we started using a \model[H]{1}/\noise{0} model
 for \texttt{dgemm} while keeping the models for the other kernels and the
 network as before. This increases very significantly the realism of the
-simulation as the performance is now overestimated by only 9% (the line (c) in the plot).
-As expected, using a polynomial model for \texttt{dgemm} instead of a linear
-model (thus switching from \model[H]{1} to \model[H]{2}) improves
-the performance prediction, in particular for smaller matrices. 
+simulation as the performance is now overestimated by only \SI{9}{\percent} (the line (c)).
+Using a polynomial model for \texttt{dgemm} instead of a linear
+model (thus switching from \model[H]{1} to \model[H]{2}) further improves
+the performance prediction, in particular for smaller matrices.
 This new model (the line (d)), is very close to reality at the
-beginning but gets equivalent to the previous model when the matrix gets
-larger. Adding the temporal variability noise (\noise{2} for all
+beginning but becomes equivalent to the previous model for larger matrices.
+We found that adding the temporal variability noise (\noise{2} for all
 kernels, \noise[H]{2} for \texttt{dgemm}) is the key ingredient to
 obtain the last bit of realism. The prediction (the line (e)) is now
-extremly close to the reality as it slightly underestimates the performance by
-less than 5%, even 2% for the larger matrices. Adding back temporal variability
+extremly close to reality as it slightly underestimates the performance by
+less than \SI{5}{\percent} and even as little as \SI{2}{\percent} for the larger matrices. Adding back temporal variability
 to the network model (\noisep{1}, line (f)) still has no significant
 effect but this can be explained by the fact that HPL mostly
-communicates very large amount of data in bulk. Network temporal
+communicates very large amounts of data in bulk. Network temporal
 variability may be a very important aspect to model for applications
 that are more /latency-bound/.
 
-It is interesting to mention that we obtained an early access to the
+It is interesting to mention that we obtained early access to the
 Dahu cluster just after it was installed. It experienced several
 maintenance sessions and over the duration of our investigations (a
 few months), the performance of HPL has surprisingly decreased by
-about 10%. Although we had a very good software control over the
-cluster, we noticed that the performance of a few nodes has
-significantly changed, which has increased the system heterogeneity,
+about \SI{10}{\percent}. Although we had full software control over the
+cluster, we noticed that the performance of a few nodes
+changed significantly. This increased the system heterogeneity,
 leading to the current performance depicted in
 Figure\ref{fig:validation_performance}. By replacing the few currently
-slow nodes by "average" nodes in our model, we have been able to
-re-estimate the overall performance of HPL and to obtain a (higher)
+slow nodes by "average" nodes in our model, we were able to
+re-estimate the overall performance of HPL and to obtain a
 prediction matching the performance obtained a few months ago.
 
 We have shown it is possible to predict consistently the
-performance of HPL within a few percents of reality provided a
-faithful model of each individual resource is used. Again, we
-insist on the fact that modeling both spatial and temporal variability
-is crucial.
+performance of HPL within a few percent of reality provided a
+faithful model of each individual resource is used. We would like to stress
+again that modeling both spatial and temporal variability is crucial.
 ** \scalebox{.9}{Comparing With the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:stampede}
@@ -4131,14 +4135,19 @@ Each node of the Stampede cluster comprises two 8-core Intel Xeon
 E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
 (KNC) \NSI{1.1}{\GHz} accelerator that is roughly three times more
 powerful than the two CPUs. The HPL output submitted to the TOP500
+\CH{Than the two CPUs combined? Clarify.}
 (Table\ref{fig:typical_run}) does not indicate how the KNC was
 used. However, because of the values assigned to $P$ and $Q$, we are
 certain that there were only one MPI rank per node. For this
 reason, it is likely that the KNC was used as an accelerator, which is
 effortless with Intel's Math Kernel Library (MKL) as it supports
 automatic offloading for selected BLAS functions.  While we cannot
+certain that that only one MPI rank per node was used. For this
+reason, it is likely that the KNC was used as an accelerator, which is
+effortless with Intel's Math Kernel Library (MKL) as it supports
+automatic offloading for selected BLAS functions. While we cannot
 know precisely which MKL version was used in 2013, we measured the
-default version (version 11.1.1) used on Stampede in the beginning
+default version (version 11.1.1) that was used on Stampede in the beginning
 of 2017. The MKL documentation states that, depending on the matrix
 geometry, the computation will run on either all the cores of the CPU
 or exclusively on the KNC.  In the case of =dgemm=, the computation of
@@ -4148,10 +4157,10 @@ larger than $1280$ while $K$ is simultaneously larger than $256$,
 which calls for a \modelp{} model. Similarly, offloading for =dtrsm= is
 used when both $M$ and $N$ are larger than $512$, which results in a
 better throughput but incurs a higher latency. The measured
-performance was close to the peak performance: \eg for =dgemm= on the
-Phi reached \NSI{1}{\tera\flops}. Since the
+performance was close to the peak performance: \eg =dgemm= on the
+Phi reached \NSI{1}{\tera\flops}$. Since the
 block size used in HPL is \Num{1024}, all calls (except for maybe the
-very last iteration) are offloaded to the KNC. Therefore, we decided
+very last iteration) are offloaded to the KNC. We therefore decided
 as a first step to use very simple (\modelp{1}\noise{0}) models for
 =dgemm= and =dtrsm= and to simply skip all other functions, which is a
 very optimistic modeling. Likewise, although the performance of MPI
@@ -4159,6 +4168,7 @@ measured in 2017 (see Figure\ref{fig:nw_var}) calls for a \modelp{1}\noisep{1} m
 simple optimistic \modelp{1}\noise{0} model. All HPL input parameters were
 set to exactly the values used in the TOP500 qualification run and were
 coherent with the submitted output.
+\CH{Isn't it clear that the output contains the values used in the original run? Why do we have to stress that they are the same?}
 *** Xeon Phi R figures                                           :noexport:
 # See CH's journal from [2017-10-03 Tue] to see how the version was determined
 #+begin_src R :results output :session *R* :exports both
@@ -4396,19 +4406,21 @@ our simulations to be optimistic yet close to results obtained by a real life ex
 *** Simulating HPL                                                 :ignore:
 Figure\ref{fig:stampede_prediction} compares two simulation scenarios
 with the original result from 2013. The solid red line represents the HPL
-performance prediction as obtained with SMPI with the very optimistic Stampede model
+performance prediction as obtained with SMPI with the highly optimistic Stampede model
 we just described. Surprisingly, the prediction was much lower than the TOP500 result.
 We verified that no part of HPL was left unmodeled and decided to
-investigate whether a flaw in our network model that would result in
-too much congestion could explain the performance. 
-Alas, even a congestion-free network model only
-results in minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
+investigate whether a potential flaw in our network model that could for example
+cause too much congestion could explain the difference.
+Alas, switching to a congestion-free network model resulted
+in only minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
 either the CPU or the KNC seemed to be used at a time and a specifically
 optimized version of the MKL may have been used in 2013. 
+\CH{Change this phrase. We just talked about network, we now have to talk about experiments for computation kernels. Do you want to express that CPU/KNC was used exclusively in our tests but that MKL may have used both at the same time? This is not clear.}
 Removing the offloading latency and modeling each node as a
 single \NSI{1.2}{\tera\flops} node also fails (dashed blue line in
 Figure\ref{fig:stampede_prediction}) to explain the 
 huge difference between our prediction results and reality.
+\CH{Modeling each node as a single node - reword this.}
 
 #+BEGIN_EXPORT latex
 \begin{figure}[t]
@@ -4528,14 +4540,16 @@ for the first five iterations can be obtained in about 10 minutes on a
 commodity computer and is about \NSI{175}{\mega\byte} large once
 compressed). Figure\ref{fig:hpl_gantt} illustrates the very
 synchronous and iterative nature of the first iterations with the
-HPL configuration of Table\ref{fig:typical_run}: One can
+\CH{iterative nature of an iteration? Phase-based nature?}
+HPL configuration of Table\ref{fig:typical_run}: one can
 identify first a factorization of the panel, then a broadcast to all
-the nodes, and finally an update of trailing matrix.  More than one
+the nodes, and finally an update of the trailing matrix.  More than one
 fifth of each iteration is spent communicating (although the first
 iterations are the ones with the lowest communication to computation
 ratio), which prevents HPL from reaching the TOP500 performance.
+\CH{Maybe: original TOP500 performance?}
 Overlapping these heavy communication phases with computation would
-significantly improve performance. The fact that this is almost not
+significantly improve overall performance. The fact that this is almost not
 happening can be explained by the look-ahead ~DEPTH~ parameter that was
 allegedly set to =0=. This is quite
 surprising as even the tuning section of the HPL documentation
@@ -4544,7 +4558,7 @@ even though a large problem size could be needed to see some
 performance gain. We discussed this surprising behavior with the
 Stampede-team and were informed that, although the HPL output mentions
 =HPLinpack 2.1= from =October 26, 2012= by Petitet\etal, the run in 2013
-was actually executed with the Intel binary version of HPL and which
+was actually executed with Intel's binary version of HPL and which
 was probably specifically modified for Stampede. The submitted HPL
 output provides information about the progress of HPL throughout
 iterations and statistics for the panel-owning process about the time
@@ -4553,30 +4567,32 @@ total time spent in the =Update= section was \NSI{9390}{\sec} whereas
 the total execution time was \NSI{7505}{\sec}, which is impossible
 unless iterations have overlapped.
 
-It is thus very almost sure that some configuration values have been
+It is thus almost certain that some configuration values have been
 hardcoded to enforce an overlap of iterations with others and that
-they should not be trusted. The broadcast and swapping algorithms use
-very heavy communication patterns. This is not at all surprising since
+the values HPL reported in its output should not be trusted. The broadcast and swapping algorithms use
+very heavy communication patterns. This is not a surprise, since
 for a matrix of this order, several hundred megabytes need to be
-broadcast.  Although the output states that the =long-modified= algorithm was
-used it is likely that another algorithm has been used.  We tried the
+broadcast. The output states that the =long-modified= broadcast algorithm was
+used, however, it is likely that another algorithm was used instead. We tried the
 six other broadcast algorithms provided by HPL but could not
-obtain significantly better overall performance.  An analysis of the
+obtain significantly better overall performance. An analysis of the
 symbols in the Intel binary revealed that another broadcast algorithm
 named =HPL_bcast_bpush= was available. Unlike the others, this new
 algorithm relies on non-blocking sends, which could contribute to the
-performance obtained in 2013.  Likewise, the swapping algorithm that
+\CH{How do we now that it actually did do that?}
+performance obtained in 2013. Likewise, the swapping algorithm that
 was used (~SWAP=Binary-exchange~) involves communications that are
 rather long and organized in trees, which is surprising as the
 ~spread-roll~ algorithm is recommended for large matrices.
+\CH{Add: Officially recommended?}
 
-We do not aim to reverse engineer the Intel HPL code. We can, however,
-already draw two conclusions from our analysis: (1) the parameters by
-HPL are not the ones used in the real
+We have not reverse engineered the Intel HPL code. We can, however,
+already draw two conclusions from our analysis: (1) the parameters
+printed by HPL are not the ones used in the real
 execution, probably because these values were hardcoded and the
 configuration output file was not updated accordingly and (2) it is
-apparent that many optimizations have been done on the communication
-side with respect to asynchrony and to the broadcast algorithm.
+apparent that the communication part has been optimized
+with respect to asynchronous communications and to the broadcast algorithm.
 
 **** Gantt charts                                               :noexport:
 #+begin_src sh :results output :exports both
@@ -4593,10 +4609,10 @@ cp /home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/com
 
 Studying HPC applications at scale can be very time- and
 resource-consuming. 
-We believe being capable of precisely predicting an application's
+We believe that being capable of precisely predicting an application's
 performance on a given platform will become invaluable in the future
-to aid compute centers with the decision of whether a new machine (and
-what technology) will work best for a given application or if an
+as it can for example aid compute centers with the decision of whether
+the envisioned technology of a new machine works best for a given application or if an
 upgrade of the current machine should be considered. 
 Simulation is often an effective approach in this
 context and SMPI has previously been successfully validated in several small-scale
@@ -4617,27 +4633,27 @@ employed several non-trivial operating-system level optimizations
 (memory mapping, dynamic library loading, huge pages) that have since been
 integrated into the last version of SimGrid/SMPI.
 
-The downside of scaling that high is a less well-controlled scenario.
-We explain how to model the performance of compute kernels and of
-the MPI library and show that a careful modeling allows to predict
+The downside of scaling this high is a less well-controlled scenario.
+We explained how to model the performance of compute kernels and of
+the MPI library and showed that a careful modeling allows to predict
 performance within a few percents of real experiments on a controlled
-cluster of Grid'5000. Interestingly spatial and temporal variability
+cluster of Grid'5000. Interestingly, spatial and temporal variability
 are key ingredients of faithful predictions.
 Unfortunately, the reference run of HPL on Stampede was done several
 years ago. We only have very limited information about the setup
 (\eg software versions and configuration) and a reservation and
-re-execution on the whole machine was impossible for us. We
+re-execution on the whole machine was impossible. We
 nevertheless modeled Stampede carefully, which allowed us to predict
 the performance that would have been obtained using an unmodified,
 freely available version of HPL.  Despite all our
-efforts, the predicted performance is much lower than what was
+efforts, the predicted performance was much lower than what was
 reported in 2013. We determined that this discrepancy comes from the
 fact that a modified, closed-source version of HPL supplied by Intel
-was used in 2013 and misreports the true configuration. A quick
-analysis of the optimized HPL binary confirmed that algorithmic
-differences were likely to be the reason for the performance
-differences.  We claim that the modifications we made in HPL are minor and
-are applicable to that optimized version. In fact, while HPL comprises
+was used in 2013 and misreports the true configuration. An
+analysis of the optimized HPL binary confirmed that the availability
+of new algorithms is likely the reason for the performance
+discrepancy. We claim that the modifications we made in HPL are minor and
+are applicable to Intel's optimized version as well. In fact, while HPL comprises
 16K lines of ANSI C over 149 files, our modifications only changed 14
 files with 286 line insertions and 18 deletions.
 
@@ -4650,15 +4666,15 @@ used in STAN would be particularly helpful to inject uncertainty (in
 particular the platform heterogeneity which should be estimated from
 only a few sample nodes) in the simulation. This integration effort is
 underway.
-As an other future work, building on the effort of SimGrid developers on
+As another future work, building on the effort of SimGrid developers on
 supporting the emulation of a wide variety of applications with
 SMPI\cite{smpi_proxy_apps}, we also intend to conduct similar studies with
 other HPC benchmarks (\eg HPCG\cite{HPCG} or HPGMG\cite{HPGMG}), and
-real applications (\eg BigDFT\cite{bigdft}) with other TOP500 machines.
+real applications (\eg BigDFT\cite{bigdft}) and other TOP500 machines.
 In this context, we believe that improving reproducibility through a faithful and
 public reporting of the experimental conditions (compiler options,
-library versions, input parameters, HPL output, etc.) would be invaluable and allow
-researchers to better understand how to correctly model these platforms.
+library versions, input parameters, HPL output, etc.) is invaluable
+and would allow researchers to better understand how to correctly model these platforms.
 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
