@@ -4142,10 +4142,6 @@ certain that there were only one MPI rank per node. For this
 reason, it is likely that the KNC was used as an accelerator, which is
 effortless with Intel's Math Kernel Library (MKL) as it supports
 automatic offloading for selected BLAS functions.  While we cannot
-certain that that only one MPI rank per node was used. For this
-reason, it is likely that the KNC was used as an accelerator, which is
-effortless with Intel's Math Kernel Library (MKL) as it supports
-automatic offloading for selected BLAS functions. While we cannot
 know precisely which MKL version was used in 2013, we measured the
 default version (version 11.1.1) that was used on Stampede in the beginning
 of 2017. The MKL documentation states that, depending on the matrix
