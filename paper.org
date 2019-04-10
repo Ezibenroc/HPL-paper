@@ -1856,6 +1856,7 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 
 We now present the changes to SimGrid and HPL that were required for a
 scalable simulation. We provide only a brief presentation of our
+\CH{The simulation isn't really scalable...}
 modifications and refer the reader interested in details
 to\cite{cornebize:hal-01544827} and\cite{cornebize:github_notebook}.
 For our experiments in this section, we used a single core from nodes
@@ -1866,13 +1867,13 @@ CPUs processors and a Debian Stretch OS (Linux 4.9).
 *** Compute Kernel Modeling
 HPL heavily relies 
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
-=dtrsm= (for solving an  $A\cdot x=b$ equation). Analyzing an
+=dtrsm= (for solving an  $A\cdot x=b$ equation). The analysis of an
 HPL simulation with $64$ processes and a very small matrix of order
-$30,000$ shows that $\approx \NSI{96}{\percent}$ of the time is spent in
+$30,000$ showed that $\approx \NSI{96}{\percent}$ of the time is spent in
 these two kernels. Since the output of 
 these kernels does not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
-performance model for the respective kernel. 
+performance model of the respective kernel. 
 Skipping kernels renders the content of some variables invalid but in
 simulation, only the behavior of the application and not the
 correctness of computation results are of concern.
@@ -1883,7 +1884,7 @@ for this compute kernel and was obtained through calibration. The
 estimated time of the kernel is calculated based on the given
 parameters and passed on to =smpi_execute_benched= that
 advances the clock of the executing rank by this estimate.
-The effect on simulation time for a small scenario is
+The effect on the simulation time for a small scenario is
 depicted in Figure\ref{fig:kernel_sampling}. This
 modification speeds up the simulation by orders of magnitude. The precision of
 the simulation will be investigated in more details in the next sections
@@ -2061,11 +2062,9 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
 
 HPL uses pseudo-randomly generated matrices that are setup every time
 HPL is executed. This initialization, just like the factorization
-correctness verification, is not considered in the reported
-performance.  Since both phases have no impact on the reported
-performance, we can safely skip them.
-Last, note that HPL
-implements an LU factorization with partial pivoting, which requires a special
+correctness verification at the end of the run, is not considered in the reported
+performance and can therefore be safely skipped.
+Note that HPL implements an LU factorization with partial pivoting, which requires a special
 treatment of the =idamax= function that returns the index of the first
 element equaling the maximum absolute value. Although we ignored the
 cost of this function as well, we set its return value to a random (but controlled)
@@ -2073,6 +2072,8 @@ value to make the simulation unbiased (but fully deterministic).
 We confirmed that this modification is harmless in terms of
 performance prediction.
 ** Scaling Down Memory Consumption
+\CH{I am not sure about "scaling" here. Lowering? Reducing?}
+*** Figure                                                         :ignore:
 #+BEGIN_EXPORT latex
 \tikzset{draw half paths/.style 2 args={%
   % From https://tex.stackexchange.com/a/292108/71579
@@ -2212,10 +2213,10 @@ non-contiguous parts of this flat allocation, it is therefore
 essential to have a mechanism that preserves the process-specific
 content. We have thus introduced the 
 =SMPI_PARTIAL_SHARED_MALLOC= macro that allows us to specify which ranges of the
-allocation should be preserved (\ie private to each process) and
-which ones may be corrupted (\ie shared between processes). 
+allocation should be preserved (\ie are private to each process) and
+which ones may be corrupted (\ie are shared between processes). 
 For a matrix of order $40,000$ and $64$ MPI processes,
-memory consumption decreases from about \NSI{13.5}{\giga\byte} to
+memory consumption decreases with this approach from about \NSI{13.5}{\giga\byte} to
 less than \NSI{40}{\mega\byte}.
 
 Another HPL specific optimization is related to the systematic
@@ -2223,7 +2224,7 @@ allocation and deallocation of panels in each
 iteration, with the size of the panel strictly decreasing from
 iteration to iteration. As we explained above, the partial sharing of
 panels requires many calls to =mmap= and introduces an overhead that
-makes these repeated allocations / frees become a bottleneck. Since
+makes these repeated allocations / frees a bottleneck. Since
 the very first allocation can fit all subsequent panels, we modified
 this allocation mechanism to allocate only the first panels and reuse
 them as much as possible for subsequent iterations (see
@@ -2250,8 +2251,8 @@ HPL simulation times and memory consumption were considerably improved
 in our experiments because the =panel= is the most frequently
 transferred data structure but only a small part of it is actually private.
 
-Mapping MPI processes to threads of a single process effectively folds
-them into the same address space.  Consequently, global variables in
+As explained above, SMPI maps MPI processes to threads of a single
+process, effectively folding them into the same address space.  Consequently, global variables in
 the MPI application are shared between threads unless these variables
 are /privatized/ and the simulated MPI ranks thus isolated from each
 other. Several technical solutions are possible to handle this
@@ -2274,12 +2275,12 @@ page faults drops from \Num{4412047} (with =mmap=) to \Num{6880} (with
 Finally, for larger matrix orders (\ie $N$ larger than a few hundred
 thousands), the performance of the simulation quickly deteriorates as
 the memory consumption rises rapidly. Indeed, folding the memory
-allows to reduce the /physical/ memory usage. The /virtual/ memory, on the
+reduces the /physical/ memory usage. The /virtual/ memory, on the
 other hand, is still allocated for every process since the allocation
 calls are still executed.  Without a reduction of allocated virtual
-addresses, the page table rapidly becomes too large to fit in a single
+addresses, the page table rapidly becomes too large to for a single
 node. Thankfully, the x86-64 architecture supports several
-page sizes, known as /huge pages/ in Linux. Typically, these pages
+page sizes, such as the /huge pages/ in Linux. Typically, these pages
 are around \NSI{2}{\mebi\byte} (instead of \NSI{4}{\kibi\byte}), which
 reduces drastically the page table size. For example, for a matrix of
 order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
@@ -2306,7 +2307,7 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
 
 The main goal of the previous optimizations is to reduce the
 complexity from $\Theta(N^3) + \Theta(N^2\cdot{}P\cdot{}Q)$ to something more reasonable.
-The $\Theta(N^3)$ was removed through skipping most computations. 
+The $\Theta(N^3)$ was removed by skipping most computations. 
 Ideally, since there are $N/NB$ iterations (steps), 
 the complexity of simulating one step should be decreased to something independent of
 $N$. SimGrid's fluid models, used to simulate communications, do not
@@ -2317,13 +2318,13 @@ is impossible to get rid of the $\O(N)$ complexity without
 modifying HPL more profoundly. 
 
 To evaluate the efficiency of our proposal, we conduct a first
-evaluation on a non-existing, albeit similar to Stampede, platform
+evaluation on a non-existing but Stampede resembling platform
 comprising 4,096 nodes interconnected through a
 fat-tree topology.
 We run simulations with \Num{512}, \Num{1024}, \Num{2048} or
 \Num{4096} MPI ranks and with matrices of orders \Num{5e5},
 \Num{1e6}, \Num{2e6} or \Num{4e6}. All other HPL parameters are
-similar to the ones of the Stampede scenario.  The impact of the
+similar to the ones of the original Stampede scenario.  The impact of the
 matrix order on total makespan and memory is illustrated in
 Figure\ref{fig:hpl_scalability}.  With all previously described
 optimizations enabled, the longest simulation took
