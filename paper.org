@@ -2273,7 +2273,7 @@ the memory consumption rises rapidly. Indeed, folding the memory
 reduces the /physical/ memory usage. The /virtual/ memory, on the
 other hand, is still allocated for every process since the allocation
 calls are still executed.  Without a reduction of allocated virtual
-addresses, the page table rapidly becomes too large to for a single
+addresses, the page table rapidly becomes too large for a single
 node. Thankfully, the x86-64 architecture supports several
 page sizes, such as the /huge pages/ in Linux. Typically, these pages
 are around \NSI{2}{\mebi\byte} (instead of \NSI{4}{\kibi\byte}), which
@@ -2893,8 +2893,8 @@ estimations are denoted by \noise[H]{}.
 \begin{figure}[!t]
   \vspace{-1em}
   \centering \includegraphics[width=.9\linewidth]{./figures/network/calibration.png}
-  \vspace{-2em}
-  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-2em}
+  \vspace{-1em}
+  \caption{Illustrating piecewise linearity and temporal variability of high-speed communications on two systems.}\vspace{-1em}
   \label{fig:nw_var}
 \end{figure}
 #+END_EXPORT
@@ -2977,7 +2977,7 @@ model. Figure\ref{fig:dgemm_poly} depicts the performance (red dots)
 of a given node as well as the prediction using a simple linear model
 (\model[H]{1}, black line), a full polynomial model (\model[H]{2},
 blue dots) and a full polynomial model with heteroscedastic noise
-(\model[H]{2}\noise{2}, orange dots). A close inspection reveals that
+(\model[H]{2}\noise[H]{2}, orange dots). A close inspection reveals that
 all experimental variability is actually very well explained by both the
 polynomial model (better fit for particular 
 parameter combinations) and some temporal variability.
@@ -4028,7 +4028,7 @@ of collective operations.
 
 We now provide a more quantitative comparison using the whole cluster and varying
 matrix sizes, focusing on the \si{\giga\flops} rate reported by HPL (see Figure\ref{fig:validation_performance}).
-The real executions are depicted in black. For each matrix size, we performed 8
+The real executions are depicted in black, for each matrix size we performed 8
 runs of HPL, to illustrate the temporal variability of the performance.  The
 line (a), on the top, is our first attempt to simulate HPL. The
 simulation was done with a simple model: \model{1} for the kernels and
@@ -4139,7 +4139,7 @@ which calls for a \modelp{} model. Similarly, offloading for =dtrsm= is
 used when both $M$ and $N$ are larger than $512$, which results in a
 better throughput but incurs a higher latency. The measured
 performance was close to the peak performance: \eg =dgemm= on the
-Phi reached \NSI{1}{\tera\flops}$. Since the
+Phi reached \NSI{1}{\tera\flops}. Since the
 block size used in HPL is \Num{1024}, all calls (except for maybe the
 very last iteration) are offloaded to the KNC. We therefore decided
 as a first step to use very simple (\modelp{1}\noise{0}) models for
