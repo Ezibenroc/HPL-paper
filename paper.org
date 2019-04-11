@@ -12,7 +12,7 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) | DONE(d!) CANCELLED(c@) DEFERRED(@) FLAWED(f@)
 #+LATEX_CLASS: acmart
-#+LATEX_CLASS_OPTIONS: [sigconf,review,anonymous]
+#+LATEX_CLASS_OPTIONS: [sigconf]
 #+PROPERTY: header-args :eval never-export
 
 * R and Python dependencies and versions                           :noexport:
@@ -1267,22 +1267,21 @@ zlib 1.0
 \newcommand{\TC}[2][inline]{}
 \newcommand{\CH}[2][inline]{}
 
+% From https://tex.stackexchange.com/a/346309/71579
+\setcopyright{none}
+\settopmatter{printacmref=false} % Removes citation information below abstract
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\pagestyle{plain} % removes running headers
+
 \title{Faithful and Efficient Simulation of High Performance Linpack}
 
-% \author{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
-\author{Anonymous PhD Student, His Advisor, An Other PhD Student}
-% \affiliation{%
-%   \institution{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG}
-%   \city{Grenoble}
-%   \state{France}
-%   \postcode{38000}
-% }
-\affiliation{%
-  \institution{Univ. of Neverwhere}
-%  \city{}
-%  \state{Wonderland}
-%  \postcode{38000}
-}
+\author{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
+ \affiliation{%
+   \institution{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG}
+   \city{Grenoble}
+   \state{France}
+   \postcode{38000}
+ }
 % \email{firstname.lastname@inria.fr}
 \acmConference[SC19]{International Conference for High Performance Computing, Networking, Storage and Analysis}{19-21 Nov. 2019}{Denver, CO, USA}
 
@@ -4720,11 +4719,9 @@ Tangle this file with C-c C-v t
 
 @mastersthesis{cornebize:hal-01544827,
   TITLE = {{Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
-  OPTAUTHOR = {Cornebize, Tom},
-  OPTURL = {https://hal.inria.fr/hal-01544827},
-  OPTSCHOOL = {{Grenoble INP ; Universit{\'e} Grenoble - Alpes}},
-  AUTHOR = {Anonymous},
-  SCHOOL = {{University of Neverwhere, Wonderland}},
+  AUTHOR = {Cornebize, Tom},
+  URL = {https://hal.inria.fr/hal-01544827},
+  SCHOOL = {{Grenoble INP ; Universit{\'e} Grenoble - Alpes}},
   YEAR = {2017},
   MONTH = Jun,
   KEYWORDS = {Simulation ;  MPI runtime and applications ;  Performance prediction and extrapolation ;  High Performance LINPACK},
@@ -4734,11 +4731,9 @@ Tangle this file with C-c C-v t
 }
 
 @Misc{cornebize:github_notebook,
-  OPTAUTHOR = {Cornebize, Tom},
-  author = 	 {Anonymous},
+  AUTHOR = {Cornebize, Tom},
   title = 	 {{Laboratory Notebook hosted on GitHub. Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
-  OPThowpublished = {\url{https://github.com/Ezibenroc/m2_internship_journal}},
-  howpublished = {\url{https://github.com/anonymous/m2_internship_journal}},
+  howpublished = {\url{https://github.com/Ezibenroc/m2_internship_journal}},
   year = 	 {2017},
 }
 
