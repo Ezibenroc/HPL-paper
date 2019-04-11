@@ -1538,7 +1538,7 @@ these runs.
 % 2017.}
 
 \begin{table}[b]
-\vspace{-1em}
+\vspace{-1.5em}
 \caption{Typical runs of HPL}\vspace{-1em}
 \label{fig:typical_run}
 \scalebox{.9}{\begin{tabular}{l|lll}
@@ -1912,8 +1912,8 @@ on small ($N=\Num{30000}$) and even more on large scenarios.
   \subfigure[Gain in terms of simulation time.\label{fig:kernel_sampling}]{
     \begin{minipage}[b]{\linewidth} 
       \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
-    \end{minipage}}\vspace{-1em}
-  \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1em}
+    \end{minipage}}\vspace{-1.5em}
+  \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1.5em}
 \end{figure}
 #+END_EXPORT
 
@@ -2189,8 +2189,8 @@ regardless of the size of the actual allocations.
       \end{tikzpicture}
     \end{minipage}%
   }%
-  \end{minipage}}\vspace{-1em}
-  \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1em}
+  \end{minipage}}\vspace{-1.5em}
+  \caption{Panel structure and allocation strategy.\label{fig:panel}}\vspace{-1.5em}
 \end{figure}
 #+END_EXPORT
 
@@ -2294,7 +2294,7 @@ order $N=4,000,000$, it shrinks from \NSI{250}{\giga\byte} to
   \centering
   \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}\vspace{-1em}
 %  \includegraphics[width=\linewidth,page=2]{./figures/scalability_plot_nbproc.pdf}
-  \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank.}\vspace{-1em}
+  \caption{Time complexity and memory consumption are linear in the number of processes but remain mildly quadratic with matrix rank.}\vspace{-1.5em}
   \label{fig:hpl_scalability}
   \labspace
 \end{figure}
@@ -2907,8 +2907,8 @@ estimations are denoted by \noise[H]{}.
     \subfigure[\texttt{dgemm} heterogeneity\label{fig:dgemm_het}]{\includegraphics[width=.33\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}}\hfill%
     \subfigure[\texttt{dgemm} model\label{fig:dgemm_poly}]{\includegraphics[width=.33\linewidth]{figures/kernels/dgemm_model_calib.png}}\hfill%
     \subfigure[\texttt{HPL\_dlatcpy} model\label{fig:HPL_var}]{\includegraphics[width=0.33\linewidth]{figures/kernels/dlatcpy_model.png}}
-    \vspace{-1em}
-    \caption{Illustrating the realism of modeling for BLAS and HPL functions.}\vspace{-1em}
+    \vspace{-1.5em}
+    \caption{Illustrating the realism of modeling for BLAS and HPL functions.}\vspace{-1.5em}
     \label{fig:blas_var}
   \end{minipage}\hfill%
 \end{figure*}
@@ -4008,7 +4008,7 @@ of collective operations.
     \ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\
     \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
     \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
-    \end{tabular}\vspace{-1em}
+    \end{tabular}\vspace{-1.5em}
     \caption{Gantt charts of HPL first iterations in simulation}\vspace{-1em}
     \label{fig:gantt_simulation}
     \labspace
@@ -4018,7 +4018,7 @@ of collective operations.
 #+BEGIN_EXPORT latex
 \begin{figure}[h]
     % \centering
-    \hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}
+    \hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1.5em}
     % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
     \caption{HPL performance: predictions vs. reality}\vspace{-1em}
     \label{fig:validation_performance}
@@ -4407,8 +4407,8 @@ huge difference between our prediction results and reality.
 \begin{figure}[t]
   \centering
 %  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
-  \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
-  \caption{HPL on Stampede: predictions vs. reality}\vspace{-1em}
+  \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1.5em}
+  \caption{HPL on Stampede: predictions vs. reality}\vspace{-1.5em}
   \label{fig:stampede_prediction}
   \labspace
 \end{figure}
@@ -4506,7 +4506,7 @@ ggplot(results, aes(x=size, y=simulation_time, color=mode, linetype=mode)) + geo
 \begin{figure}[!b]
   \centering
   \vspace{-.5em}
-  \includegraphics[width=.9\linewidth,page=1]{./figures/fullscale_unzoomed.png}\vspace{-.5em}
+  \includegraphics[width=.8\linewidth,page=1]{./figures/fullscale_unzoomed.png}\vspace{-.5em}
   \caption{Gantt chart of the first two iterations of HPL. Communication states are in 
       red while computations are in cyan. Each communication 
       is represented with a white arrow, which results in very cluttered white areas.}\vspace{-1em}
