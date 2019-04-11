@@ -12,16 +12,16 @@ experiment scripts and notebooks are available in public repositories with
 open-source licenses.
 * (a) Performed verification and validation studies:
 Our article is precisely about the comparison between simulation of HPC
-applications with real experiments. Therefore, we extensively checked that our
+applications and real experiments. Therefore, we extensively checked that our
 simulations were close to reality:
 1) We instrumented the code to get traces from both the simulation and the
    reality. This allowed us to visually compare the Gantt charts and check that
-   the number of calls to each function and their durations was similar.
+   the number of calls to each function and their durations were similar.
 2) We performed complete executions of HPL, both in reality and in simulation,
    to compare their reported performance. This confirmed that our prediction of
-   the performance was very close to the reality.
+   the performance was very close to reality.
 
-We checked extensively that our simulations were close to the reality:
+We checked extensively that our simulations were close to reality:
 1) We instrumented the code to get traces from both the simulation and the
    reality. This allowed us to visually compare the Gantt charts and check that
    the number of calls to each function and their durations was similar.
@@ -29,8 +29,8 @@ We checked extensively that our simulations were close to the reality:
    to compare their reported performance. This confirmed that our prediction of
    the performance was very close to the reality.
 * (b) Validated the accuracy and precision of timings
-All timings have been measured with the function clock_gettime. The MPI trace of
-HPL has been collected with the Akypuera library that makes sure to correct any
+All timings have been measured with the function clock_gettime. The MPI traces of
+HPL have been collected with the Akypuera library that makes sure to correct any
 clock drift of the machines. All the real executions of HPL have been repeated
 several times, we report in our plot (figure 9) both the average and all the
 original values.
