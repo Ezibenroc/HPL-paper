@@ -2965,8 +2965,8 @@ line corresponds to model \model{1} over all the nodes). These nodes
 \CH{You may want to add some more details to the captions: Which model etc.}
 will systematically be slightly slower than other nodes and accounting
 for this spatial heterogeneity is likely to be rather important for
-HPL. Likewise, it is also common that the cores of two CPUs of the
-same node have a significantly different performance. Second, we took
+HPL.
+Second, we took
 care of covering a wide variety of combinations for $M$, $N$, and $K$
 and it can be observed that $M.N.K$ is not sufficient to describe correctly
 the performance of =dgemm=. Indeed, for $M.N.K \approx \num{4.5E9}$ some
