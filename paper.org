@@ -1267,7 +1267,7 @@ zlib 1.0
 \newcommand{\TC}[2][inline]{}
 \newcommand{\CH}[2][inline]{}
 
-\title{Faithful and Efficient Simulation of High Performance Linpack}
+\title{Faithful and Efficient Simulation of\linebreak complex MPI applications}
 
 \author{
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
@@ -1279,20 +1279,20 @@ zlib 1.0
 #+END_EXPORT
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
-With a power consumption of several MW per hour on a TOP500 machine,
-running applications on supercomputers at scale solely to optimize
-their performance is extremely expensive. Likewise, High-Performance Linpack (HPL),
-the benchmark used to rank supercomputers in the TOP500, requires a
-careful tuning of many parameters (problem size, grid arrangement,
-granularity, collective operation algorithms, etc.) and supports
-exploration of the most common and fundamental performance issues and
-their solutions. In this article, we explain how we both extended the
-SimGrid's SMPI simulator and slightly modified the open-source version
-of HPL to allow a fast emulation on a single commodity server at the
-scale of a supercomputer. We explain how to model the different
-components (network, BLAS, ...) and show that a careful modeling of
-both spatial and temporal node variability allows us to obtain
-predictions within a few percents of real experiments.
+With a rising power consumption on modern supercomputers, running parallel
+applications at scale solely to optimize their performance is extremely
+expensive. However, this tuning is critical to benefit from the highest
+performance, as one often has to choose between different settings, like the
+granularity level or the collective operation implementation.
+
+In this article, we explain how we managed to perform faithful simulations of
+High Performance Linpack (HPL), the benchmark used to rank supercomputers in the
+TOP500. We both extended the SimGrid's SMPI simulator and slightly modified the
+open-source version of HPL to allow a fast emulation on a single commodity
+server at the scale of a supercomputer. We explain how to model the different
+components (network, BLAS, ...) and show that a careful modeling of both spatial
+and temporal node variability allows us to obtain predictions within a few
+percents of real experiments.
 #+LaTeX: \end{abstract}
 * Introduction
 Today, machines with 100,000\nbsp{}cores and more are common and several
