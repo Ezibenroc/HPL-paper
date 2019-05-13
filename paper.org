@@ -11,8 +11,8 @@
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) | DONE(d!) CANCELLED(c@) DEFERRED(@) FLAWED(f@)
-#+LATEX_CLASS: acmart
-#+LATEX_CLASS_OPTIONS: [sigconf,review,anonymous]
+#+LATEX_CLASS: IEEEtran
+#+LATEX_CLASS_OPTIONS: [conference]
 #+PROPERTY: header-args :eval never-export
 
 * R and Python dependencies and versions                           :noexport:
@@ -1250,7 +1250,7 @@ zlib 1.0
 \def\subsection#1{\osubsection[]{#1}}
 #+END_EXPORT
 
-* ACM title and authors                                    :ignore:
+* Title and authors                                                  :ignore:
 #+BEGIN_EXPORT latex
 \let\oldcite=\cite
 \renewcommand\cite[2][]{~\ifthenelse{\equal{#1}{}}{\oldcite{#2}}{\oldcite[#1]{#2}}\xspace}
@@ -1269,31 +1269,13 @@ zlib 1.0
 
 \title{Faithful and Efficient Simulation of High Performance Linpack}
 
-% \author{Tom Cornebize, Franz C. Heinrich, Arnaud Legrand}
-\author{Anonymous PhD Student, His Advisor, An Other PhD Student}
-% \affiliation{%
-%   \institution{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG}
-%   \city{Grenoble}
-%   \state{France}
-%   \postcode{38000}
-% }
-\affiliation{%
-  \institution{Univ. of Neverwhere}
-%  \city{}
-%  \state{Wonderland}
-%  \postcode{38000}
+\author{
+    \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
+    \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG\\ 38000 Grenoble, France\\
+      firstname.lastname@inria.fr}
 }
-% \email{firstname.lastname@inria.fr}
-\acmConference[SC19]{International Conference for High Performance Computing, Networking, Storage and Analysis}{19-21 Nov. 2019}{Denver, CO, USA}
 
-% The default list of authors is too long for headers.
-% \renewcommand{\shortauthors}{B. Trovato et al.}
-
-%\title{Simulating the Energy Consumption of MPI~Applications}
-% Predicting the Performance and the Power Consumption of MPI Applications With SimGrid
-  %\titlerunning{Power-aware simulation for large-scale systems with SimGrid}
-  %
-
+\maketitle              % typeset the title of the contribution
 #+END_EXPORT
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
@@ -1312,8 +1294,6 @@ components (network, BLAS, ...) and show that a careful modeling of
 both spatial and temporal node variability allows us to obtain
 predictions within a few percents of real experiments.
 #+LaTeX: \end{abstract}
-
-#+LaTeX: \maketitle              % typeset the title of the contribution
 * Introduction
 Today, machines with 100,000\nbsp{}cores and more are common and several
 machines beyond the 1,000,000\nbsp{}cores mark are already in
