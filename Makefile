@@ -6,7 +6,7 @@ ARCHIVE_FILES=$(NAME).org refs.bib Makefile figures/*
 all: $(NAME).pdf
 
 fast:
-	emacs -batch -l ~/.emacs.d/init.el --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
+	emacs -batch --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
 	--eval "(setq org-export-babel-evaluate t)" paper.org  --funcall org-latex-export-to-latex
 	pdflatex paper.tex
 
@@ -15,8 +15,8 @@ watch:
 
 # If you have good Emacs and Org-mode installed by default, delete "-l ~/.emacs.d/init.el"
 %.tex: %.org
-	emacs -batch -l ~/.emacs.d/init.el $^  --funcall org-babel-tangle
-	emacs -batch -l ~/.emacs.d/init.el --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
+	emacs -batch $^  --funcall org-babel-tangle
+	emacs -batch --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
 	--eval "(setq org-export-babel-evaluate t)" $^  --funcall org-latex-export-to-latex
 
 %.pdf: %.tex
@@ -24,13 +24,11 @@ watch:
 	bibtex `basename $^ .tex`
 	pdflatex $^
 	pdflatex $^
-	pdftops `basename $^ .tex`.pdf
-	ps2pdf14 -dPDFSETTINGS=/prepress `basename $^ .tex`.ps
 
 
 
 %.html: %.org
-	emacs -batch -l ~/.emacs.d/init.el --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
+	emacs -batch --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
 	   --eval "(setq org-export-babel-evaluate t)" $^  --funcall org-html-export-to-html
 
 $(ARCHIVE).tgz: $(ARCHIVE_FILES)

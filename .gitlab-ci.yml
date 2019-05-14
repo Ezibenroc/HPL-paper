@@ -1,0 +1,16 @@
+image: ezibenroc/orgmode_latex
+
+before_script:
+    - emacs --version 2>&1 | head -n 1
+    - emacs -batch --funcall "org-version" 2>&1 | grep version
+
+compilation:
+    script:
+        - make && git checkout *.c *.txt && make fast
+        - ls -l paper.*
+        - sha256sum paper.*
+    artifacts:
+        paths:
+        - paper.pdf
+        - paper.tex
+        expire_in: 1 week
