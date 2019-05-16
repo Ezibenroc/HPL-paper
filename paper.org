@@ -1267,16 +1267,20 @@ zlib 1.0
 \newcommand{\TC}[2][inline]{}
 \newcommand{\CH}[2][inline]{}
 
-\title{Faithful and Efficient Simulation of\linebreak complex MPI applications}
+\title{Fast and Faithful Performance Prediction of\\ MPI applications\\The HPL use case study}
 
 \author{
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
     \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG\\ 38000 Grenoble, France\\
-      firstname.lastname@inria.fr}
+      firstname.lastname@inria.fr\\
+      \includegraphics[width=.75\linewidth]{figures/validation_performance_simple.pdf}
+    }
 }
 
 \maketitle              % typeset the title of the contribution
+
 #+END_EXPORT
+
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
 With a rising power consumption on modern supercomputers, running parallel
@@ -4040,19 +4044,19 @@ lab = lab %>% mutate(y  = case_when(origin == 'Simulation' ~ 1.05*y,
 plot = ggplot(df, aes(x=matrix_size, y=gflops, color=origin, linetype=origin))
 plot = plot + stat_summary(fun.y='mean', geom='line')
 plot = plot + stat_summary(fun.y='mean', geom='point')
-plot = plot + theme_bw() + expand_limits(y=0)
+plot = plot + theme_bw() #+ expand_limits(y=0)
 plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
 plot = plot + scale_linetype_manual(values=c('solid', 'dashed'), guide=F)
 plot = plot + theme(text=element_text(size=12))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
 plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=6)
 plot = plot + theme(text=element_text(size=text_size))
-ggsave(filename='figures/validation_performance_simple.pdf', plot=plot)
+ggsave(filename='figures/validation_performance_simple.pdf', height=3, width=9, plot=plot)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-nl8reK/figureKeHBkz.png]]
+[[file:/tmp/babel-nl8reK/figure76mhSq.png]]
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with reality. We instrumented HPL to collect the start
