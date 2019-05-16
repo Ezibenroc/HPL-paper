@@ -3958,6 +3958,101 @@ entering extended mode
 null device 
           1
 #+end_example
+*** Drawing the plot - simple model
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+library(tikzDevice)
+library(dplyr)
+dfreal = read.csv('data/validation_performance/hpl_reality.csv')
+dfreal = dfreal %>% filter(date == '2019-03')
+dfsim = read.csv('data/validation_performance/hpl_simulation_heterogeneous.csv')
+dfsim = dfsim %>% filter(model == 'simple')
+head(dfreal)
+head(dfsim)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+  matrix_size gflops    time    mode    date
+1      175000  22610  158.00 reality 2019-03
+2      500000  22330 3732.41 reality 2019-03
+3       50000  12780    6.52 reality 2019-03
+4      300000  21140  851.46 reality 2019-03
+5      400000  21660 1969.91 reality 2019-03
+6      150000  19910  113.02 reality 2019-03
+  matrix_size gflops    time mode stochastic_cpu stochastic_network
+1       75000  16680   16.86                True              False
+2      175000  19970  178.88                True              False
+3      350000  21570 1325.29                True              False
+4      125000  18660   69.80                True              False
+5      250000  21020  495.50                True              False
+6      450000  21710 2798.35                True              False
+  polynomial_dgemm heterogeneous_dgemm  model
+1             True                True simple
+2             True                True simple
+3             True                True simple
+4             True                True simple
+5             True                True simple
+6             True                True simple
+#+end_example
+
+Removing the two outliers in the real executions. These two points are
+"abnormaly fast", each of them was the first to be made in the sequence of runs
+(the machines were not overheating yet).
+#+begin_src R :results output :session *R* :exports both
+print(length(dfreal$gflops))
+dfreal = dfreal %>% filter(matrix_size != 175000 | gflops < 22000)
+print(length(dfreal$gflops))
+#+end_src
+
+#+RESULTS:
+: [1] 112
+: [1] 110
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
+dfsim$origin = 'Simulation'
+dfreal$origin = 'Reality'
+df = rbind(dfsim %>% select(gflops, matrix_size, origin), dfreal %>% select(gflops, matrix_size, origin))
+
+text_size = 16
+# Labels definitions
+lab = df %>% filter(
+    (origin == 'Simulation' & matrix_size == 100000) |
+    (origin == 'Reality'    & matrix_size == 100000)
+)
+lab = lab %>% group_by(origin, matrix_size) %>% summarise(gflops=mean(gflops))
+lab$x = lab$matrix_size
+lab$y = lab$gflops
+lab$xl = lab$x*1.0
+lab$yl = lab$y*1.0
+delta_x = max(dfsim$matrix_size) / 12
+delta_y = max(dfsim$gflops) / 12
+max_x = max(dfsim$matrix_size)
+max_y = max(dfsim$gflops)
+lab = lab %>% mutate(x  = case_when(origin == 'Simulation' ~ 0.95*x,
+                                    origin == 'Reality'    ~ 1.05*x
+                                   ))
+lab = lab %>% mutate(y  = case_when(origin == 'Simulation' ~ 1.05*y,
+                                    origin == 'Reality'    ~ 0.95*y
+                                   ))
+
+# Plot drawing
+plot = ggplot(df, aes(x=matrix_size, y=gflops, color=origin, linetype=origin))
+plot = plot + stat_summary(fun.y='mean', geom='line')
+plot = plot + stat_summary(fun.y='mean', geom='point')
+plot = plot + theme_bw() + expand_limits(y=0)
+plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
+plot = plot + scale_linetype_manual(values=c('solid', 'dashed'), guide=F)
+plot = plot + theme(text=element_text(size=12))
+plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
+plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=6)
+plot = plot + theme(text=element_text(size=text_size))
+ggsave(filename='figures/validation_performance_simple.pdf', plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-nl8reK/figureKeHBkz.png]]
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with reality. We instrumented HPL to collect the start
