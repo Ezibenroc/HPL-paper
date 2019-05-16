@@ -1283,11 +1283,14 @@ zlib 1.0
 
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
-With a rising power consumption on modern supercomputers, running parallel
-applications at scale solely to optimize their performance is extremely
-expensive. However, this tuning is critical to benefit from the highest
-performance, as one often has to choose between different settings, like the
-granularity level or the collective operation implementation.
+Usual MPI applications allow their users to choose between several
+parameters. For instance, it is often possible to select the virtual topology,
+the collective operation implementation and the granularity level. This tuning
+is critical to benefit from the highest performance.  With a rising cost of
+modern supercomputers, running parallel applications at scale solely to optimize
+their performance is extremely expensive. Having cheap but faithful predictions
+of said performance could be a great help for researchers and system
+administrators.
 
 In this article, we explain how we managed to perform faithful simulations of
 High Performance Linpack (HPL), the benchmark used to rank supercomputers in the
