@@ -103,3 +103,16 @@ matrix_size,gflops,time,mode,stochastic_cpu,stochastic_network,polynomial_dgemm,
 100000,18760.0,35.53,simulation,True,True,False,True,B2_het
 200000,21430.0,248.87,simulation,True,True,False,True,B2_het
 400000,22640.0,1884.69,simulation,True,True,False,True,B2_het
+75000,16680.0,16.86,,True,False,True,True,simple
+175000,19970.0,178.88,,True,False,True,True,simple
+350000,21570.0,1325.29,,True,False,True,True,simple
+125000,18660.0,69.8,,True,False,True,True,simple
+250000,21020.0,495.5,,True,False,True,True,simple
+450000,21710.0,2798.35,,True,False,True,True,simple
+100000,18240.0,36.54,,True,False,True,True,simple
+200000,20410.0,261.26,,True,False,True,True,simple
+400000,21570.0,1978.32,,True,False,True,True,simple
+50000,13840.0,6.02,,True,False,True,True,simple
+150000,19430.0,115.83,,True,False,True,True,simple
+300000,21460.0,838.72,,True,False,True,True,simple
+500000,21900.0,3806.05,,True,False,True,True,simple

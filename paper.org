@@ -3755,7 +3755,7 @@ replace the existing scale.
 
 ** Performance plots generation                                   :noexport:
 For this plot, the CSV files are small, so they are stored directly in the
-repository, no need to download them. They have been dumped by [[https://github.com/Ezibenroc/mpi_calibration/blob/57e844cb6c9803de2efe85f9d7d6ee84b4acee02/dahu/smpi_hpl/hpl_simulation.ipynb][this notebook]]
+repository, no need to download them. They have been dumped by [[https://github.com/Ezibenroc/mpi_calibration/blob/230cd9f1a9a985eecd2aea5098c2a8b643c16d66/dahu/smpi_hpl/hpl_simulation.ipynb][this notebook]]
 (cell 2).
 
 The zip archives for these files are:
