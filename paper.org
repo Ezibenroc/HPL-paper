@@ -3870,12 +3870,19 @@ lab = dfsim %>% filter(
     (model == 'D2het' & matrix_size == 500000)
 ) 
 lab = lab %>% select(gflops, matrix_size, model) %>% distinct()
-lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('(a) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'A2'     ~ paste(to_tex('(b) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
-                                       model == 'A1het' ~ paste(to_tex('(c) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'C1het' ~ paste(to_tex('(d) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D1het' ~ paste(to_tex('(e) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
-                                       model == 'D2het' ~ paste(to_tex('(f) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+#lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('(a) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+#                                       model == 'A2'     ~ paste(to_tex('(b) kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+#                                       model == 'A1het' ~ paste(to_tex('(c) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+#                                       model == 'C1het' ~ paste(to_tex('(d) kernels', model(F, F, 1, F, F, 0)), to_tex('dgemm', model(T, F, 2, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+#                                       model == 'D1het' ~ paste(to_tex('(e) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+#                                       model == 'D2het' ~ paste(to_tex('(f) kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+#                                       T             ~ as.character(model)))
+lab = lab %>% mutate(label = case_when(model == 'A1'     ~ paste(to_tex('\\textbf{(a)} kernels', model(F, F, 1, F, F, 0)), to_tex('network', model(F, T, 1, F, F, 0)), sep='\n'),
+                                       model == 'A2'     ~ paste('\\textbf{(b)} model (a) with', to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
+                                       model == 'A1het' ~  paste('\\textbf{(c)} model (a) with', to_tex('dgemm', model(T, F, 1, F, F, 0)), sep='\n'),
+                                       model == 'C1het' ~  paste('\\textbf{(d)} model (a) with', to_tex('dgemm', model(T, F, 2, F, F, 0)), sep='\n'),
+                                       model == 'D1het' ~  paste('\\textbf{(e)} model (a) with', to_tex('kernels', model(F, F, 1, F, F, 2)), to_tex('dgemm', model(T, F, 2, T, F, 2)), sep='\n'),
+                                       model == 'D2het' ~  paste('\\textbf{(f)} model (e) with', to_tex('network', model(F, T, 1, F, T, 1)), sep='\n'),
                                        T             ~ as.character(model)))
 lab$x = lab$matrix_size
 lab$y = lab$gflops
@@ -3926,22 +3933,16 @@ print(plot)
 
 #+RESULTS:
 #+begin_example
-[1] "(a) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
+[1] "\\textbf{(a)} kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "(b) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
-[1] "(c) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "(d) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}\\!-\\!0$"
-[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "(e) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
-[1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
-[1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N}\\!-\\!0$"
-[1] "(f) kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
+[1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
+Measuring dimensions of: \textbf{(e)} model (a) with
+Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpGH1Cmw/tikzDevice1dbd40af2787' '/tmp/RtmpGH1Cmw/tikzDevice1dbd40af2787/tikzStringWidthCalc.tex'
 
 Active compiler:
 	/usr/bin/pdflatex
@@ -3949,7 +3950,7 @@ Active compiler:
 	kpathsea version 6.3.0
 
 Measuring dimensions of: A1het
-Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpDI9CkZ/tikzDevice1c2025aebbcb' '/tmp/RtmpDI9CkZ/tikzDevice1c2025aebbcb/tikzStringWidthCalc.tex'
+Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpGH1Cmw/tikzDevice1dbd75f7a5bd' '/tmp/RtmpGH1Cmw/tikzDevice1dbd75f7a5bd/tikzStringWidthCalc.tex'
 This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex)
  restricted \write18 enabled.
 entering extended mode
