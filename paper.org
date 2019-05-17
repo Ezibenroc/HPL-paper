@@ -1277,6 +1277,13 @@ zlib 1.0
     }
 }
 
+\newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\noise}[2][]{\ensuremath{\mathcal{N}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
+\newcommand{\norm}{\ensuremath{N}\xspace}
+\newcommand{\mcdots}{\ensuremath{\!\cdot\!\cdot\!\cdot\!}\xspace}
+
 % See https://tex.stackexchange.com/a/55766/71579
 \twocolumn[{%
 \renewcommand\twocolumn[1][]{#1}%
@@ -1292,7 +1299,12 @@ zlib 1.0
     \begin{minipage}[t]{0.6\linewidth}
         \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
-        \captionof{figure}{The predicted performance lays within a few percents of the reality}
+        \captionof{figure}{The predicted performance lays within a few percents of the reality\\
+                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
+                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
+                                   $\text{HPL kernels} \sim 0$,
+                                   $\text{Network} \sim \modelp{1}\noise{0}$
+                          }
     \end{minipage}
 \end{center}%
 }]
@@ -2813,12 +2825,6 @@ communications to illustrate the importance of the model
 complexity. We finally show in Section\ref{sec:validation} that using simpler
 modeling options leads to a serious inaccuracy of the simulation.
 ** Modeling Notations
-#+LaTeX: \newcommand{\model}[2][]{\ensuremath{\mathcal{M}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
-#+LaTeX: \newcommand{\modelp}[2][]{\ensuremath{\mathcal{M'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
-#+LaTeX: \newcommand{\noise}[2][]{\ensuremath{\mathcal{N}_{#1}\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
-#+LaTeX: \newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
-#+LaTeX: \newcommand{\norm}{\ensuremath{N}\xspace}
-#+LaTeX: \newcommand{\mcdots}{\ensuremath{\!\cdot\!\cdot\!\cdot\!}\xspace}
 We denote as $T$ the duration of an operation with parameters
 $M$, $N$, $K$ (in the case of the =dgemm=
 operation, these parameters describe the geometry of the input
