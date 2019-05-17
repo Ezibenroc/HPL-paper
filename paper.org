@@ -1273,7 +1273,8 @@ zlib 1.0
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
     \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG, 38000 Grenoble, France\\
       firstname.lastname@inria.fr\\
-      \includegraphics[width=.75\linewidth]{figures/validation_performance_simple.pdf}
+      \includegraphics[width=.3\linewidth]{figures/node_hours.pdf} %
+      \includegraphics[width=.6\linewidth]{figures/validation_performance_simple.pdf}
     }
 }
 
@@ -3993,13 +3994,13 @@ head(dfsim)
 4      125000  18660   69.80                True              False
 5      250000  21020  495.50                True              False
 6      450000  21710 2798.35                True              False
-  polynomial_dgemm heterogeneous_dgemm  model
-1             True                True simple
-2             True                True simple
-3             True                True simple
-4             True                True simple
-5             True                True simple
-6             True                True simple
+  polynomial_dgemm heterogeneous_dgemm  model simulation_time
+1             True                True simple         1486.82
+2             True                True simple         3910.58
+3             True                True simple         9937.09
+4             True                True simple         2680.43
+5             True                True simple         6260.74
+6             True                True simple        14568.70
 #+end_example
 
 Removing the two outliers in the real executions. These two points are
@@ -4035,8 +4036,8 @@ delta_x = max(dfsim$matrix_size) / 12
 delta_y = max(dfsim$gflops) / 12
 max_x = max(dfsim$matrix_size)
 max_y = max(dfsim$gflops)
-lab = lab %>% mutate(x  = case_when(origin == 'Simulation' ~ 0.95*x,
-                                    origin == 'Reality'    ~ 1.05*x
+lab = lab %>% mutate(x  = case_when(origin == 'Simulation' ~ 0.7*x,
+                                    origin == 'Reality'    ~ 1.2*x
                                    ))
 lab = lab %>% mutate(y  = case_when(origin == 'Simulation' ~ 1.05*y,
                                     origin == 'Reality'    ~ 0.95*y
@@ -4046,19 +4047,52 @@ lab = lab %>% mutate(y  = case_when(origin == 'Simulation' ~ 1.05*y,
 plot = ggplot(df, aes(x=matrix_size, y=gflops, color=origin, linetype=origin))
 plot = plot + stat_summary(fun.y='mean', geom='line')
 plot = plot + stat_summary(fun.y='mean', geom='point')
-plot = plot + theme_bw() #+ expand_limits(y=0)
+plot = plot + theme_bw() + expand_limits(y=0)
 plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
 plot = plot + scale_linetype_manual(values=c('solid', 'dashed'), guide=F)
 plot = plot + theme(text=element_text(size=12))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
-plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=6)
+plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=4)
 plot = plot + theme(text=element_text(size=text_size))
-ggsave(filename='figures/validation_performance_simple.pdf', height=3, width=9, plot=plot)
+ggsave(filename='figures/validation_performance_simple.pdf', height=3, width=6, plot=plot)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-nl8reK/figure76mhSq.png]]
+[[file:/tmp/babel-fPmClk/figure0cThGd.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
+# +begin_src R :results output :session *R* :exports both
+dfsim$origin = 'Simulation'
+dfreal$origin = 'Reality'
+dfsim$node_time = dfsim$simulation_time
+dfreal$node_time = dfreal$time * 32  # 32 nodes
+df = rbind(dfsim %>% select(gflops, matrix_size, origin, node_time), dfreal %>% select(gflops, matrix_size, origin, node_time))
+
+pretty_hour <- function(nb) {
+    return(paste(round(nb), 'node hours'));
+}
+
+#text_size = 16
+df$node_time = df$node_time/3600
+#df$text = paste(df$origin, df$node_time, sep='\n')
+df = df %>% filter(matrix_size == 500000) %>% group_by(origin) %>% summarise(node_time=mean(node_time))
+df$pretty_hour = sapply(df$node_time, pretty_hour)
+df = within(df, text <- paste(origin, pretty_hour, sep='\n'))
+plot = ggplot(df, aes(x=origin, y=node_time, fill=origin)) + geom_bar(stat='identity', alpha=0.5) + theme_bw()
+plot = plot + scale_fill_brewer(type='qual', palette='Dark2', guide=F)
+plot = plot + ylab('Node hours')
+plot = plot + theme(text=element_text(size=12))
+plot = plot + geom_text(aes(label=text), y=10, size=4)
+plot = plot + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
+ggsave(filename='figures/node_hours.pdf', height=3, width=3, plot=plot)
+plot
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-fPmClk/figurecby9yl.png]]
+
+
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with reality. We instrumented HPL to collect the start
