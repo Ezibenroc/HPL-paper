@@ -1271,7 +1271,7 @@ zlib 1.0
 
 \author{
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
-    \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG\\ 38000 Grenoble, France\\
+    \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG, 38000 Grenoble, France\\
       firstname.lastname@inria.fr\\
       \includegraphics[width=.75\linewidth]{figures/validation_performance_simple.pdf}
     }
