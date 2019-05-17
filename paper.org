@@ -1267,7 +1267,7 @@ zlib 1.0
 \newcommand{\TC}[2][inline]{}
 \newcommand{\CH}[2][inline]{}
 
-\title{Fast and Faithful Performance Prediction of\\ MPI applications\\The HPL use case study}
+\title{Fast and Faithful Performance Prediction of\\ MPI applications: the HPL use case study}
 
 \author{
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
@@ -1289,8 +1289,6 @@ supercomputers.  With a rising cost of modern supercomputers, running parallel
 applications at scale solely to optimize their performance is extremely
 expensive. Having inexpensive but faithful predictions of expected performance
 could be a great help for researchers and system administrators.
-
-
 The methodology we propose captures the complexity of adaptive applications by
 emulating the MPI code while skipping insignificant parts. We demonstrate its
 capability with High Performance Linpack (HPL), the benchmark used to rank
