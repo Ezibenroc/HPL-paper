@@ -1146,6 +1146,7 @@ zlib 1.0
 #+LATEX_HEADER: \usepackage{ifthen,figlatex}
 #+LATEX_HEADER: \usepackage{longtable}
 #+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{caption}
 #+LATEX_HEADER: \usepackage{dblfloatfix}    % To enable figures at the bottom of page
 #+LATEX_HEADER: \usepackage{wrapfig}
 #+LATEX_HEADER: \usepackage{subfigure}
@@ -1273,13 +1274,28 @@ zlib 1.0
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
     \IEEEauthorblockA{Univ. Grenoble Alpes, CNRS, Inria, Grenoble INP, LIG, 38000 Grenoble, France\\
       firstname.lastname@inria.fr\\
-      \includegraphics[width=.3\linewidth]{figures/node_hours.pdf} %
-      \includegraphics[width=.6\linewidth]{figures/validation_performance_simple.pdf}
     }
 }
 
-\maketitle              % typeset the title of the contribution
-
+% See https://tex.stackexchange.com/a/55766/71579
+\twocolumn[{%
+\renewcommand\twocolumn[1][]{#1}%
+\maketitle
+\begin{center}
+    \centering
+    \begin{minipage}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figures/node_hours.pdf}
+        \label{fig:teaser:node_hours}
+        \captionof{figure}{For the largest matrix, simulation is one order of magnitude less expensive than the real execution}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.6\linewidth}
+        \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
+        \label{fig:teaser:performance}
+        \captionof{figure}{The predicted performance lays within a few percents of the reality}
+    \end{minipage}
+\end{center}%
+}]
 #+END_EXPORT
 
 * Abstract                                                           :ignore:
@@ -4017,14 +4033,15 @@ print(length(dfreal$gflops))
 : [1] 110
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
-dfsim$origin = 'Simulation'
+dfsim$origin = 'Prediction'
 dfreal$origin = 'Reality'
 df = rbind(dfsim %>% select(gflops, matrix_size, origin), dfreal %>% select(gflops, matrix_size, origin))
+df$origin = factor(df$origin, levels=c('Reality', 'Prediction'))
 
 text_size = 16
 # Labels definitions
 lab = df %>% filter(
-    (origin == 'Simulation' & matrix_size == 100000) |
+    (origin == 'Prediction' & matrix_size == 100000) |
     (origin == 'Reality'    & matrix_size == 100000)
 )
 lab = lab %>% group_by(origin, matrix_size) %>% summarise(gflops=mean(gflops))
@@ -4036,10 +4053,10 @@ delta_x = max(dfsim$matrix_size) / 12
 delta_y = max(dfsim$gflops) / 12
 max_x = max(dfsim$matrix_size)
 max_y = max(dfsim$gflops)
-lab = lab %>% mutate(x  = case_when(origin == 'Simulation' ~ 0.7*x,
+lab = lab %>% mutate(x  = case_when(origin == 'Prediction' ~ 0.7*x,
                                     origin == 'Reality'    ~ 1.2*x
                                    ))
-lab = lab %>% mutate(y  = case_when(origin == 'Simulation' ~ 1.05*y,
+lab = lab %>% mutate(y  = case_when(origin == 'Prediction' ~ 1.05*y,
                                     origin == 'Reality'    ~ 0.95*y
                                    ))
 
@@ -4059,7 +4076,7 @@ plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-fPmClk/figure0cThGd.png]]
+[[file:/tmp/babel-fPmClk/figurexDVPFa.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
 # +begin_src R :results output :session *R* :exports both
