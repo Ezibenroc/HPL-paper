@@ -3827,13 +3827,13 @@ head(dfsim)
 4       75000  15930   17.65 simulation           True               True
 5      175000  19690  181.49 simulation           True               True
 6      350000  21470 1331.50 simulation           True               True
-  polynomial_dgemm heterogeneous_dgemm model
-1            False                True B1het
-2            False                True B1het
-3            False                True B1het
-4             True                True D2het
-5             True                True D2het
-6             True                True D2het
+  polynomial_dgemm heterogeneous_dgemm model simulation_time
+1            False                True B1het         3227.07
+2            False                True B1het         6316.27
+3            False                True B1het        14848.10
+4             True                True D2het         1522.91
+5             True                True D2het         4094.11
+6             True                True D2het        10207.20
 #+end_example
 
 Keeping only a subset of the models, to have a readable plot.
@@ -3864,7 +3864,59 @@ For information, the notations are:
 \newcommand{\noisep}[2][]{\ensuremath{\mathcal{N'}_{#1}\!\ifthenelse{\equal{#2}{}}{}{\!-\!}{#2}}\xspace}
 #+END_SRC
 
-#  +begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
+Let's compute the error done by each model for each matrix size. This is a
+relative error (a percentage), computed with (perf_simu-perf_real)/perf_real.
+
+#+begin_src R :results output :session *R* :exports both
+library(stringr)
+tmp = dfreal %>% group_by(matrix_size) %>% summarize(gflops=mean(gflops))
+tmp = inner_join(dfsim, tmp, by='matrix_size', suffix=c('_simulation', '_reality'))
+tmp$error = (tmp$gflops_simulation - tmp$gflops_reality)/tmp$gflops_reality
+
+pretty_percent = function(value) {
+    value = round(value*100)
+    if(value > 0) {
+        sign='+'
+    }
+    else {
+        sign='-'
+        value = -value
+    }
+    return(paste(sign, value, '\\%', sep=''))
+}
+
+tmp$pretty_error = sapply(tmp$error, pretty_percent)
+head(tmp)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+  matrix_size gflops_simulation    time       mode stochastic_cpu
+1       75000             15930   17.65 simulation           True
+2      175000             19690  181.49 simulation           True
+3      350000             21470 1331.50 simulation           True
+4       50000             13900    5.99 simulation          False
+5      150000             20510  109.73 simulation          False
+6      300000             23150  777.47 simulation          False
+  stochastic_network polynomial_dgemm heterogeneous_dgemm model simulation_time
+1               True             True                True D2het         1522.91
+2               True             True                True D2het         4094.11
+3               True             True                True D2het        10207.20
+4              False            False                True A1het         1512.69
+5              False            False                True A1het         4960.00
+6              False            False                True A1het        10003.40
+  gflops_reality        error pretty_error
+1       16588.75 -0.039710647        -4\\%
+2       19803.33 -0.005722942        -1\\%
+3       21765.00 -0.013553871        -1\\%
+4       12797.50  0.086149639        +9\\%
+5       19403.75  0.057012175        +6\\%
+6       21491.25  0.077182574        +8\\%
+#+end_example
+
+
+Then, we can generate the plot.
+
 #+begin_src R :results output :session *R* :exports both
 tikzDevice::tikz(file = './figures/validation_performance.tex', width = 5, height = 3)
 #tikzDevice::tikz(file = '/tmp/plot.tex', standAlone=T, width = 5, height = 3)
@@ -3936,6 +3988,9 @@ lab = lab %>% mutate(yl = case_when(model == 'A1'     ~ 0.95*max_y,
                                     model == 'D2het' ~ 0.1*max_y,
                                        T             ~ yl))
 
+error_txt = tmp %>% filter(matrix_size == 500000)
+error_txt = error_txt %>% filter(model %in% c('A1', 'A1het', 'D2het'))
+
 # Plot drawing
 plot = ggplot(dfsim, aes(x=matrix_size, y=gflops)) + geom_point(data=dfreal, shape=1, size=0.5) + geom_point(aes(color=model), size=0.5)
 plot = plot + stat_summary(aes(color=model), fun.y='mean', geom='line', linetype='dashed')
@@ -3952,6 +4007,8 @@ plot = plot + geom_label(data=lab, aes(x=xl, y=yl, label=label, group=model, fil
 plot = plot + scale_fill_brewer(type='qual', palette='Dark2', guide=F)
 plot = plot + geom_segment(data=lab, x=max_x*0.75, xend=4.5e5, y=max_y*0.6, yend=mean((dfreal %>% filter(matrix_size == 450000))$gflops), linetype="solid")
 plot = plot + geom_label(data=lab, aes(x=max_x*0.75, y=max_y*0.6), label='\\textbf{reality}', size=text_size)
+plot = plot + geom_text(data=error_txt, aes(label=pretty_error, y=gflops_simulation+200), x=5.3e5)
+plot = plot + expand_limits(x=5.35e5)
 plot
 tikzTest("A1het")
 dev.off()
@@ -3970,8 +4027,6 @@ print(plot)
 [1] "kernels$\\sim\\mathcal{M}\\!-\\!1 \\mathcal{N}\\!-\\!2$"
 [1] "dgemm$\\sim\\mathcal{M}_{H}\\!-\\!2 \\mathcal{N}_{H}\\!-\\!2$"
 [1] "network$\\sim\\mathcal{M'}\\!-\\!1 \\mathcal{N'}\\!-\\!1$"
-Measuring dimensions of: \textbf{(e)} model (a) with
-Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpGH1Cmw/tikzDevice1dbd40af2787' '/tmp/RtmpGH1Cmw/tikzDevice1dbd40af2787/tikzStringWidthCalc.tex'
 
 Active compiler:
 	/usr/bin/pdflatex
@@ -3979,7 +4034,7 @@ Active compiler:
 	kpathsea version 6.3.0
 
 Measuring dimensions of: A1het
-Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpGH1Cmw/tikzDevice1dbd75f7a5bd' '/tmp/RtmpGH1Cmw/tikzDevice1dbd75f7a5bd/tikzStringWidthCalc.tex'
+Running command: '/usr/bin/pdflatex' -interaction=batchmode -halt-on-error -output-directory '/tmp/RtmpwEhviK/tikzDevice51bd564dc53f' '/tmp/RtmpwEhviK/tikzDevice51bd564dc53f/tikzStringWidthCalc.tex'
 This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex)
  restricted \write18 enabled.
 entering extended mode
@@ -4114,8 +4169,6 @@ plot
 
 #+RESULTS:
 [[file:/tmp/babel-fPmClk/figurecby9yl.png]]
-
-
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with reality. We instrumented HPL to collect the start
