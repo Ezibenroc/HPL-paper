@@ -1744,6 +1744,27 @@ simulations quickly become intractable without significant effort.
 # with computations. Its adaptive behavior is thus particularly
 # challenging to simulate and representative of what can be found in
 # many MPI applications.
+
+A first approach for estimating the performance of applications like HPL is
+extrapolation \cite{hpl_prediction}. The main idea is twofold: (1) Using a
+simple linear regression, one can run the application several times with small
+and medium problem sizes to predict its makespan for larger sizes. (2) For a
+given problem size, it is possible to have a good estimate of the application
+performance by running only a subset of its iterations.  With this method, it is
+possible to predict the performance of large HPL runs with an error of only a
+few percents and a relatively low cost. However, this approach has several
+flaws:
+- It does not account for phenomena that could happen at scale (\eg a network collapse).
+- The application is seen as a black box, the prediction only outputs a raw
+  value, it is not possible to have a trace of the execution.
+- To make any prediction, it is necessary to make real runs on the target
+  platform. It is not possible to study what-if scenarios (\eg what if the
+  network bandwidth was increased or the nodes heterogeneity was decreased?).
+- The predictions are only possible with the same parameters. In particular, the
+  number of rows and columns of the virtual grid: to predict the performance of
+  a run using the whole supercomputer, it is required to perform several
+  executions using all the nodes of the machine.
+
 Performance prediction of MPI applications through simulation has been
 widely studied over the last decades but two approaches can be
 distinguished in the literature: offline and online simulation.
@@ -5350,6 +5371,17 @@ pages = {366-376},
     pages = "612--625",
     title = "Top-down induction of model trees with regression and splitting nodes",
     journal = "{IEEE} Transactions on Pattern Analysis and Machine Intelligence"
+}
+
+@incollection{hpl_prediction,
+    author = "Luszczek, Piotr and Dongarra, Jack",
+    doi = "10.1007/978-3-642-31464-3_74",
+    url = "https://doi.org/10.1007%2F978-3-642-31464-3_74",
+    year = "2012",
+    publisher = "Springer Berlin Heidelberg",
+    pages = "730--739",
+    title = "Reducing the Time to Tune Parallel Dense Linear Algebra Routines with Partial Execution and Performance Modeling",
+    booktitle = "Parallel Processing and Applied Mathematics"
 }
 #+end_src
 
