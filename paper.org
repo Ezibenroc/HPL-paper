@@ -4947,7 +4947,6 @@ Tangle this file with C-c C-v t
 @Misc{cornebize:github_notebook,
   AUTHOR = {Cornebize, Tom},
   title = 	 {{Laboratory Notebook hosted on GitHub. Capacity Planning of Supercomputers: Simulating MPI Applications at Scale}},
-  howpublished = {\url{https://github.com/Ezibenroc/m2_internship_journal}},
   howpublished = {\url{https://github.com/anonymous/m2_internship_journal}},
   year = 	 {2017},
 }
