@@ -4244,7 +4244,7 @@ We found that adding the temporal variability noise (\noise{2} for all
 kernels, \noise[H]{2} for \texttt{dgemm}) is the key ingredient to
 obtain the last bit of realism. The prediction (the line (e)) is now
 extremely close to reality as it slightly underestimates the performance by
-less than \SI{5}{\percent} and even as little as \SI{2}{\percent} for the larger matrices. Adding back temporal variability
+less than \SI{5}{\percent} and even as little as \SI{1}{\percent} for the larger matrices. Adding back temporal variability
 to the network model (\noisep{1}, line (f)) still has no significant
 effect but this can be explained by the fact that HPL mostly
 communicates very large amounts of data in bulk. Network temporal
