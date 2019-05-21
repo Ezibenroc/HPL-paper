@@ -1290,21 +1290,34 @@ zlib 1.0
 \maketitle
 \begin{center}
     \centering
-    \begin{minipage}[t]{0.3\linewidth}
-        \begin{tabular}{l|ll}
-             & Node hours & Total gigabytes \\
+    \begin{minipage}[t]{0.35\linewidth}
+        \vspace{0pt}
+        \begin{tabular}{|l|ll|}
             \hline
-            Reality & 33.7 & > 2000 \\
-            Simulation & 4.6 & 9.4 \\
+            \textbf{Dahu} & Node hours & Total gigabytes \\
+            \hline
+            Reality & \Num{34} & > \Num{2000} \\
+            Simulation & \Num{5} & \Num{9} \\
+            \hline
         \end{tabular}
-        \captionof{table}{For the largest matrix, simulation is one order of magnitude less expensive than the real execution}
+        \\ \vspace{0.5 cm} \\
+        \begin{tabular}{|l|ll|}
+            \hline
+            \textbf{Stampede} & Node hours & Total gigabytes \\
+            \hline
+            Reality & > \Num{12000} & > \Num{120000} \\
+            Simulation & \Num{62} & \Num{19} \\
+            \hline
+        \end{tabular}
+        \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
         \label{fig:teaser:node_hours}
-    \end{minipage}
-    \hfill
+    \end{minipage} %
+    \hfill %
     \begin{minipage}[t]{0.6\linewidth}
+        \vspace{0pt}
         \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
-        \captionof{figure}{The predicted performance lays within a few percents of the reality\\
+        \captionof{figure}{Dahu's predicted performance is within a few percents of reality\\
                            Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
                                    $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
                                    $\text{HPL kernels} \sim 0$,
