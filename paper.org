@@ -1290,39 +1290,39 @@ zlib 1.0
 \maketitle
 \begin{center}
     \centering
-    \begin{minipage}[t]{0.35\linewidth}
+    \begin{minipage}[t]{0.48\linewidth}
         \vspace{0pt}
-        \begin{tabular}{|l|ll|}
+        \begin{tabular}{|l|lll|}
             \hline
-            \textbf{Dahu} & Node hours & Total gigabytes \\
+            \textbf{Dahu} & \# nodes & Node hours & Total gigabytes \\
             \hline
-            Reality & \Num{34} & > \Num{2000} \\
-            Simulation & \Num{5} & \Num{9} \\
+            Reality & \Num{32} & \Num{34} & > \Num{2000} \\
+            Simulation & \Num{1} & \Num{5} & \Num{9} \\
             \hline
         \end{tabular}
         \\ \vspace{0.5 cm} \\
-        \begin{tabular}{|l|ll|}
+        \begin{tabular}{|l|lll|}
             \hline
-            \textbf{Stampede} & Node hours & Total gigabytes \\
+            \textbf{Stampede} & \# nodes & Node hours & Total gigabytes \\
             \hline
-            Reality & > \Num{12000} & > \Num{120000} \\
-            Simulation & \Num{62} & \Num{19} \\
+            Reality & \Num{6006} & > \Num{12000} & > \Num{120000} \\
+            Simulation & \Num{1} & \Num{62} & \Num{19} \\
             \hline
         \end{tabular}
         \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
         \label{fig:teaser:node_hours}
     \end{minipage} %
     \hfill %
-    \begin{minipage}[t]{0.6\linewidth}
+    \begin{minipage}[t]{0.48\linewidth}
         \vspace{0pt}
         \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
-        \captionof{figure}{Dahu's predicted performance is within a few percents of reality\\
-                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
-                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
-                                   $\text{HPL kernels} \sim 0$,
-                                   $\text{Network} \sim \modelp{1}\noise{0}$
-                          }
+        \captionof{figure}{Dahu's predicted performance is within a few percents of reality, using a stochastic heterogeneous model for \texttt{dgemm} and a simplistic model for the other kernels and the nerwork}
+%                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
+%                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
+%                                   $\text{HPL kernels} \sim 0$,
+%                                   $\text{Network} \sim \modelp{1}\noise{0}$
+%                          }
     \end{minipage}
 \end{center}%
 }]
