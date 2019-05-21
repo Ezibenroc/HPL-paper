@@ -1291,9 +1291,14 @@ zlib 1.0
 \begin{center}
     \centering
     \begin{minipage}[t]{0.3\linewidth}
-        \includegraphics[width=\linewidth]{figures/node_hours.pdf}
+        \begin{tabular}{l|ll}
+             & Node hours & Total gigabytes \\
+            \hline
+            Reality & 33.7 & > 2000 \\
+            Simulation & 4.6 & 9.4 \\
+        \end{tabular}
+        \captionof{table}{For the largest matrix, simulation is one order of magnitude less expensive than the real execution}
         \label{fig:teaser:node_hours}
-        \captionof{figure}{For the largest matrix, simulation is one order of magnitude less expensive than the real execution}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.6\linewidth}
@@ -3813,6 +3818,7 @@ The zip archives for these files are:
 - Real executions of March: [[https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/hpl/grenoble_2019-03-15_1855885.zip][this]] and [[https://github.com/Ezibenroc/mpi_calibration/blob/master/dahu/hpl/grenoble_2019-03-18_1856059.zip][this]] archives.
 - Simulations with the homogeneous dgemm model: [[https://github.com/Ezibenroc/mpi_calibration/tree/master/dahu/smpi_hpl/paper_sc19/performance/2][these archives]].
 - Simulation with the heterogeneous dgemm model: [[https://github.com/Ezibenroc/mpi_calibration/tree/master/dahu/smpi_hpl/paper_sc19/performance/11][these archives]].
+- Simulation with the heterogeneous dgemm model but simple models for the other parts: [[https://github.com/Ezibenroc/mpi_calibration/tree/master/dahu/smpi_hpl/paper_sc19/performance/12][these archives]].
 *** Drawing the plot
 Here, we use tikzDevice to generate Tikz code with ggplot. More information on
 this [[https://matthew-parker.rbind.io/post/easy-latex-titles-and-labels-for-ggplot/][tutorial]].
@@ -4190,6 +4196,77 @@ plot
 
 #+RESULTS:
 [[file:/tmp/babel-fPmClk/figurecby9yl.png]]
+*** Values for the teaser table - simple model
+#+begin_src R :results output :session *R* :exports both
+library(ggplot2)
+library(tikzDevice)
+library(dplyr)
+dfreal = read.csv('data/validation_performance/hpl_reality.csv')
+dfreal = dfreal %>% filter(date == '2019-03')
+dfsim = read.csv('data/validation_performance/hpl_simulation_heterogeneous.csv')
+dfsim = dfsim %>% filter(model == 'simple')
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output org :session *R* :exports both
+library(ascii)
+options(warn=-1)
+
+dfsim$origin = 'Simulation'
+dfreal$origin = 'Reality'
+dfsim$node_time = dfsim$simulation_time
+dfreal$node_time = dfreal$time * 32  # 32 nodes
+dfreal$memory_consumption = dfreal$matrix_size ** 2 * 8  # we only have a lower bound of the memory consumption, no real measure
+df = bind_rows(dfreal, dfsim)
+df = df %>% select(gflops, matrix_size, origin, node_time, memory_consumption)
+
+df$memory_consumption = df$memory_consumption / 1e9
+df$node_time = df$node_time / 3600
+df = df %>% filter(matrix_size == 500000) %>% group_by(origin) %>% summarise(node_time=mean(node_time), memory_consumption=mean(memory_consumption))
+
+print(ascii(df), type='org')
+#+end_src
+
+#+RESULTS:
+#+BEGIN_SRC org
+|   | origin     | node_time | memory_consumption |
+|---+------------+-----------+--------------------|
+| 1 | Reality    |     33.67 |            2000.00 |
+| 2 | Simulation |      4.60 |               9.42 |
+#+END_SRC
+
+#+begin_src R :results output latex :session *R* :exports both
+library(xtable)
+filename = '/tmp/table.tex'
+print(xtable(df,
+             align='llll',
+             caption='For the largest matrix, simulation is one order of magnitude less expensive than the real execution',
+             label='fig:teaser:node_hours',
+     ),
+     file=filename, include.rownames=FALSE
+)
+writeLines(readLines(filename))
+#+end_src
+
+#+RESULTS:
+#+BEGIN_EXPORT latex
+% latex table generated in R 3.5.1 by xtable 1.8-4 package
+% Tue May 21 16:48:41 2019
+\begin{table}[ht]
+\centering
+\begin{tabular}{lll}
+  \hline
+origin & node\_time & memory\_consumption \\ 
+  \hline
+Reality & 33.67 & 2000.00 \\ 
+  Simulation & 4.60 & 9.42 \\ 
+   \hline
+\end{tabular}
+\caption{For the largest matrix, simulation is one order of magnitude less expensive than the real execution} 
+\label{fig:teaser:node_hours}
+\end{table}
+#+END_EXPORT
 ** \scalebox{.94}{Comparing Simulations with Real Executions}
 Our first evaluation consists in comparing the traces of the
 simulations with reality. We instrumented HPL to collect the start
