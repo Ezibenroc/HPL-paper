@@ -1879,7 +1879,7 @@ larger scale with HPL, whose emulation comes with at least two challenges:
 - The time-complexity of the
   algorithm is $\Theta(N^3)$ and $\Theta(N^2)$ communications are performed, with $N$ being very
   large. The execution on the Stampede cluster took roughly two hours
-  on 6,006\nbsp{}compute nodes. Using only a single node, a naive
+  on \Num{6006}\nbsp{}compute nodes. Using only a single node, a naive
   emulation of HPL at the scale of the Stampede run would take about
   500 days if perfect scaling was reached. 
   # Although the emulation could
@@ -1916,7 +1916,7 @@ HPL heavily relies
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
 =dtrsm= (for solving an  $A\cdot x=b$ equation). The analysis of an
 HPL simulation with $64$ processes and a very small matrix of order
-\Num{30000} showed that $\approx \NSI{96}{\percent}$ of the time is spent in
+\Num{30000} showed that about $\NSI{96}{\percent}$ of the time is spent in
 these two kernels. Since the output of 
 these kernels does not influence the control flow, simulation time can
 be reduced by substituting =dgemm= and =dtrsm= function calls with a
