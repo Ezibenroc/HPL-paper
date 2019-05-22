@@ -3848,9 +3848,10 @@ this [[https://matthew-parker.rbind.io/post/easy-latex-titles-and-labels-for-ggp
 library(ggplot2)
 library(tikzDevice)
 library(dplyr)
+options(warn=-1)
 dfreal = read.csv('data/validation_performance/hpl_reality.csv')
 dfreal = dfreal %>% filter(date == '2019-03')
-dfsim = rbind(
+dfsim = bind_rows(
     read.csv('data/validation_performance/hpl_simulation_heterogeneous.csv'),
     read.csv('data/validation_performance/hpl_simulation_homogeneous.csv')
 )
