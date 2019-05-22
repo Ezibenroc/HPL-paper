@@ -1289,21 +1289,21 @@ zlib 1.0
 \maketitle
 \begin{center}
     \centering
-    \begin{minipage}[t]{0.41\linewidth}\centering
+    \begin{minipage}[t]{0.44\linewidth}\centering
         \vspace{0pt}
         \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
-        \scalebox{.95}{\begin{tabular}{ll|ll}
-            && Reality & Simulation\\
+        \scalebox{.95}{\begin{tabular}{ll|l@{~~~}l}
+            && Reality & Simulation\\[.2em]
             \hline
-            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Dahu}}} & \# nodes & \Num{32} & \Num{1}\\
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{  Dahu  }}} & \#nodes~/~\#processes & \Num{32}~/~\Num{1024} & \Num{1}~/~\Num{1}\\
              & Memory & \NSI{2}{\tera\byte} & \NSI{9}{\giga\byte}\\
-             & Duration & \Num{1} hour & \Num{5} hours\\
-             & Resources & \Num{32} node hours & \Num{1} node hours\\
+             & Duration   (hours) & \Num{1} & \Num{5} \\
+             & Resources (node hours) & \Num{32} & \Num{1}\\[.2em]
              \hline
-            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Stampede}}} & \# nodes & \Num{6006} & \Num{1}\\
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Stampede}}} & \#nodes~/~\#processes & \Num{6006}~/~\Num{6006} & \Num{1}~/~\Num{1}\\
              & Memory & \NSI{120}{\tera\byte} & \NSI{19}{\giga\byte}\\
-             & Duration & \Num{2} hours & \Num{62} hours\\
-             & Resources & \Num{12000} node hours & \Num{62} node hours\\
+             & Duration   (hours) & \Num{2} & \Num{62}\\
+             & Resources (node hours)& \Num{12000} & \Num{62} \\
         \end{tabular}}
         \label{fig:teaser:node_hours}
     \end{minipage} %
@@ -1313,7 +1313,7 @@ zlib 1.0
         \includegraphics[width=.95\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
         \vspace{-.5em}
-        \captionof{figure}{HPL performance on Dahu can be predicted within within a few percents of reality using a stochastic heterogeneous model for \texttt{dgemm} and a simple model for all other kernels and the nerwork}
+        \captionof{figure}{HPL performance on Dahu can be predicted within a few percents of reality using a stochastic heterogeneous model for \texttt{dgemm} and a simple model for all other kernels and the nerwork}
 %                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
 %                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
 %                                   $\text{HPL kernels} \sim 0$,
@@ -4198,12 +4198,12 @@ plot = plot + scale_linetype_manual(values=c('solid', 'dashed'))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
 # plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=4)
 plot = plot + theme(text=element_text(size=text_size), legend.title = element_blank(), legend.justification=c(0,0), legend.position=c(.7,.1))
-ggsave(filename='figures/validation_performance_simple.pdf', height=2.2, width=6, plot=plot)
+ggsave(filename='figures/validation_performance_simple.pdf', height=2.3, width=6, plot=plot)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-11346F8S/figure11346ZyZ.png]]
+[[file:/tmp/babel-11346F8S/figure11346ARs.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
 # +begin_src R :results output :session *R* :exports both
