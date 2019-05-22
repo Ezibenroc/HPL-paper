@@ -1352,30 +1352,33 @@ organization or choice of algorithm, as these have a huge impact on
 load distribution and network utilization. Scientific application
 developers and users often spend a considerable amount of time and
 effort running their application at different scales solely to tweak
-parameters and therefore optimize their performance. This expenditure
-of time, combined with the power consumption that often reaches several MW for TOP500
-machines, makes it financially expensive to test-run
-applications. Similar difficulties are encountered when (co-)designing
+parameters and therefore optimize their performance.  Whenever actual
+performance does not match expectations, it can be very difficult to
+understand whether the mismatch originates from application
+misunderstanding or machine misconfiguration.
+This expenditure
+of time, combined with the power consumption that often reaches several MW, makes it financially expensive to test-run
+applications. Similar difficulties are encountered when \hbox{(co-)designing}
 supercomputers for specific applications. A
 large part of this tuning work could be simplified if a generic and
 faithful performance prediction tool was available. This article
 presents a decisive step in this direction.
 
-The world's largest and fastest machines are ranked twice a year in
-the TOP500\cite{TOP500} list using the High-Performance Linpack (HPL) benchmark. To
-get near to the peak performance, a sizable input is needed and it
-typically takes several hours to run HPL on the list's number one
-system. HPL implements several algorithmic optimizations that should
-be carefully tuned and it is thus quite representative of many
-other scientific applications in terms of potential performance issues
-and their solutions. In the case of HPL, machine vendors know how to
-estimate the performance by using simple mathematical
-models. However, these models only give trends but fail to capture the
-impact of the network congestion and of system noise and are thus not
-particularly accurate. Whenever actual
-performance does not match expectations, it can be very difficult to
-understand whether the mismatch originates from model inaccuracy or
-machine misconfiguration.
+# The world's largest and fastest machines are ranked twice a year in
+# the TOP500\cite{TOP500} list using the High-Performance Linpack (HPL) benchmark. To
+# get near to the peak performance, a sizable input is needed and it
+# typically takes several hours to run HPL on the list's number one
+# system. HPL implements several algorithmic optimizations that should
+# be carefully tuned and it is thus quite representative of many
+# other scientific applications in terms of potential performance issues
+# and their solutions. In the case of HPL, machine vendors know how to
+# estimate the performance by using simple mathematical
+# models. However, these models only give trends but fail to capture the
+# impact of the network congestion and of system noise and are thus not
+# particularly accurate. Whenever actual
+# performance does not match expectations, it can be very difficult to
+# understand whether the mismatch originates from model inaccuracy or
+# machine misconfiguration.
 
 # \TC{Au contraire, on a bien vu dans nos expériences que l'impact du réseau était complètement négligeable. C'est plutot la variabilité spatiale et temporelle qui pose problème et n'est pas prise en compte par les modèles analytiques.}
 
@@ -1394,32 +1397,36 @@ machine misconfiguration.
 # importance of carefully modeling spatial and temporal variability 4)
 # Compare with a top 500 qualification run }
 
-In this article, we explain how to predict the performance of HPL on a
-supercomputer with the SimGrid/SMPI\cite{simgrid,smpi} simulator. We
-detail how we obtained faithful models for several key functions (\eg
-=dgemm= and =dtrsm=) and managed to reduce the memory consumption from
-more than a hundred terabytes to several gigabytes. This allowed us to
-emulate on a single commodity server within 1-2 days a scenario
-similar to the HPL run that was carried out on the 
-Stampede cluster (hosted at TACC) in 2013 for the TOP500.
-More importantly, we managed to
-predict the performance of HPL on a recent cluster (running a thousand
-MPI ranks) within a few percent of reality.
-\CH{Why is the small cluster "more important"? I would start this sentence using "Moreover, ..". As a reader, I ask myself: The cluster was within a few percent, and the precision for the stampede run was ...?}
+In this article, we explain how to predict the performance of
+High-Performance Linpack (HPL) on a supercomputer with the
+SimGrid/SMPI\cite{simgrid,smpi} simulator. HPL is used to rank twice a
+year the world's largest and fastest machines in the
+TOP500\cite{TOP500} and requires both a careful tuning and a sizable
+input to get near to the peak performance.  We detail how we obtained
+faithful models for several key functions (\eg =dgemm= and =dtrsm=) and
+managed to reduce the memory consumption from more than a hundred
+terabytes to several gigabytes. This allowed us to emulate HPL on a single
+commodity server within 1-3 days scenarios similar to the run that
+was carried out on the Stampede cluster (hosted at TACC) in 2013 for
+the TOP500 (see Table I). More importantly, we show that despite the
+genericity of our approach (we only modify a few dozens of lines of
+HPL), our simulation allows to predict the performance of HPL on a
+recent cluster (running a thousand MPI ranks) within a few percent of
+reality (see Figure 1).
 
 This article is organized as follows: Section\ref{sec:con} presents
-the main characteristics of the HPL application and provides details on
-the run that was conducted at TACC in 2013. Section\ref{sec:relwork}
+the main characteristics of the HPL application and provides
+information on how the run are conducted on modern supercomputers. Section\ref{sec:relwork}
 discusses related work and explains why emulation (or /online
-simulation/) is the only possible approach when studying an application
+simulation/) is the only sensible approach when studying an application
 as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
 simulator we used for this work, SimGrid/SMPI, followed by an
 extensive discussion in Section\ref{sec:em} about the optimizations on
-all levels (\ie simulator, application, operating system) that were necessary to
+all levels (\ie simulator, application, operating system) that are necessary to
 make a large-scale run tractable. The scalability of our approach is
 evaluated in Section\ref{sec:scalabilityevol}. In
 Section\ref{sec:modeling}, we explain how the different resources of
-the supercomputer (network, compute kernels) are modeled to
+the supercomputer (network, compute kernels) can be modeled to
 predict the performance of HPL faithfully. We particularly
 discuss the usefulness and relevance of different degrees of
 modeling complexity. In Section\ref{sec:validation}, we compare
@@ -1549,14 +1556,13 @@ the peak performance and the effective performance, it provides almost
 no information on how (software versions, HPL parameters, etc.) this
 performance was achieved. Some colleagues agreed to provide us with
 the HPL configuration they used and the output they submitted for
-ranking. In June 2013, the Stampede supercomputer at TACC was ranked
+ranking (see Table\ref{fig:typical_run}). 
+In June 2013, the Stampede supercomputer at TACC was ranked
 6th in the TOP500 by achieving \NSI{5168.1}{\tera\flops}. In November
 2017, the Theta supercomputer at ANL was ranked 18th with a performance of \NSI{5884.6}{\tera\flops}
 but required a 28-hour run on the
 whole machine. Finally, we ran HPL ourselves on a Grid'5000 cluster
-named Dahu that we could fully control. 
-Table\ref{fig:typical_run} shows the parameters that were used for each of
-these runs.
+named Dahu whose software stack could be fully controlled. 
 
 #+BEGIN_EXPORT latex
 % \TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
@@ -1759,29 +1765,27 @@ simulations quickly become intractable without significant effort.
 # challenging to simulate and representative of what can be found in
 # many MPI applications.
 
-A first approach for estimating the performance of applications like HPL is
-extrapolation \cite{hpl_prediction}. The main idea is twofold: (1) Using a
-simple linear regression, one can run the application several times with small
-and medium problem sizes to predict its makespan for larger sizes. (2) For a
-given problem size, it is possible to have a good estimate of the application
-performance by running only a subset of its iterations.  With this method, it is
-possible to predict the performance of large HPL runs with an error of only a
-few percents and a relatively low cost. However, this approach has several
-flaws:
-- It does not account for phenomena that could happen at scale (\eg a network collapse).
-- The application is seen as a black box, the prediction only outputs a raw
-  value, it is not possible to have a trace of the execution.
-- To make any prediction, it is necessary to make real runs on the target
-  platform. It is not possible to study what-if scenarios (\eg what if the
-  network bandwidth was increased or the nodes heterogeneity was decreased?).
-- The predictions are only possible with the same parameters. In particular, the
-  number of rows and columns of the virtual grid: to predict the performance of
-  a run using the whole supercomputer, it is required to perform several
-  executions using all the nodes of the machine.
+A first approach for estimating the performance of applications like
+HPL is statistical modeling of the application as a
+whole\cite{hpl_prediction}.  By running the application several times
+with small and medium problem sizes (of a few iterations of large
+problem sizes) and using simple linear regressions, it is possible to
+predict its makespan for larger sizes with an error of only a few
+percents and a relatively low cost. Unfortunately, the predictions are
+limited to the same application configuration and studying the
+influence of the number of rows and columns of the virtual grid or of
+the broadcast algorithms requires a new model and new (costly) runs
+using the whole target machine.  Furthermore, this approach does not
+allow to study what-if scenarios (\eg to evaluate what would happen
+if the network bandwidth was increased or if node heterogeneity was
+decreased) that are particularly useful when investigating potential
+performance improvements.
 
-Performance prediction of MPI applications through simulation has been
-widely studied over the last decades but two approaches can be
-distinguished in the literature: offline and online simulation.
+Simulation provides the details and flexibility missing to such
+black-box modeling approach. Performance prediction of MPI
+applications through simulation has been widely studied over the last
+decades but two approaches can be distinguished in the literature:
+offline and online simulation.
 
 With the most common approach, /offline simulation/, a 
 trace of the application is first obtained on a real platform. This
@@ -1798,16 +1802,16 @@ acquisition requirement. Not only is a large machine required but the
 compressed trace of a few iterations (out of several thousands)
 of HPL typically reaches a few hundred MB, making this approach
 quickly 
-impractical\cite{suter}. Even worse, tracing an application provides
+impractical\cite{suter}. Worse, tracing an application provides
 only information about
-its behavior at the time of the run. Even slight modifications 
-(\eg to communication patterns) may make the trace inaccurate. It is
-possible for simple applications (\eg =stencil=)
-to extrapolate behavior from small-scale
+its behavior at the time of the run: slight modifications 
+(\eg to communication patterns) may make the trace inaccurate. The
+behavior of simple applications (\eg =stencil=)
+can be extrapolated from small-scale
 traces\cite{scalaextrap,pmac_lspp13} but this fails if the execution is
-non-deterministic, \ie whenever the application relies on
+non-deterministic, \eg whenever the application relies on
 non-blocking communication patterns, which is unfortunately the
-case for HPL.
+case for HPL.  
 
 The second approach discussed in the literature is /online simulation/.
 Here, the application is executed (emulated) on top of a simulator
@@ -1822,7 +1826,14 @@ SimGrid/SMPI are mature enough to faithfully emulate
 HPL. In this work, we decided to rely on SimGrid as 
 its performance models and its emulation capabilities seemed quite solid but 
 the developments we propose would a priori also be possible with SST.
-\CH{seemed quite solid? Using another simulator was never up for debate - we are the developers of this simulator. I would delete this part and just say ... SimGrid, but our proposed approach is a priori also possible with SST}
+Note that the HPL emulation we describe in Section\ref{sec:em} should not
+be confused with the application skeletonization\cite{sst_skeleton}
+commonly used with SST. Skeletons are code extractions of the most
+important parts of a complex application whereas we only modify a few
+dozens of lines of HPL before emulating it with SMPI. Finally, it is
+important to understand that the approach we propose is intended to
+help studies at the level of the whole machine and application, not
+the influence of microarchitectural details as intended by MUSA\cite{musa_16}.
 * SimGrid/SMPI in a Nutshell
 #+LATEX: \label{sec:smpi}
 
@@ -1850,12 +1861,12 @@ relies on SimGrid's communication models where each ongoing
 communication is represented as a whole (as opposed to single packets)
 by a /flow/. Assuming steady-state, contention between active
 communications can then be modeled as a bandwidth sharing problem that
-accounts for non-trivial phenomena (\eg cross-traffic interference or network
-heterogeneity\cite{Velho_TOMACS13}). If needed, communications that start or end
+accounts for non-trivial phenomena (\eg cross-traffic interference\cite{Velho_TOMACS13}). If needed, communications that start or end
 trigger a re-computation of the bandwidth share.  In this
-model, the time to simulate a message passing through the network is
+fluid model, the time to simulate a message passing through the network is
 independent of its size, which is advantageous for large-scale
-applications frequently sending large messages.  SimGrid does not
+applications frequently sending large messages and orders of magnitude
+faster than packet-level simulation.  SimGrid does not
 model transient phenomena incurred by the network protocol but
 accounts for network topology and heterogeneity. Special attention to
 the modeling of collective communication algorithms has also been
@@ -1906,9 +1917,8 @@ modifications and refer the reader interested in details
 to a previous report \cite{cornebize:hal-01544827,cornebize:github_notebook}
 and a companion repository\cite{cornebize:exp_artifact}.
 For our experiments in this section, we used a single core from nodes
-of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
-\NSI{32}{\giga\byte} of RAM, two 8-core Intel Xeon E5-2620 v4
-CPUs processors and a Debian Stretch OS (Linux 4.9). 
+of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} (\NSI{32}{\giga\byte} of RAM, two 8-core Intel Xeon E5-2620 v4
+CPUs, Debian Stretch OS (Linux 4.9)). 
 ** Speeding Up the Emulation
 *** Compute Kernel Modeling
 HPL heavily relies 
@@ -2103,7 +2113,7 @@ grid_arrange_shared_legend(plot2, plot1, ncol=2, position="top")
     if(expected_time > 0)  |\color{colorfuncall}smpi\_execute\_benched|(expected_time); \
 })
 #+END_SRC
-*** Specific Adjustments of HPL
+*** Specific Adjustments
 #+LaTeX: \label{sec:hplchanges}
 
 HPL uses pseudo-randomly generated matrices that are setup every time
@@ -2116,7 +2126,7 @@ element equaling the maximum absolute value. Although we ignored the
 cost of this function as well, we set its return value to a random (but controlled)
 value to make the simulation unbiased (but fully deterministic).
 We confirmed that this modification was harmless in terms of
-performance prediction.
+performance prediction (see\cite{cornebize:github_notebook} for details).
 ** Scaling Down Memory Consumption
 \CH{I am not sure about "scaling" here. Lowering? Reducing?}
 *** Figure                                                         :ignore:
@@ -2272,8 +2282,8 @@ iteration to iteration. As we explained above, the partial sharing of
 panels requires many calls to =mmap= and introduces an overhead that
 makes these repeated allocations / frees a bottleneck. Since
 the very first allocation can fit all subsequent panels, we modified
-this allocation mechanism to allocate only the first panels and reuse
-them as much as possible for subsequent iterations (see
+this allocation mechanism so that SMPI can reuse panels as much as
+possible from an iteration to an other (see
 Figure\ref{fig:panel_reuse}). Even for a very small matrix of order
 $40,000$ and $64$ MPI processes, the simulation time decreases from
 \NSI{20.5}{\sec} to \NSI{16.5}{\sec}.
@@ -2376,7 +2386,10 @@ Figure\ref{fig:hpl_scalability}.  With all previously described
 optimizations enabled, the longest simulation took
 close to $47$ hours and consumed \NSI{16}{\giga\byte} of memory
 whereas the shortest one took $20$ minutes and \NSI{282}{\mega\byte}
-of memory.
+of memory. These optimizations also enabled us to simulated the 
+configuration used for the Stampede cluster in 2013 for the TOP500
+ranking in less than $62$ hours and using \NSI{19}{\giga\byte} on a
+single node of a commodity cluster (see Table I).
 *** Hidden section                                               :noexport:
 Got data and code from the "2017-06-05 Monday: Plots for scalability
 test" section of Tom's journal:
@@ -2867,7 +2880,7 @@ matrices). We first consider the three following modeling options:
   compute kernels, the duration can be modeled as a constant
   duration independent of the input parameters, \ie $T \sim \alpha$, where
   $\alpha$ is estimated through the sample average of the duration of the
-  operation. 
+  operation (or simply 0 if the kernel is negligible) . 
 - Modeling option \model{1}: A simple combination of the parameters
   (\eg $S=M.N.K$) may be the primary factor driving the performance of
   the operation. Then $T \sim \alpha.S ~(+ \beta)$ and $\alpha$ and $\beta$ can be
@@ -2879,9 +2892,10 @@ matrices). We first consider the three following modeling options:
   estimated through a classical least-square linear regression.
 There are two situations where more elaborate variations need to be
 considered:
-- The platform may be slightly heterogeneous (spatial variability) and
-  the previous models should then be built for each host
-  individually. We denote this modeling option as \model[H]{}.
+- Whenever the platform is slightly heterogeneous (spatial variability),
+  the previous models should be built for each host
+  individually. This modeling option is denoted 
+  #+LaTeX: \model[H]{}.
 - The behavior of the operation may be mostly linear but only for
   specific parameter ranges. This is for example the case for
   networking operations or for computing nodes on Stampede where
@@ -2895,8 +2909,8 @@ considered:
       \text{else if } M<\theta_2 & \alpha_2.M+\beta_2 \\
       ... \end{cases},$
   #+END_EXPORT
-  where the $\theta, \alpha, \beta$ should all be estimated. We denote this kind of
-  model as \modelp{}.
+  where the $\theta, \alpha, \beta$ should all be estimated. This kind of
+  model is denoted \modelp{}.
 All previous models can be fit with relatively simple linear
 regressions or maximum likelihood learning methods. However, an
 important hypothesis underlying all these methods is the
@@ -2907,7 +2921,7 @@ The residual (temporal) variability may be an important phenomenon to
 account for, as "system noise" is known to be detrimental to the overall
 performance of parallel applications like HPL. We thus consider
 different modeling options for this temporal variability:
-- Noise option \noise{0} (no noise): This is the simplest option. It consists in simply
+- Noise option \noise{0} (no noise): This is the simplest option. It consists in 
   injecting the value predicted by the model
   # , \ie $T \sim \model{}(M,N,K) + 0$.
 - Noise option \noise{1} (homoscedastic): The simplest probability family to model
@@ -3716,21 +3730,21 @@ look-ahead =depth= of 1. Finally, we used the =increasing-2-ring= broadcast with
 # |---+-------------+------------+--------+--------+-------+-------+-------+-------+------+-----------+------------------+--------------------|
 # | 1 |      175000 |        128 |     32 |     32 |     1 |     2 |     2 |     1 |    0 |         8 |               32 |                  1 |
 
-Although this machine is much smaller than top supercomputers, we
-think that faithfully simulating an HPL execution with such settings
-is as challenging as a typical TOP500 qualification run.
-- We simulated one rank per core to obtain a higher number
-  (\Num{1024}) of MPI process. This is more difficult than simulating
-  one rank per node, as this (1) increases the amount of data
+Although this machine is much smaller than top supercomputers,  
+faithfully simulating an HPL execution with such settings
+is already quite challenging.
+- We used one rank per core to obtain a higher number
+  (1024) of MPI process. This is more difficult than simulating
+  one rank per node, as (1) this increases the amount of data
   transferred through MPI and (2) the performance is then subject to
   memory interference and network
-  heterogeneity (which we modeled through different models for
+  heterogeneity (we used a different model for
   local and remote communications).
 - We used a smaller block size than commonly used, which leads
   to a higher number of iterations and hence more
   complex communication patterns.
-- We used a smaller input matrix and the makespan is therefore
-  reduced. This is generally harder to predict with a good precision.
+- We used relatively small input matrices, which reduces the makespan
+  and makes good predictions harder to obtain.
 # - The network is more stable due to its smaller size.
 ** Gantt Chart generation                                         :noexport:
 *** Downloading the CSV
@@ -4389,26 +4403,34 @@ less than \SI{5}{\percent} and even as little as \SI{1}{\percent} for the larger
 to the network model (\noisep{1}, line (f)) still has no significant
 effect but this can be explained by the fact that HPL mostly
 communicates very large amounts of data in bulk. Network temporal
-variability may be a very important aspect to model for applications
+variability is however very important aspect to model for applications
 that are more /latency-bound/.
 
-It is interesting to mention that we obtained early access to the
-Dahu cluster just after it was installed. It experienced several
-maintenance sessions and over the duration of our investigations (a
-few months), the performance of HPL has surprisingly decreased by
-about \SI{10}{\percent}. Although we had full software control over the
-cluster, we noticed that the performance of a few nodes
-changed significantly. This increased the system heterogeneity,
-leading to the current performance depicted in
-Figure\ref{fig:validation_performance}. By replacing the few currently
-slow nodes by "average" nodes in our model, we were able to
-re-estimate the overall performance of HPL and to obtain a
-prediction matching the performance obtained a few months ago.
+Overall, although this was not particularly foreseeable and could have
+been different with an other application, only the =dgemm= kernel needs
+to be carefully modeled with a \model[H]{2}-\noise[H]{2}. In Figure 1,
+we used a simple \model{1}-\noise{0} for =dtrsm= and simply skipped
+every other kernel. Although a detailed modeling of all (BLAS and HPL)
+kernels is possible, a minimal calibration of the =dgemm= kernel over a
+representative set of nodes is thus sufficient to consistently predict
+the performance of HPL on this machine within a few percent of
+reality. We would like to stress again that modeling both spatial and
+temporal variability is crucial.
 
-We have shown it is possible to predict consistently the
-performance of HPL within a few percent of reality provided a
-faithful model of each individual resource is used. We would like to stress
-again that modeling both spatial and temporal variability is crucial.
+# It is interesting to mention that we obtained early access to the
+# Dahu cluster just after it was installed. It experienced several
+# maintenance sessions and over the duration of our investigations (a
+# few months), the performance of HPL has surprisingly decreased by
+# about \SI{10}{\percent}. Although we had full software control over the
+# cluster, we noticed that the performance of a few nodes
+# changed significantly. This increased the system heterogeneity,
+# leading to the current performance depicted in
+# Figure\ref{fig:validation_performance}. By replacing the few currently
+# slow nodes by "average" nodes in our model, we were able to
+# re-estimate the overall performance of HPL and to obtain a
+# prediction matching the performance obtained a few months ago.
+
+
 ** \scalebox{.9}{Comparing With the Stampede Qualification Run}
 *** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:stampede}
