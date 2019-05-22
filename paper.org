@@ -3209,6 +3209,8 @@ str(df)
 
 #+RESULTS:
 #+begin_example
+Use suppressPackageStartupMessages() to eliminate package startup
+messages.
 'data.frame':	5004288 obs. of  14 variables:
  $ func        : Factor w/ 1 level "dgemm": 1 1 1 1 1 1 1 1 1 1 ...
  $ m           : int  378 378 378 9441 9441 9441 1041 1041 1041 1248 ...
@@ -3387,13 +3389,13 @@ plot = ggplot(dgemm, aes(x=m*n*k, y=duration, color=factor(cpu%%9))) +
 plot = plot + theme_bw() + ylab('Duration (s)') + 
     scale_x_continuous(name = 'M.N.K', breaks = (0:4)*3E9, limits=c(0,1.2E10)) + 
     labs(color='CPU') 
-ggsave(filename='figures/kernels/dgemm_heterogeneity_calib.png', plot=plot, width=3.9,height=4, dpi=200)
+ggsave(filename='figures/kernels/dgemm_heterogeneity_calib.png', plot=plot, width=3.9,height=3, dpi=200)
 ## ggsave(filename="figures/kernels/dgemm_heterogeneity.pdf", plot=plot, width=4,height=4)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-M9BfMg/figureyWAkEb.png]]
+[[file:/tmp/babel-7wTFgK/figureOSP9O9.png]]
 
 
 #+begin_src R :results output :session *R* :exports both
@@ -3430,6 +3432,16 @@ dgemm2 %>% str()
 
 #+RESULTS:
 #+begin_example
+
+Attachement du package : ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
 # A tibble: 10 x 11
    func      m     n     k  node  core   cpu type        duration    mnk mnk_id
    <fct> <dbl> <dbl> <dbl> <int> <int> <int> <fct>          <dbl>  <dbl>  <dbl>
@@ -3466,18 +3478,19 @@ plot = ggplot(dgemm2, aes(x=mnk, y=duration,color=type)) +
     ## geom_point(aes(x=m*n*k+1E8, y=pred_noise/1.05),alpha=0.3, color="green")
 plot = plot + theme_bw() + ylab('Duration (s)') + 
         scale_x_continuous(name = 'M.N.K', breaks = (0:4)*3E9, limits=c(0,1.2E10)) 
-plot = plot + scale_color_manual(values=MSet1, guide=F) + labs(color='(Both M2 models are shifted to\n the right to improve readability)') + #    scale_color_brewer(palette="Set1")
+plot = plot + annotate('text', x=0, y=0.75, hjust=0, vjust=0, size=2.5, fontface='italic', label='(Both M2 models are shifted to\n the right to improve readability)')
+plot = plot + scale_color_manual(values=MSet1, guide=F) + #    scale_color_brewer(palette="Set1")
     theme(legend.position = c(1, 0), legend.justification=c(1, 0), legend.text=element_text(size=8), legend.box.background=element_rect(colour = "black"),
-          panel.border=element_rect(colour = "black", fill=NA), legend.title=element_text(size = 7, face = "italic")) +
+          panel.border=element_rect(colour = "black", fill=NA), legend.title=element_blank()) + #(size = 7, face = "italic")) +
     geom_smooth(data=dgemm2[dgemm2$type=="Reality",], size=.2,
                 color="black", method='lm', se=F, fullrange=T) +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
-ggsave(filename="figures/kernels/dgemm_model_calib.png", plot=plot, width=3.9,height=4, dpi=200)
+ggsave(filename="figures/kernels/dgemm_model_calib.png", plot=plot, width=3.9,height=3, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-sfW1Yb/figureTu01UX.png]]
+[[file:/tmp/babel-7wTFgK/figureHKEeQE.png]]
 **** DGEMM from HPL  (DEPRECATED, DO NOT RUN)                   :noexport:
 #+begin_src R :results output :session *R* :exports both
 dgemm = df[(df$func == 'dgemm') & (df$mode == 'reality'),]
@@ -3680,12 +3693,12 @@ plot = plot + theme_bw() + ylab('Duration (ms)') + xlab('M.N') +
     theme(legend.position = c(1, 0), legend.justification=c(1, 0), legend.text=element_text(size=8), legend.box.background=element_rect(colour = "black"),
           panel.border = element_rect(colour = "black", fill=NA), legend.title=element_blank())
 
-ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=3.9,height=4, dpi=200)
+ggsave(filename='figures/kernels/dlatcpy_model.png', plot=plot, width=3.9,height=3, dpi=200)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-l9yW3l/figureFdU9XL.png]]
+[[file:/tmp/babel-7wTFgK/figurejrVjLJ.png]]
 
 * Validation at Scale
 #+LaTeX: \label{sec:validation}
