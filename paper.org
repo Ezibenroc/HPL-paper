@@ -2839,9 +2839,7 @@ scatter3D(
 \ACM@NRadjust\@secfont
 #+END_EXPORT
 
-* MODELING HPL KERNELS AND COMMUNICATIONS\hspace{-1cm}
-# #+LaTeX: \def\@secfont{\sffamily\bfseries\section@raggedright\MakeTextUppercase}\makeatother
-# #+LaTeX: \let\section=\osection
+* Modeling HPL Kernels and Communications
 #+LaTeX: \label{sec:modeling}
 As explained in Section\ref{sec:em}, HPL spends most of its computation
 time in a dozen specific functions for which a performance
