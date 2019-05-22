@@ -4345,10 +4345,14 @@ of collective operations.
 #+END_EXPORT
 
 #+BEGIN_EXPORT latex
+\tikzstyle{model_label}=[anchor=south west, fill=white, font=\scriptsize]
 \begin{figure}[h]
     % \centering
-    \hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}
-    % \includegraphics[width=0.95\linewidth]{./figures/validation_performance.pdf}
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] at (0,0) {\hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}};
+        \node[model_label] at (8.2, 4.8)   {spatial var.};
+        \node[model_label] at (8.2, 3.7) {temporal var.};
+    \end{tikzpicture}
     \caption{HPL performance: predictions vs. reality}\vspace{-1em}
     \label{fig:validation_performance}
     \labspace
