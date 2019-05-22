@@ -5496,6 +5496,18 @@ pages = {366-376},
     title = "Reducing the Time to Tune Parallel Dense Linear Algebra Routines with Partial Execution and Performance Modeling",
     booktitle = "Parallel Processing and Applied Mathematics"
 }
+
+@InProceedings{sst_skeleton,
+    author="Bird, R. F. and Wright, S. A. and Beckingsale, D. A. and Jarvis, S. A.",
+    editor="Tribastone, Mirco and Gilmore, Stephen",
+    title="Performance Modelling of Magnetohydrodynamics Codes",
+    booktitle="Computer Performance Engineering",
+    year="2013",
+    publisher="Springer Berlin Heidelberg",
+    address="Berlin, Heidelberg",
+    pages="197--209",
+    isbn="978-3-642-36781-6"
+}
 #+end_src
 
 * Emacs Setup                                                      :noexport:
