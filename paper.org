@@ -1908,7 +1908,8 @@ We now present the changes to SimGrid and HPL that were required for a
 scalable simulation. We provide only a brief presentation of our
 \CH{The simulation isn't really scalable...}
 modifications and refer the reader interested in details
-to\cite{cornebize:hal-01544827,cornebize:github_notebook,cornebize:exp_artifact}.
+to a previous report \cite{cornebize:hal-01544827,cornebize:github_notebook}
+and a companion repository\cite{cornebize:exp_artifact}.
 For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} with
 \NSI{32}{\giga\byte} of RAM, two 8-core Intel Xeon E5-2620 v4
