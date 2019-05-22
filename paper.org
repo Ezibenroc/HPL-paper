@@ -1317,6 +1317,7 @@ zlib 1.0
         \vspace{0pt}
         \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
+        \vspace{-0.5cm}
         \captionof{figure}{Dahu's predicted performance is within a few percents of reality, using a stochastic heterogeneous model for \texttt{dgemm} and a simplistic model for the other kernels and the nerwork}
 %                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
 %                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
