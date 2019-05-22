@@ -1225,7 +1225,6 @@ zlib 1.0
 #+LATEX_HEADER:\usetikzlibrary{arrows,shapes,positioning,shadows,trees,calc}
 #+LATEX_HEADER:\usepackage{pgfplots}
 #+LATEX_HEADER:\pgfplotsset{compat=1.13}
-#+LATEX_HEADER:\tikzset{every picture/.style={/utils/exec={\sffamily}}}  % use sans-serif fonts for tikz figures
 
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \setlist[itemize,1]{leftmargin=\dimexpr 26pt-.2in}
