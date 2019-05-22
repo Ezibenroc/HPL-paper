@@ -1150,7 +1150,7 @@ zlib 1.0
 #+LATEX_HEADER: \usepackage{dblfloatfix}    % To enable figures at the bottom of page
 #+LATEX_HEADER: \usepackage{wrapfig}
 #+LATEX_HEADER: \usepackage{subfigure}
-#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{array,multirow,graphicx}
 #+LATEX_HEADER: \usepackage{color,soul}
 #+LATEX_HEADER: \usepackage[export]{adjustbox}
 #+LATEX_HEADER: \usepackage{xspace}
@@ -1292,22 +1292,18 @@ zlib 1.0
     \centering
     \begin{minipage}[t]{0.48\linewidth}
         \vspace{0pt}
-        \begin{tabular}{|l|lll|}
+        \begin{tabular}{ll|ll}
+            && Reality & Simulation\\
             \hline
-            \textbf{Dahu} & \# nodes & Node hours & Total gigabytes \\
-            \hline
-            Reality & \Num{32} & \Num{34} & > \Num{2000} \\
-            Simulation & \Num{1} & \Num{5} & \Num{9} \\
-            \hline
-        \end{tabular}
-        \\ \vspace{0.5 cm} \\
-        \begin{tabular}{|l|lll|}
-            \hline
-            \textbf{Stampede} & \# nodes & Node hours & Total gigabytes \\
-            \hline
-            Reality & \Num{6006} & > \Num{12000} & > \Num{120000} \\
-            Simulation & \Num{1} & \Num{62} & \Num{19} \\
-            \hline
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Dahu}}} & \# nodes & \Num{32} & \Num{1}\\
+             & Memory & \NSI{2}{\tera\byte} & \NSI{9}{\giga\byte}\\
+             & Duration & \Num{1} hour & \Num{5} hours\\
+             & Resources & \Num{32} node hours & \Num{1} node hours\\
+             \hline
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Stampede}}} & \# nodes & \Num{6006} & \Num{1}\\
+             & Memory & \NSI{120}{\tera\byte} & \NSI{19}{\giga\byte}\\
+             & Duration & \Num{2} hours & \Num{62} hours\\
+             & Resources & \Num{12000} node hours & \Num{62} node hours\\
         \end{tabular}
         \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
         \label{fig:teaser:node_hours}
