@@ -1268,7 +1268,7 @@ zlib 1.0
 \newcommand{\TC}[2][inline]{}
 \newcommand{\CH}[2][inline]{}
 
-\title{Fast and Faithful Performance Prediction of\\ MPI applications: the HPL use case study}
+\title{Fast and Faithful Performance Prediction of\\ MPI Applications: the HPL Case Study}
 
 \author{
     \IEEEauthorblockN{Tom Cornebize, Arnaud Legrand, Franz C. Heinrich}
@@ -1290,9 +1290,10 @@ zlib 1.0
 \maketitle
 \begin{center}
     \centering
-    \begin{minipage}[t]{0.48\linewidth}
+    \begin{minipage}[t]{0.41\linewidth}\centering
         \vspace{0pt}
-        \begin{tabular}{ll|ll}
+        \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
+        \scalebox{.95}{\begin{tabular}{ll|ll}
             && Reality & Simulation\\
             \hline
             \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Dahu}}} & \# nodes & \Num{32} & \Num{1}\\
@@ -1304,17 +1305,16 @@ zlib 1.0
              & Memory & \NSI{120}{\tera\byte} & \NSI{19}{\giga\byte}\\
              & Duration & \Num{2} hours & \Num{62} hours\\
              & Resources & \Num{12000} node hours & \Num{62} node hours\\
-        \end{tabular}
-        \captionof{table}{For large matrices, simulation is orders of magnitude less expensive than real executions}
+        \end{tabular}}
         \label{fig:teaser:node_hours}
     \end{minipage} %
     \hfill %
-    \begin{minipage}[t]{0.48\linewidth}
+    \begin{minipage}[t]{0.54\linewidth}
         \vspace{0pt}
-        \includegraphics[width=\linewidth]{figures/validation_performance_simple.pdf}
+        \includegraphics[width=.95\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
-        \vspace{-0.5cm}
-        \captionof{figure}{Dahu's predicted performance is within a few percents of reality, using a stochastic heterogeneous model for \texttt{dgemm} and a simplistic model for the other kernels and the nerwork}
+        \vspace{-.5em}
+        \captionof{figure}{HPL performance on Dahu can be predicted within within a few percents of reality using a stochastic heterogeneous model for \texttt{dgemm} and a simple model for all other kernels and the nerwork}
 %                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
 %                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
 %                                   $\text{HPL kernels} \sim 0$,
@@ -4095,6 +4095,16 @@ head(dfsim)
 
 #+RESULTS:
 #+begin_example
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
   matrix_size gflops    time    mode    date
 1      175000  22610  158.00 reality 2019-03
 2      500000  22330 3732.41 reality 2019-03
@@ -4116,6 +4126,13 @@ head(dfsim)
 4             True                True simple         2680.43
 5             True                True simple         6260.74
 6             True                True simple        14568.70
+  memory_consumption
+1         1624884000
+2         3477836000
+3         6074744000
+4         2780576000
+5         5032344000
+6         8561732000
 #+end_example
 
 Removing the two outliers in the real executions. These two points are
@@ -4160,22 +4177,22 @@ lab = lab %>% mutate(y  = case_when(origin == 'Prediction' ~ 1.05*y,
                                    ))
 
 # Plot drawing
-plot = ggplot(df, aes(x=matrix_size, y=gflops, color=origin, linetype=origin))
+plot = ggplot(df, aes(x=matrix_size, y=gflops, color=origin, linetype=origin, shape=origin))
 plot = plot + stat_summary(fun.y='mean', geom='line')
-plot = plot + stat_summary(fun.y='mean', geom='point')
+plot = plot + stat_summary(fun.y='mean', geom='point',size=2.4)
 plot = plot + theme_bw() + expand_limits(y=0)
-plot = plot + scale_color_brewer(type='qual', palette='Dark2', guide=F)
-plot = plot + scale_linetype_manual(values=c('solid', 'dashed'), guide=F)
-plot = plot + theme(text=element_text(size=12))
+plot = plot + scale_color_brewer(type='qual', palette='Dark2')
+plot = plot + scale_linetype_manual(values=c('solid', 'dashed'))
+# plot = plot + theme(text=element_text(size=12))
 plot = plot + ylab('Gflop/s') + xlab('Matrix rank')
-plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=4)
-plot = plot + theme(text=element_text(size=text_size))
-ggsave(filename='figures/validation_performance_simple.pdf', height=3, width=6, plot=plot)
+# plot = plot + geom_text(data=lab, aes(x=x, y=y, label=origin), size=4)
+plot = plot + theme(text=element_text(size=text_size), legend.title = element_blank(), legend.justification=c(0,0), legend.position=c(.7,.1))
+ggsave(filename='figures/validation_performance_simple.pdf', height=2.2, width=6, plot=plot)
 plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-fPmClk/figurexDVPFa.png]]
+[[file:/tmp/babel-11346F8S/figure11346ZyZ.png]]
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1000 :height 600 :session *R*
 # +begin_src R :results output :session *R* :exports both
