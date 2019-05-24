@@ -4467,7 +4467,7 @@ despite the reported output which mentioned =HPLinpack 2.1= from =October
 with the open-source version of HPL but with a specifically optimized
 binary version from Intel employing a custom broadcast algorithm
 relying on non-blocking sends, and which was a priori specifically
-modified for Stampede. We refer to\cite{FIXME} for a detailed
+modified for Stampede. We refer to a previous work \cite{cornebize:hal-01654804} for a detailed
 discussion on this investigation, which explains why this failure to
 predict similar performance cannot be considered as an invalidation of
 our approach. Validation experiments therefore cannot rely on the
@@ -5164,6 +5164,18 @@ Tangle this file with C-c C-v t
   year         = 2019,
   doi          = {10.5281/zenodo.3066213},
   url          = {https://doi.org/10.5281/zenodo.3066213}
+}
+
+@unpublished{cornebize:hal-01654804,
+  TITLE = {{Emulating High Performance Linpack on a Commodity Server at the Scale of a Supercomputer}},
+  AUTHOR = {Cornebize, Tom and Heinrich, Franz C and Legrand, Arnaud and Vienne, J{\'e}r{\^o}me},
+  URL = {https://hal.inria.fr/hal-01654804},
+  NOTE = {working paper or preprint},
+  YEAR = {2017},
+  MONTH = Dec,
+  PDF = {https://hal.inria.fr/hal-01654804/file/paper.pdf},
+  HAL_ID = {hal-01654804},
+  HAL_VERSION = {v1},
 }
 
 @incollection{grid5000,
