@@ -1573,8 +1573,8 @@ named Dahu whose software stack could be fully controlled.
 % 2017.}
 
 \begin{table}[b]
-\vspace{-1.5em}
-\caption{Typical runs of HPL}\vspace{-1em}
+\vspace{-1em}
+\caption{Typical runs of HPL}%\vspace{-1em}
 \label{fig:typical_run}
 \scalebox{.9}{\begin{tabular}{l|lll}
 \multicolumn{1}{l|}{} & Stampede@TACC & Theta@ANL & Dahu@G5K\\
@@ -1920,6 +1920,22 @@ For our experiments in this section, we used a single core from nodes
 of the Nova cluster provided by the Grid'5000 testbed\cite{grid5000} (\NSI{32}{\giga\byte} of RAM, two 8-core Intel Xeon E5-2620 v4
 CPUs, Debian Stretch OS (Linux 4.9)). 
 ** Speeding Up the Emulation
+#+BEGIN_EXPORT latex
+\begin{figure}[!tb]
+%  \null\vspace{-1cm}
+  \centering
+  \subfigure[Non-intrusive macro replacement with a very simple computation model.\label{fig:macro_simple}]{
+    \begin{minipage}[b]{\linewidth}
+      \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
+    \end{minipage}}\vspace{-1em}
+  \subfigure[Gain in terms of simulation time.\label{fig:kernel_sampling}]{
+    \begin{minipage}[b]{\linewidth} 
+      \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
+    \end{minipage}}%\vspace{-1em}
+  \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1em}
+\end{figure}
+#+END_EXPORT
+
 *** Compute Kernel Modeling
 HPL heavily relies 
 on BLAS kernels such as =dgemm= (for matrix-matrix multiplication) or
@@ -1962,22 +1978,6 @@ the overall performance, we handled them similarly to =dgemm= and
 =dtrsm=, through performance models and macro substitution, which
 speeds up the simulation by an additional factor of $3$ to $4$
 on small ($N=\Num{30000}$) and even more on large scenarios.
-#+BEGIN_EXPORT latex
-\begin{figure}[!tb]
-%  \null\vspace{-1cm}
-  \centering
-  \subfigure[Non-intrusive macro replacement with a very simple computation model.\label{fig:macro_simple}]{
-    \begin{minipage}[b]{\linewidth}
-      \lstset{frame=bt,language=C,numbers=none,escapechar=|}\lstinputlisting{HPL_dgemm_macro_simple.c}
-    \end{minipage}}\vspace{-1em}
-  \subfigure[Gain in terms of simulation time.\label{fig:kernel_sampling}]{
-    \begin{minipage}[b]{\linewidth} 
-      \includegraphics[width=\linewidth,page=2]{figures/validation_kernel_modeling.pdf}
-    \end{minipage}}%\vspace{-1em}
-  \caption{Replacing the calls to computationally expensive functions by a model allows to emulate HPL at a larger scale.}\vspace{-1em}
-\end{figure}
-#+END_EXPORT
-
 **** Hidden section with estimation of the quality/speed of the simulation :noexport:
 Inspire from the entry of [[file:~/Work/Journals/tom_cornebize/m2_internship_journal/journal.org::*2017-11-15%20Wednesday][Tom's journal]] ([[https://github.com/Ezibenroc/m2_internship_journal/tree/master/journal.org][Github version]]) "2017-11-15 Wednesday":
 Regenerating the validation plot for smpi_execute".
@@ -2129,7 +2129,36 @@ We confirmed that this modification was harmless in terms of
 performance prediction (see\cite{cornebize:github_notebook} for details).
 ** Scaling Down Memory Consumption
 \CH{I am not sure about "scaling" here. Lowering? Reducing?}
-*** Figure                                                         :ignore:
+
+*** Text                                                           :ignore:
+The largest two allocated data structures in HPL are the input matrix =A=
+(with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
+information about the sub-matrix currently being factorized. This sub-matrix 
+typically occupies a few hundred \si{\mega\byte} per process.
+Unfortunately, when emulating an application with SMPI, all MPI processes are run
+within the same simulation process on a single node and the memory
+consumption of the simulation can therefore quickly reach several
+\si{\tera\byte} of RAM.  Yet, as we no longer operate on real data,
+storing the whole input matrix $A$ is needless. However, since only a
+minimal portion of the code was modified, some functions may still
+read or write some parts of the matrix.  It is thus not possible to
+simply remove the memory allocations of large data structures. SMPI
+provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE=) macro to replace
+calls to =malloc= (=free=). They indicate that some data structures can
+safely be shared between processes and that the data they contain is
+not critical for the execution (\eg an input matrix) and that it may
+even be overwritten. =SMPI_SHARED_MALLOC= works as follows (see
+Figure\ref{fig:global_shared_malloc}): a single block of physical
+memory (of default size \NSI{1}{\mega\byte}) for the whole execution
+is allocated and shared by all MPI processes.  A range of virtual
+addresses corresponding to a specified size is reserved and cyclically
+mapped onto the previously obtained physical address.  This mechanism
+allows most applications to obtain a nearly constant memory footprint,
+regardless of the size of the actual allocations.
+# Instead, SMPI's =SHARED_MALLOC= mechanism can be used
+# to share unimportant data structures between all ranks, minimizing the memory footprint.
+
+
 #+BEGIN_EXPORT latex
 \tikzset{draw half paths/.style 2 args={%
   % From https://tex.stackexchange.com/a/292108/71579
@@ -2146,7 +2175,7 @@ performance prediction (see\cite{cornebize:github_notebook} for details).
 \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
 \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
 \tikzstyle{bigswitch}=[base, draw]
-\begin{figure}[b]%[htbp]
+\begin{figure}[t]%[htbp]
   \vspace{-1em}\centering
   \begin{tikzpicture}[yscale=0.5, scale=0.7]
     \pgfmathtruncatemacro{\size}{4}
@@ -2181,39 +2210,8 @@ performance prediction (see\cite{cornebize:github_notebook} for details).
 	\draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
 	\draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
   \end{tikzpicture}
-  \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are mapped onto the same physical pages.}
-\end{figure}
-#+END_EXPORT
-*** Text                                                           :ignore:
-The largest two allocated data structures in HPL are the input matrix =A=
-(with a size of typically several \si{\giga\byte} per process) and the =panel= which contains
-information about the sub-matrix currently being factorized. This sub-matrix 
-typically occupies a few hundred \si{\mega\byte} per process.
-Unfortunately, when emulating an application with SMPI, all MPI processes are run
-within the same simulation process on a single node and the memory
-consumption of the simulation can therefore quickly reach several
-\si{\tera\byte} of RAM.  Yet, as we no longer operate on real data,
-storing the whole input matrix $A$ is needless. However, since only a
-minimal portion of the code was modified, some functions may still
-read or write some parts of the matrix.  It is thus not possible to
-simply remove the memory allocations of large data structures. SMPI
-provides the =SMPI_SHARED_MALLOC= (=SMPI_SHARED_FREE=) macro to replace
-calls to =malloc= (=free=). They indicate that some data structures can
-safely be shared between processes and that the data they contain is
-not critical for the execution (\eg an input matrix) and that it may
-even be overwritten. =SMPI_SHARED_MALLOC= works as follows (see
-Figure\ref{fig:global_shared_malloc}): a single block of physical
-memory (of default size \NSI{1}{\mega\byte}) for the whole execution
-is allocated and shared by all MPI processes.  A range of virtual
-addresses corresponding to a specified size is reserved and cyclically
-mapped onto the previously obtained physical address.  This mechanism
-allows most applications to obtain a nearly constant memory footprint,
-regardless of the size of the actual allocations.
-# Instead, SMPI's =SHARED_MALLOC= mechanism can be used
-# to share unimportant data structures between all ranks, minimizing the memory footprint.
+  \caption{\label{fig:global_shared_malloc}SMPI shared malloc mechanism: large area of virtual memory are mapped onto the same physical pages.}\vspace{2em}
 
-#+BEGIN_EXPORT latex
-\begin{figure}[!t]
  \centering
  {\begin{minipage}{1.0\linewidth}
   \subfigure[Structure of the panel in HPL.\label{fig:panel_structure}]{\small
@@ -4459,8 +4457,7 @@ Surprisingly, despite our efforts, our predictions forecast a
 significantly /lower/ performance (\approx 20-30%) than the one reported for
 the top500, even when considering an ideal network (no contention, no
 latency, no noise) and perfectly stable and homogeneous nodes where
-Xeon Phi would operate at peak performance (see
-Figure\ref{fig:stampede_prediction}). Unfortunately, when tracking
+Xeon Phi would operate at peak performance. Unfortunately, when tracking
 down the cause of this discrepancy, we eventually realized that
 despite the reported output which mentioned =HPLinpack 2.1= from =October
 26, 2012= by Petitet\etal, the TOP500 performance had not been obtained
@@ -4473,16 +4470,16 @@ predict similar performance cannot be considered as an invalidation of
 our approach. Validation experiments therefore cannot rely on the
 lacunar information provided by the TOP500 and cannot make the economy
 of a large-scale controlled (software environment, source code) run.
-#+BEGIN_EXPORT latex
-\begin{figure}[t]
-  \centering
-%  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
-  \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
-  \caption{HPL on Stampede: predictions vs. reality}\vspace{-1em}
-  \label{fig:stampede_prediction}
-  \labspace
-\end{figure}
-#+END_EXPORT
+# #+BEGIN_EXPORT latex
+# \begin{figure}[t]
+#   \centering
+# %  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
+#   \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
+#   \caption{HPL on Stampede: predictions vs. reality}\vspace{-1em}
+#   \label{fig:stampede_prediction}
+#   \labspace
+# \end{figure}
+# #+END_EXPORT
 
 ** \scalebox{.9}{Comparing With the Stampede Qualification Run}   :noexport:
 *** Stampede modeling                                              :ignore:
