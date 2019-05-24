@@ -1313,7 +1313,7 @@ zlib 1.0
         \includegraphics[width=.95\linewidth]{figures/validation_performance_simple.pdf}
         \label{fig:teaser:performance}
         \vspace{-.5em}
-        \captionof{figure}{HPL performance on Dahu can be predicted within a few percents of reality using a stochastic heterogeneous model for \texttt{dgemm} and a simple model for all other kernels and the nerwork}
+        \captionof{figure}{HPL performance on Dahu can be predicted within a few percents of reality using a stochastic heterogeneous model for \texttt{dgemm} and a simple model for all other kernels and the network}
 %                           Models: $\texttt{dgemm} \sim \model[H]{2}\noise[H]{2}$,
 %                                   $\text{BLAS kernels} \sim \model{1}\noise{0}$,\\
 %                                   $\text{HPL kernels} \sim 0$,
