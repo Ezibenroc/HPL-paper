@@ -4347,28 +4347,13 @@ of collective operations.
 \begin{figure}[t]
     \centering
     \begin{tabular}{c@{}c}
-    \ganttcaption{\hspace{.3cm}Reality}{}                        & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_reality.png} \\
-    \ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\
-    \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
-    \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.95\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
+    \ganttcaption{\hspace{.3cm}Reality}{}                        & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_reality.png} \\
+    \ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\
+    \ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\
+    \ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\
     \end{tabular}\vspace{-1em}
     \caption{Gantt charts of HPL first iterations in simulation}\vspace{-1em}
     \label{fig:gantt_simulation}
-    \labspace
-\end{figure}
-#+END_EXPORT
-
-#+BEGIN_EXPORT latex
-\tikzstyle{model_label}=[anchor=south west, fill=white, font=\scriptsize]
-\begin{figure}[h]
-    % \centering
-    \begin{tikzpicture}
-        \node[anchor=south west,inner sep=0] at (0,0) {\hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}};
-        \node[model_label] at (8.2, 4.8)   {spatial var.};
-        \node[model_label] at (8.2, 3.7) {temporal var.};
-    \end{tikzpicture}
-    \caption{HPL performance: predictions vs. reality}\vspace{-1em}
-    \label{fig:validation_performance}
     \labspace
 \end{figure}
 #+END_EXPORT
@@ -4406,16 +4391,34 @@ communicates very large amounts of data in bulk. Network temporal
 variability is however very important aspect to model for applications
 that are more /latency-bound/.
 
-Overall, although this was not particularly foreseeable and could have
-been different with an other application, only the =dgemm= kernel needs
-to be carefully modeled with a \model[H]{2}-\noise[H]{2}. In Figure 1,
-we used a simple \model{1}-\noise{0} for =dtrsm= and simply skipped
-every other kernel. Although a detailed modeling of all (BLAS and HPL)
-kernels is possible, a minimal calibration of the =dgemm= kernel over a
+#+BEGIN_EXPORT latex
+\tikzstyle{model_label}=[anchor=south west, fill=white, font=\scriptsize]
+\begin{figure}[t]
+    % \centering
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] at (0,0) {\hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}};
+        \node[model_label] at (8.2, 4.8)   {spatial var.};
+        \node[model_label] at (8.2, 3.7) {temporal var.};
+    \end{tikzpicture}
+    \caption{HPL performance: predictions vs. reality}\vspace{-1em}
+    \label{fig:validation_performance}
+    \labspace
+\end{figure}
+#+END_EXPORT
+
+As illustrated in Figure\ref{fig:validation_performance} (rightmost
+labels), we would like to stress again that accurate predictions
+require a careful modeling of both spatial and temporal
+variability. Overall, although this was not particularly foreseeable
+and could have been different with an other application, only the
+=dgemm= kernel needs to be carefully modeled with a
+\model[H]{2}-\noise[H]{2}. In Figure 1, we used a simple
+\model{1}-\noise{0} for =dtrsm= and simply skipped every other
+kernel. A detailed modeling of all (BLAS and HPL) kernels is
+possible but a minimal calibration of the =dgemm= kernel over a
 representative set of nodes is thus sufficient to consistently predict
 the performance of HPL on this machine within a few percent of
-reality. We would like to stress again that modeling both spatial and
-temporal variability is crucial.
+reality.
 
 # It is interesting to mention that we obtained early access to the
 # Dahu cluster just after it was installed. It experienced several
@@ -4430,8 +4433,56 @@ temporal variability is crucial.
 # re-estimate the overall performance of HPL and to obtain a
 # prediction matching the performance obtained a few months ago.
 
-
 ** \scalebox{.9}{Comparing With the Stampede Qualification Run}
+Each node of the Stampede cluster comprises two 8-core Intel Xeon
+E5-2680 8C \NSI{2.7}{\GHz} CPUs and one 61-core Intel Xeon Phi SE10P
+(KNC) \NSI{1.1}{\GHz} accelerator that is roughly three times more
+powerful than the two CPUs. The HPL output submitted to the TOP500
+(Table\ref{fig:typical_run}) does not indicate how the KNC was
+used. However, because of the values assigned to $P$ and $Q$, we are
+certain that there were only one MPI rank per node. For this reason,
+it is likely that the KNC was used as an accelerator, which is
+effortless with Intel's Math Kernel Library (MKL) as it supports
+automatic offloading for selected BLAS functions. While we cannot
+know precisely which MKL version was used in 2013, we measured the
+default version (version 11.1.1) that was used on Stampede in the
+beginning of 2017 and built precise \modelp{2}\noise{1} models of
+=dgemm= and =dtrsm=. Likewise, using measurements of the performance of
+MPI obtained in 2017, we built a precise \modelp{1}\noisep{1} model of
+the fat-tree interconnect.  All HPL input parameters were set to
+exactly the values used in the TOP500 qualification run and were
+coherent with the submitted output.
+
+Surprisingly, despite our efforts, our predictions forecast a
+significantly /lower/ performance (\approx 20-30%) than the one reported for
+the top500, even when considering an ideal network (no contention, no
+latency, no noise) and perfectly stable and homogeneous nodes where
+Xeon Phi would operate at peak performance (see
+Figure\ref{fig:stampede_prediction}). Unfortunately, when tracking
+down the cause of this discrepancy, we eventually realized that
+despite the reported output which mentioned =HPLinpack 2.1= from =October
+26, 2012= by Petitet\etal, the TOP500 performance had not been obtained
+with the open-source version of HPL but with a specifically optimized
+binary version from Intel employing a custom broadcast algorithm
+relying on non-blocking sends, and which was a priori specifically
+modified for Stampede. We refer to\cite{FIXME} for a detailed
+discussion on this investigation, which explains why this failure to
+predict similar performance cannot be considered as an invalidation of
+our approach. Validation experiments therefore cannot rely on the
+lacunar information provided by the TOP500 and cannot make the economy
+of a large-scale controlled (software environment, source code) run.
+#+BEGIN_EXPORT latex
+\begin{figure}[t]
+  \centering
+%  \includegraphics[width=\linewidth,page=1]{./figures/stampede_simgrid.pdf}
+  \includegraphics[height=4.8cm,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
+  \caption{HPL on Stampede: predictions vs. reality}\vspace{-1em}
+  \label{fig:stampede_prediction}
+  \labspace
+\end{figure}
+#+END_EXPORT
+
+** \scalebox{.9}{Comparing With the Stampede Qualification Run}   :noexport:
 *** Stampede modeling                                              :ignore:
 #+LaTeX: \label{sec:stampede}
 # #+BEGIN_EXPORT latex
@@ -4748,7 +4799,7 @@ We verified that no part of HPL was left unmodeled and decided to
 investigate whether a potential flaw in our network model that could for example
 cause too much congestion could explain the difference.
 Alas, switching to a congestion-free network model resulted
-in only minor improvements. In our experiments to model =DGEMM= and =DTRSM=,
+in only minor improvements. In our experiments to model =dgemm= and =dtrsm=,
 either the CPU or the KNC seemed to be used at a time and a specifically
 optimized version of the MKL may have been used in 2013. 
 \CH{Change this phrase. We just talked about network, we now have to talk about experiments for computation kernels. Do you want to express that CPU/KNC was used exclusively in our tests but that MKL may have used both at the same time? This is not clear.}
@@ -4942,58 +4993,65 @@ cp /home/alegrand/Work/Journals/tom_cornebize/m2_internship_journal/stampede/com
 # other benchmarks such as HPCG and HPGMG have recently been proposed to
 # become the new standard
 
-Studying HPC applications at scale can be very time- and
+Studying and tuning HPC applications at scale can be very time- and
 resource-consuming. 
 We believe that being capable of precisely predicting an application's
-performance on a given platform will become invaluable in the future
+performance on a given platform is useful for application developers and users
+(e.g., to evaluate the scalability of the application on a given machine) and will become invaluable in the future
 as it can for example aid compute centers with the decision of whether
 the envisioned technology of a new machine works best for a given application or if an
 upgrade of the current machine should be considered. 
 Simulation is often an effective approach in this
-context and SMPI has previously been successfully validated in several small-scale
+context and SimGrid/SMPI has previously been successfully validated in several small-scale
 studies with simple HPC benchmarks\cite{smpi,heinrich:hal-01523608}.  In this
-article, we proposed and evaluated extensions to the SimGrid/SMPI
-framework that allowed us to emulate HPL at the scale of a
-supercomputer. Our application of choice, HPL, is particularly challenging in terms of simulation
-as it implements its own set of non-blocking collective operations
-that rely on =MPI_Iprobe= in order to facilitate overlapping with computations.
+article, we proposed and evaluated extensions to SMPI that allowed us to emulate HPL at the scale of a
+supercomputer. Our application of choice, HPL, is particularly challenging both in terms of tuning and simulation 
+as it implements its own set of non-blocking collective operations (from which the users has to choose)
+that rely on =MPI_Iprobe= in order to overlap with computations.
 
-More specifically, we tried to reproduce the execution of HPL on the
-Stampede supercomputer conducted in $2013$ for the TOP500, which
-involved a \NSI{120}{\tera\byte} matrix and took two hours on 6,006\nbsp{}nodes.  
-Our emulation of this specific configuration runs on a single machine for
-about $62$ hours and requires less than \NSI{19}{\giga\byte} of RAM. 
-This emulation
-employed several non-trivial operating-system level optimizations
-(memory mapping, dynamic library loading, huge pages) that have since been
-integrated into the last version of SimGrid/SMPI.
+More specifically, we explain how simulate on a single commodity node
+scenarios at the scale of the TOP500 qualification runs. Although
+simulation is generally longer than a real execution is requires significantly 
+resource consuming. This emulation employs several non-trivial
+operating-system level optimizations (memory mapping, dynamic library
+loading, huge pages) that have since been integrated into the last
+version of SimGrid/SMPI.  Unlike the common skeleton
+approach\cite{sst_skeleton}, we do not rely on a simplified version of
+HPL but only apply minor modifications (HPL comprises 16K lines of
+ANSI C over 149 files, our modifications only changed 14 files with
+286 line insertions and 18 deletions) to the original source code to
+fully capture its whole complexity.
 
-The downside of scaling this high is a less well-controlled scenario.
-We explained how to model the performance of compute kernels and of
-the MPI library and showed that a careful modeling allows to predict
-performance within a few percents of real experiments on a controlled
-cluster of Grid'5000. Interestingly, spatial and temporal variability
-are key ingredients of faithful predictions.
-Unfortunately, the reference run of HPL on Stampede was done several
-years ago. We only have very limited information about the setup
-(\eg software versions and configuration) and a reservation and
-re-execution on the whole machine was impossible. We
-nevertheless modeled Stampede carefully, which allowed us to predict
-the performance that would have been obtained using an unmodified,
-freely available version of HPL.  Despite all our
-efforts, the predicted performance was much lower than what was
-reported in 2013. We determined that this discrepancy comes from the
-fact that a modified, closed-source version of HPL supplied by Intel
-was used in 2013 and misreports the true configuration. An
-analysis of the optimized HPL binary confirmed that the availability
-of new algorithms is likely the reason for the performance
-discrepancy. We claim that the modifications we made in HPL are minor and
-are applicable to Intel's optimized version as well. In fact, while HPL comprises
-16K lines of ANSI C over 149 files, our modifications only changed 14
-files with 286 line insertions and 18 deletions.
+We also explain how different levels of detail of modeling of the
+performance of compute kernels and of the MPI library influence the
+quality of the prediction. In particular, we show that a careful
+modeling (including both spatial and temporal variability) of the main
+compute kernel (=dgemm=, which is rather inexpensive from a benchmarking
+perspective) allows to predict performance within a few percents of
+real experiments with 1,024 ranks on a controlled cluster of
+Grid'5000. Validation experiments involving larger platforms are
+underway but, as briefly explained with the Stampede study, cannot be
+done simply from the information reported in the TOP500 and require
+access to a well-controlled supercomputer.
+
+# The downside of scaling this high is a less well-controlled scenario.
+# Unfortunately, the reference run of HPL on Stampede was done several
+# years ago. We only have very limited information about the setup
+# (\eg software versions and configuration) and a reservation and
+# re-execution on the whole machine was impossible. We
+# nevertheless modeled Stampede carefully, which allowed us to predict
+# the performance that would have been obtained using an unmodified,
+# freely available version of HPL.  Despite all our
+# efforts, the predicted performance was much lower than what was
+# reported in 2013. We determined that this discrepancy comes from the
+# fact that a modified, closed-source version of HPL supplied by Intel
+# was used in 2013 and misreports the true configuration. An
+# analysis of the optimized HPL binary confirmed that the availability
+# of new algorithms is likely the reason for the performance
+# discrepancy. 
 
 As we explained, a careful modeling of networking and computing
-resources is crucial but requires a combination of statistical
+resources is crucial but requires a diligent combination of statistical
 libraries. We intend to automate our benchmarking and modeling
 approach as much as possible using a generic and unified Bayesian
 estimation framework like STAN\cite{stan}. The MCMC sampling technique
@@ -5004,12 +5062,12 @@ underway.
 As another future work, building on the effort of SimGrid developers on
 supporting the emulation of a wide variety of applications with
 SMPI\cite{smpi_proxy_apps}, we also intend to conduct similar studies with
-other HPC benchmarks (\eg HPCG\cite{HPCG} or HPGMG\cite{HPGMG}), and
-real applications (\eg BigDFT\cite{bigdft}) and other TOP500 machines.
-In this context, we believe that improving reproducibility through a faithful and
-public reporting of the experimental conditions (compiler options,
-library versions, input parameters, HPL output, etc.) is invaluable
-and would allow researchers to better understand how to correctly model these platforms.
+other HPC benchmarks (\eg HPCG\cite{HPCG} or HPGMG\cite{HPGMG}),
+real applications (\eg BigDFT\cite{bigdft}) and larger infrastructures.
+# In this context, we believe that improving reproducibility through a faithful and
+# public reporting of the experimental conditions (compiler options,
+# library versions, input parameters, HPL output, etc.) is invaluable
+# and would allow researchers to better understand how to correctly model these platforms.
 
 # This goal will be subject to a more thorough investigation
 # in the very near future.
@@ -5025,7 +5083,7 @@ and would allow researchers to better understand how to correctly model these pl
 
 # #+LaTeX: \CH{I like the idea of pointing out again that our simulation takes much longer (48 hours instead of 2?) but that we use 1/6000 of the resources}
 
-\vspace{-1em}
+# \vspace{-1em}
 #+LaTeX: \def\subsection#1{\osubsection*{#1}}
 ** Clearpage                                               :noexport:ignore:
 \clearpage\setcounter{page}{11}
@@ -5437,7 +5495,7 @@ pages = {366-376},
   title = {Cubist: Rule- And Instance-Based Regression Modeling},
   author = {Max Kuhn and Ross Quinlan},
   year = {2018},
-  note = {R package version 0.2.2},
+  note = {{R} package version 0.2.2},
   url = {https://CRAN.R-project.org/package=Cubist},
 }
 
@@ -5545,7 +5603,6 @@ pages = {366-376},
     pages="197--209",
     isbn="978-3-642-36781-6"
 }
- BibTeX | EndNote | ACM Ref
 
 @inproceedings{musa_16,
  author = {Grass, Thomas and Allande, C{\'e}sar and Armejach, Adri\`{a} and Rico, Alejandro and Ayguad{\'e}, Eduard and Labarta, Jesus and Valero, Mateo and Casas, Marc and Moreto, Miquel},
