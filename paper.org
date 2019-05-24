@@ -4392,13 +4392,15 @@ variability is however very important aspect to model for applications
 that are more /latency-bound/.
 
 #+BEGIN_EXPORT latex
-\tikzstyle{model_label}=[anchor=south west, fill=white, font=\scriptsize]
+\tikzstyle{model_label}=[anchor=south west, font=\scriptsize]
 \begin{figure}[t]
     % \centering
     \begin{tikzpicture}
         \node[anchor=south west,inner sep=0] at (0,0) {\hbox{\hspace{-.05\linewidth}\resizebox{1.1\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}};
-        \node[model_label] at (8.2, 4.8)   {spatial var.};
-        \node[model_label] at (8.2, 3.7) {temporal var.};
+        \draw[-latex] (9.1, 5.4) to[bend left] node [midway, right, model_label, anchor=west] {\textbf{(1)}} (9.1, 4.7) ;
+        \draw[-latex] (9.1, 4.7) to[bend left] node [midway, right, model_label, anchor=west] {\textbf{(2)}} (9.1, 4.3) ;
+        \node[model_label, fill=white] at (7.7, 2.8) {\textbf{(1)} spatial var.};
+        \node[model_label, fill=white] at (7.7, 2.4) {\textbf{(2)} temporal var.};
     \end{tikzpicture}
     \caption{HPL performance: predictions vs. reality}\vspace{-1em}
     \label{fig:validation_performance}
