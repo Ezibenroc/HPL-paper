@@ -1326,7 +1326,7 @@ zlib 1.0
 
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
-Finely tuning MPI applications (number of process, granularity, collective
+Finely tuning MPI applications (number of processes, granularity, collective
 operation algorithms, geometry and process placement) is critical to obtain good performance on
 supercomputers.  With a rising cost of modern supercomputers, running parallel
 applications at scale solely to optimize their performance is extremely
@@ -1416,7 +1416,7 @@ reality (see Figure 1).
 
 This article is organized as follows: Section\ref{sec:con} presents
 the main characteristics of the HPL application and provides
-information on how the run are conducted on modern supercomputers. Section\ref{sec:relwork}
+information on how the runs are conducted on modern supercomputers. Section\ref{sec:relwork}
 discusses related work and explains why emulation (or /online
 simulation/) is the only sensible approach when studying an application
 as complex as HPL. In Section\ref{sec:smpi}, we briefly present the
@@ -1536,7 +1536,7 @@ The main parameters of HPL are:
   machines apparently get stuck when there are too many ongoing messages.
 - =DEPTH= controls how many iterations of the outer loop can overlap with each other.
 
-The sequential complexity of this factorization is 
+The sequential complexity of this factorization is \linebreak
 $\mathrm{flop}(N) = \frac{2}{3}N^3 + 2N^2 + \O(N)$ where $N$ is the
 order of the matrix to factorize. The time complexity can be
 approximated by
@@ -3718,8 +3718,8 @@ To evaluate the soundness of our approach, we compare several real
 executions of HPL with simulations using the previous models.
 We used the Dahu cluster from the Grid'5000 testbed. It has 32 nodes connected
 through a single switch by \SI{100}{\giga\bit\per\second} Omnipath links. Each node has two Intel Xeon
-Gold 6130 CPU with 16 cores per CPU. We disabled hyperthreading
-and fixed the frequency to \SI{3.7}{\giga\hertz}. We used HPL version 2.2 compiled
+Gold 6130 CPU with 16 cores per CPU and we disabled hyperthreading.
+We used HPL version 2.2 compiled
 with GCC version 6.3.0. We also used the libraries OpenMPI version 2.0.2 and
 OpenBLAS version 0.3.1.
 HPL executions were done using a block size of 128 and a matrix of varying size
@@ -4415,7 +4415,7 @@ variability. Overall, although this was not particularly foreseeable
 and could have been different with an other application, only the
 =dgemm= kernel needs to be carefully modeled with a
 \model[H]{2}-\noise[H]{2}. In Figure 1, we used a simple
-\model{1}-\noise{0} for =dtrsm= and simply skipped every other
+\model{1}-\noise{0} for the other BLAS kernels and simply skipped every other
 kernel. A detailed modeling of all (BLAS and HPL) kernels is
 possible but a minimal calibration of the =dgemm= kernel over a
 representative set of nodes is thus sufficient to consistently predict
@@ -4448,9 +4448,9 @@ effortless with Intel's Math Kernel Library (MKL) as it supports
 automatic offloading for selected BLAS functions. While we cannot
 know precisely which MKL version was used in 2013, we measured the
 default version (version 11.1.1) that was used on Stampede in the
-beginning of 2017 and built precise \modelp{2}\noise{1} models of
+beginning of 2017 and built precise \modelp{1}\noise{1} models of
 =dgemm= and =dtrsm=. Likewise, using measurements of the performance of
-MPI obtained in 2017, we built a precise \modelp{1}\noisep{1} model of
+MPI obtained in 2017, we built a precise \modelp{1}\noise{0} model of
 the fat-tree interconnect.  All HPL input parameters were set to
 exactly the values used in the TOP500 qualification run and were
 coherent with the submitted output.
@@ -5011,10 +5011,10 @@ supercomputer. Our application of choice, HPL, is particularly challenging both 
 as it implements its own set of non-blocking collective operations (from which the users has to choose)
 that rely on =MPI_Iprobe= in order to overlap with computations.
 
-More specifically, we explain how simulate on a single commodity node
+More specifically, we explain how to simulate on a single commodity node
 scenarios at the scale of the TOP500 qualification runs. Although
-simulation is generally longer than a real execution is requires significantly 
-resource consuming. This emulation employs several non-trivial
+simulation is generally longer than a real execution, it is significantly 
+less resource consuming. This emulation employs several non-trivial
 operating-system level optimizations (memory mapping, dynamic library
 loading, huge pages) that have since been integrated into the last
 version of SimGrid/SMPI.  Unlike the common skeleton
