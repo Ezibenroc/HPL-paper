@@ -1,4 +1,4 @@
-image: ezibenroc/orgmode_latex
+image: ezibenroc/orgmode_latex:testing
 
 before_script:
     - emacs --version 2>&1 | head -n 1
