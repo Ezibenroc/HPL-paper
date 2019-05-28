@@ -6,7 +6,8 @@ before_script:
 
 compilation:
     script:
-        - make && git checkout *.c *.txt && make fast
+        - make
+        - git status
         - ls -l paper.*
         - sha256sum paper.*
     artifacts:
