@@ -6,7 +6,8 @@ ARCHIVE_FILES=$(NAME).org refs.bib Makefile figures/*
 all: $(NAME).pdf
 
 fast:
-	emacs -batch --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
+	emacs -batch --eval "(require 'package)" --eval "(package-initialize)" \
+	--eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
 	--eval "(setq org-export-babel-evaluate t)" paper.org  --funcall org-latex-export-to-latex
 	pdflatex paper.tex
 
@@ -16,8 +17,9 @@ watch:
 # If you have good Emacs and Org-mode installed by default, delete "-l ~/.emacs.d/init.el"
 %.tex: %.org
 	emacs -batch $^  --funcall org-babel-tangle
-	emacs -batch --eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
-	--eval "(setq org-export-babel-evaluate t)" $^  --funcall org-latex-export-to-latex
+	emacs -batch --eval "(require 'package)" --eval "(package-initialize)" \
+	--eval "(setq enable-local-eval t)" --eval "(setq enable-local-variables t)" \
+	--eval "(setq org-export-babel-evaluate t)" paper.org  --funcall org-latex-export-to-latex
 
 %.pdf: %.tex
 	pdflatex $^
