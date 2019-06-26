@@ -1,0 +1,573 @@
+# -*- coding: utf-8 -*-
+# -*- mode: org -*-
+#+Title:  Fast and Faithful Performance Prediction of MPI Applications: the HPL Case Study
+#+Author: \textbf{Tom Cornebize}, Arnaud Legrand, Franz C. Heinrich\newline Univ. Grenoble Alpes, CNRS, Inria
+#+DATE: June 25, 2019
+#+LANGUAGE: en
+#+STARTUP: beamer indent inlineimages logdrawer
+#+TAGS: noexport(n)
+
+#+PROPERTY: header-args  :session :eval never-export :exports both
+#+DRAWERS: latex_headers
+
+:latex_headers:
+#+LaTeX_CLASS: beamer
+#+LATEX_CLASS_OPTIONS: [10pt,presentation,xcolor={usenames,dvipsnames,svgnames,table}]
+#+OPTIONS:   H:2 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+LATEX_COMPILER: lualatex
+#+LATEX_HEADER: \usedescriptionitemofwidthas{bl}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+LATEX_HEADER: \usepackage{figlatex}
+#+LATEX_HEADER: \usepackage[french]{babel}
+#+LATEX_HEADER: %\usepackage{DejaVuSansMono}
+#+LATEX_HEADER: \usepackage{ifthen,amsmath,amstext,gensymb,amssymb}
+#+LATEX_HEADER: \usepackage{boxedminipage,xspace,multicol}
+#+LATEX_HEADER: %%%%%%%%% Begin of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \ProcessOptionsBeamer
+#+LATEX_HEADER: \usetheme[numbering=fraction,titleformat=smallcaps,progressbar=frametitle]{metropolis}
+#+LATEX_HEADER: \usepackage{fontawesome}
+#+LATEX_HEADER: \usecolortheme[named=BrickRed]{structure}
+#+LATEX_HEADER: %%%%%%%%% End of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \usepackage{verbments}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{url} \urlstyle{sf}
+#+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
+#+LATEX_HEADER: %\let\tmptableofcontents=\tableofcontents
+#+LATEX_HEADER: %\def\tableofcontents{}
+#+LATEX_HEADER:  \usepackage[normalem]{ulem}
+#+LATEX_HEADER:  \usepackage{color,soul}
+#+LATEX_HEADER:  \definecolor{lightorange}{rgb}{1,.9,.7}
+#+LATEX_HEADER:  \sethlcolor{lightorange}
+#+LATEX_HEADER:  \definecolor{lightgreen}{rgb}{.7,.9,.7}
+#+LATEX_HEADER:  \let\hrefold=\href
+#+LATEX_HEADER:  \renewcommand{\href}[2]{\hrefold{#1}{\SoulColor{lightorange}\hl{#2}}}
+#+LATEX_HEADER: % \renewcommand{\uline}[1]{\SoulColor{lightorange}\hl{#1}}
+#+LATEX_HEADER: \renewcommand{\emph}[1]{\SoulColor{lightorange}\hl{#1}}
+#+LATEX_HEADER: \makeatletter
+#+LATEX_HEADER: \newcommand\SoulColor[1]{%
+#+LATEX_HEADER:   \sethlcolor{#1}%
+#+LATEX_HEADER:   \let\set@color\beamerorig@set@color%
+#+LATEX_HEADER:   \let\reset@color\beamerorig@reset@color}
+#+LATEX_HEADER: \makeatother
+#+LATEX_HEADER: \let\oldtexttt=\texttt
+#+LATEX_HEADER: % \renewcommand\texttt[1]{\SoulColor{lightgreen}\hl{\tt#1}}
+#+LATEX_HEADER: % \renewcommand\alert[1]{\SoulColor{lightgreen}\hl{#1}}
+#+LATEX_HEADER: % \AtBeginSection{\begin{frame}{Outline}\tableofcontents\end{frame}}
+#+LATEX_HEADER: \graphicspath{{fig/}}
+#+LATEX_HEADER: \usepackage{tikzsymbols}
+#+LATEX_HEADER: \def\smiley{\Smiley[1][green!80!white]}
+#+LATEX_HEADER: \def\frowny{\Sadey[1][red!80!white]}
+#+LATEX_HEADER: \def\winkey{\Winkey[1][yellow]}
+#+LATEX_HEADER: \usepackage[ruled,vlined,english]{algorithm2e}
+#+LATEX_HEADER: \DontPrintSemicolon
+#+LATEX_HEADER: \sloppy
+#+LATEX_HEADER: \usepackage{color,colortbl}
+#+LATEX_HEADER: \definecolor{gray98}{rgb}{0.98,0.98,0.98}
+#+LATEX_HEADER: \definecolor{gray20}{rgb}{0.20,0.20,0.20}
+#+LATEX_HEADER: \definecolor{gray25}{rgb}{0.25,0.25,0.25}
+#+LATEX_HEADER: \definecolor{gray16}{rgb}{0.161,0.161,0.161}
+#+LATEX_HEADER: \definecolor{gray60}{rgb}{0.6,0.6,0.6}
+#+LATEX_HEADER: \definecolor{gray30}{rgb}{0.3,0.3,0.3}
+#+LATEX_HEADER: \definecolor{bgray}{RGB}{248, 248, 248}
+#+LATEX_HEADER: \definecolor{amgreen}{RGB}{77, 175, 74}
+#+LATEX_HEADER: \definecolor{amblu}{RGB}{55, 126, 184}
+#+LATEX_HEADER: \definecolor{amred}{RGB}{228,26,28}
+#+LATEX_HEADER: \definecolor{amdove}{RGB}{102,102,122}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage[procnames]{listings}
+#+LATEX_HEADER: \lstset{ %
+#+LATEX_HEADER:  backgroundcolor=\color{gray98},    % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+#+LATEX_HEADER:  basicstyle=\tt\scriptsize,        % the size of the fonts that are used for the code
+#+LATEX_HEADER:  breakatwhitespace=false,          % sets if automatic breaks should only happen at whitespace
+#+LATEX_HEADER:  breaklines=true,                  % sets automatic line breaking
+#+LATEX_HEADER:  showlines=true,                   % sets automatic line breaking
+#+LATEX_HEADER:  captionpos=b,                     % sets the caption-position to bottom
+#+LATEX_HEADER:  commentstyle=\color{gray30},      % comment style
+#+LATEX_HEADER:  extendedchars=true,               % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+#+LATEX_HEADER:  frame=single,                     % adds a frame around the code
+#+LATEX_HEADER:  keepspaces=true,                  % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+#+LATEX_HEADER:  keywordstyle=\color{amblu},       % keyword style
+#+LATEX_HEADER:  procnamestyle=\color{amred},      % procedures style
+#+LATEX_HEADER:  language=[95]fortran,             % the language of the code
+#+LATEX_HEADER:  numbers=left,                     % where to put the line-numbers; possible values are (none, left, right)
+#+LATEX_HEADER:  numbersep=5pt,                    % how far the line-numbers are from the code
+#+LATEX_HEADER:  numberstyle=\tiny\color{gray20},  % the style that is used for the line-numbers
+#+LATEX_HEADER:  rulecolor=\color{gray20},         % if not set, the frame-color may be changed on line-breaks within not-black text (\eg comments (green here))
+#+LATEX_HEADER:  showspaces=false,                 % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+#+LATEX_HEADER:  showstringspaces=false,           % underline spaces within strings only
+#+LATEX_HEADER:  showtabs=false,                   % show tabs within strings adding particular underscores
+#+LATEX_HEADER:  stepnumber=2,                     % the step between two line-numbers. If it's 1, each line will be numbered
+#+LATEX_HEADER:  stringstyle=\color{amdove},       % string literal style
+#+LATEX_HEADER:  tabsize=2,                        % sets default tabsize to 2 spaces
+#+LATEX_HEADER:  % title=\lstname,                    % show the filename of files included with \lstinputlisting; also try caption instead of title
+#+LATEX_HEADER:  procnamekeys={call}
+#+LATEX_HEADER: }
+#+LATEX_HEADER: \definecolor{colorfuncall}{rgb}{0.6,0,0}
+#+LATEX_HEADER: \newcommand{\prettysmall}{\fontsize{6}{8}\selectfont}
+#+LATEX_HEADER: \let\oldtexttt=\texttt
+#+LATEX_HEADER: \renewcommand\texttt[1]{\oldtexttt{\smaller[1]{#1}}}
+#+LATEX_HEADER: \usepackage[binary-units,group-digits,group-separator={,}]{siunitx}
+#+LATEX_HEADER: \DeclareSIUnit\flop{Flop}
+#+LATEX_HEADER: \DeclareSIUnit\flops{\flop\per\second}
+#+LATEX_HEADER: \newcommand{\Num}[1]{\num[group-separator={,}]{#1}\xspace}
+#+LATEX_HEADER: \newcommand{\NSI}[2]{\SI[group-separator={,}]{#1}{#2}\xspace}
+#+LATEX_HEADER: \usepackage{array,multirow,graphicx}
+
+
+#+BEGIN_EXPORT latex
+\newcommand{\norm}{\ensuremath{\mathcal{N}}\xspace}
+\makeatletter
+\newcommand{\removelatexerror}{\let\@latex@error\@gobble}
+\makeatother
+
+  \newcommand{\myfbox}[2][gray!20]{\bgroup\scalebox{.7}{\colorbox{#1}{{\vphantom{pS}#2}}}\egroup} % \fbox
+  %\def\myfbox#1{#1} % \fbox
+  \def\HPC{\myfbox[gray!40]{HPC}}
+  \def\NET{\myfbox[gray!40]{Network}}
+  \def\SG{\myfbox[gray!40]{Smart Grids}}
+  \def\ECO{\myfbox[gray!40]{Economics}}
+  \def\PRIV{\myfbox[gray!40]{Privacy}}
+  \def\TRACING{\myfbox[red!20]{Tracing}}
+  \def\SIM{\myfbox[green!20]{Simulation}}
+  \def\VIZ{\myfbox[red!40]{Visualization}}
+  \def\MODELING{\myfbox[green!40]{Stochastic Models}}
+  \def\OPT{\myfbox[blue!20]{Optimization}}
+  \def\GT{\myfbox[blue!40]{Game Theory}}
+#+END_EXPORT
+
+
+#+BEGIN_EXPORT latex
+\def\changefont#1{%
+  \setbeamertemplate{itemize/enumerate body begin}{#1}
+  \setbeamertemplate{itemize/enumerate subbody begin}{#1}
+  #1}
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+\verbatimfont{\scriptsize}%small
+\let\endmintedbak=\endminted
+\def\endminted{\endmintedbak\vspace{-1cm}}
+#+END_EXPORT
+
+#+BEGIN_EXPORT latex
+\newcommand{\Norm}{\ensuremath{\mathcal{N}}\xspace}
+\newcommand{\Unif}{\ensuremath{\mathcal{U}}\xspace}
+\newcommand{\Triang}{\ensuremath{\mathcal{T}}\xspace}
+\newcommand{\Exp}{\ensuremath{\mathcal{E}}\xspace}
+\newcommand{\Bernouilli}{\ensuremath{\mathcal{B}}\xspace}
+\newcommand{\Like}{\ensuremath{\mathcal{L}}\xspace}
+\newcommand{\Model}{\ensuremath{\mathcal{M}}\xspace}
+\newcommand{\E}{\ensuremath{\mathbb{E}}\xspace}
+\def\T{\ensuremath{\theta}\xspace}
+\def\Th{\ensuremath{\hat{\theta}}\xspace}
+\def\Tt{\ensuremath{\tilde{\theta}}\xspace}
+\def\Y{\ensuremath{y}\xspace}
+\def\Yh{\ensuremath{\hat{y}}\xspace}
+\def\Yt{\ensuremath{\tilde{y}}\xspace}
+\let\epsilon=\varepsilon
+\let\leq=\leqslant
+\let\geq=\geqslant
+#+END_EXPORT
+:end:
+
+# https://cran.r-project.org/web/packages/plot3D/vignettes/plot3D.pdf
+# http://htmlpreview.github.io/?https://github.com/AckerDWM/gg3D/blob/master/gg3D-vignette.html
+
+# http://bechtel.colorado.edu/~bracken/tutorials/stan/stan-tutorial.pdf
+# http://jakewestfall.org/misc/SorensenEtAl.pdf
+# https://github.com/AllenDowney/BayesMadeSimple
+
+# https://github.com/bob-carpenter/prob-stats
+
+#+BEGIN_EXPORT latex
+#+END_EXPORT
+
+** Context
+\textbf{Typical Performance Evaluation Questions} (Given my application and a supercomputer)
+- *Before* running
+  - How many nodes ? For how long ?
+  - Which parameters / geometry / communication pattern ?
+- *After* running (performance does not match my "expectations")
+  - Does it come from my app or from the platform ?
+  - What could I do to fix the problem (if any) ?
+
+#+BEGIN_CENTER
+So many large-scale runs, solely to tune performance ?!?\pause
+#+END_CENTER
+# Test-running at scale is a waste of resources !!!
+
+\textbf{Holly Grail: Predictive Simulation on a "Laptop"} 
+Capture the *whole application*  and *platform complexity*
+- Run the code (+skeleton+)
+- Use sound performance models
+** Let's try HPL
+:PROPERTIES:
+:BEAMER_opt: fragile
+:END:
+
+#+BEGIN_EXPORT latex
+\begin{overlayarea}{\linewidth}{2.8cm}
+  \begin{minipage}[m]{.3\linewidth}\vspace{-1em}
+     \hspace{-1cm}\includegraphics[width=1.2\linewidth]{images/stampede.png}
+  \end{minipage}%
+  \begin{minipage}[m]{0.3\linewidth}
+    % \vspace{0.3cm} % ugly, could not align the drawing with the algorithm with minipages or tabular...
+    \begin{tikzpicture}[scale=0.2]
+      \draw (0, 0) -- (0, 12) -- (12, 12) -- (12, 0) -- cycle;
+      \foreach \i in {2}{
+        \draw [fill=lightgray] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
+        \draw [fill=gray] (\i, 12-\i) -- (\i, 12-\i-1) -- (\i+1, 12-\i-1) -- (\i+1, 12-\i) -- cycle;
+        \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
+        \draw[<->] (\i, 12-\i+0.5) -- (\i+1, 12-\i+0.5) node [pos=0.5, yshift=+0.15cm] {\scalebox{.8}{\texttt{NB}}};
+      }
+      \foreach \i in {3}{
+        \draw [fill=white] (\i, 0) -- (\i, 12-\i) -- (12, 12-\i) -- (12, 0) -- cycle;
+        \draw (\i,12-\i) -- (\i,0);
+        \draw[very thick, -latex] (\i,12-\i) -- (\i+2,12-\i-2);
+      }
+      \draw[dashed] (0, 12) -- (12, 0);
+      \node(L) at (2, 2) {\ensuremath{\boldsymbol{L}}};
+      \node(U) at (10, 10) {\ensuremath{\boldsymbol{U}}};
+      \node(A) at (8, 4) {\ensuremath{\boldsymbol{A}}};
+      \draw[<->] (0, -0.5) -- (12, -0.5) node [pos=0.5, yshift=-0.3cm] {$N$};
+    \end{tikzpicture}
+  \end{minipage}%
+  \begin{minipage}[m]{0.4\linewidth}\footnotesize\vspace{-1em}
+    \removelatexerror
+    \let\emphc=\emph
+    \begin{algorithm}[H]
+      Allocate and initialize $A$\;
+      \def\emph#1{#1}
+      \For{$k=N$ \textbf{to} $0$ \textbf{step} \texttt{NB}}{
+        \def\emph#1{\emphc{#1}}
+        Allocate the panel\;
+        \emph{Factor} the panel\;
+        \emph{Broadcast} the panel\;
+        \emph{Update} the sub-matrix;
+      }
+    \end{algorithm}
+    \vspace{1em}
+  \end{minipage}%\vspace{-.5em}
+\end{overlayarea}
+#+END_EXPORT
+
+# *** Typical Parameters (Top500)
+#+BEGIN_EXPORT latex
+% \TC{Voir l'email de Swan du 30/01/2018 à propos des résultats de TACC. Il
+% demandait de ne pas diffuser plus loin sans on accord, mais je ne sais pas s'il
+% parlait du HPL.dat ou des réponses de son collègue.}
+% \TC{Le run TOP500 de Theta a été refait plusieurs fois. Je ne sais pas auquel
+% correspond le fichier HPL.dat que l'on a. J'ai reporté la perf de novembre
+% 2017.}
+\scalebox{.85}{\begin{tabular}{l|lll}
+\multicolumn{1}{l|}{} & \emph{Stampede@TACC} & Theta@ANL & Dahu@G5K\\
+\hline
+\texttt{Rpeak}     & \NSI{8520.1}{\tera\flops} & \NSI{9627.2}{\tera\flops} & \NSI{62.26}{\tera\flops}              \\
+\hline
+$N$         & \emph{3,875,000}                & \Num{8360352}                & \Num{500000}            \\
+\texttt{NB}        & \Num{1024}                    & 336                      & 128                \\
+$P\times Q$             & \emph{77$\times$78}   (6006)         & 32$\times$101                 & 32$\times$32            \\
+\texttt{RFACT}  [3] & Crout                    & Left                     & Right              \\
+\texttt{SWAP }  [2] & Binary-exch.             & Binary-exch.             & Binary-exch.       \\
+\texttt{BCAST}  [6] & Long modified            & 2 Ring modified          & 2 Ring             \\
+\texttt{DEPTH}     & 0                        & 0                        & 1                  \\
+\hline
+\texttt{Rmax}      & \NSI{5168.1}{\tera\flops} & \NSI{5884.6}{\tera\flops} & \NSI{24.55}{\tera\flops}              \\
+Duration   & \emph{2 hours}                  & 28 hours                 & 1 hour             \\
+Memory    & \emph{120 TB}     & \NSI{559}{\tera\byte}     & \NSI{2}{\tera\byte} \\
+MPI ranks & 1/node                & 1/node                   & 1/core             \\
+\end{tabular}}
+#+END_EXPORT
+
+# $\Theta(N^3)$ (resp. $\Theta(N^2)$) computations (resp. communications)
+** Step 1: Emulating at Scale
+:PROPERTIES:
+:BEAMER_opt: fragile
+:END:
+*SMPI* = controled emulation of MPI programs using *SimGrid* 
+# \includegraphics[height=1.5em]{images/simgrid_logo.pdf}
+
+1. BLAS kernels \hfill $\texttt{DGEMM}(M,N,K) = \Theta(M.N.K)$ \hfill 
+   #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\null\vspace{-2em}\only<2->{\vspace{10cm}}
+   #+BEGIN_SRC C
+   #define HPL_dgemm(layout, TransA, TransB, M, N, K,    \
+              alpha, A, lda, B, ldb, beta, C, ldc) ({    \
+      double expected_time = 1.029e-11 * M * N * K;      \
+      smpi_execute_benched(expected_time);               \
+    })
+   #+END_SRC
+   #+LaTeX: \end{overlayarea}%\vspace{-1.5em}
+   #+LaTeX: \pause
+2. Memory allocations (=SMPI_SHARED_MALLOC=)
+   # #+LaTeX: \only<2>{
+   #+BEGIN_EXPORT latex
+   \only<2>{\vspace{1em}
+   \begin{center}
+   \tikzset{draw half paths/.style 2 args={%
+     % From https://tex.stackexchange.com/a/292108/71579
+     decoration={show path construction,
+       lineto code={
+         \draw [#1] (\tikzinputsegmentfirst) --
+            ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$);
+         \draw [#2] ($(\tikzinputsegmentfirst)!0.5!(\tikzinputsegmentlast)$)
+           -- (\tikzinputsegmentlast);
+       }
+     }, decorate
+   }}
+   \tikzstyle{switch}=[draw, circle, minimum width=1cm, minimum height = 1cm]
+   \tikzstyle{compute}=[draw, rectangle, minimum width=0.5cm, minimum height = 0.5cm, node distance=0.5cm]
+   \tikzstyle{base}=[ellipse, minimum width=2cm, minimum height = 0.5cm, node distance = 0.5cm]
+   \tikzstyle{bigswitch}=[base, draw]
+   \scalebox{1}{\begin{tikzpicture}[yscale=0.5, scale=0.7]
+       \pgfmathtruncatemacro{\size}{4}
+       \pgfmathtruncatemacro{\width}{2}
+       \pgfmathtruncatemacro{\sizem}{\size-1}
+       \pgfmathtruncatemacro{\smallbasex}{4}
+       \pgfmathtruncatemacro{\smallbasey}{\size/2}
+       \pgfmathtruncatemacro{\smallstopx}{\smallbasex+\width}
+       \pgfmathtruncatemacro{\smallstopy}{\smallbasey+1}
+       \foreach \i in {0,\sizem}{
+               \pgfmathtruncatemacro{\j}{\i+1}
+               \draw (0, \i) -- (0, \j);
+               \draw (\width, \i) -- (\width, \j);
+               \draw[dotted] (0, \i) -- (\width, \i);
+               \draw[dotted] (0, \j) -- (\width, \j);
+           }
+           \draw[dashed] (0, 1) -- (0, \sizem);
+           \draw[dashed] (\width, 1) -- (\width, \sizem);
+           \draw (0, 0)     -- (\width, 0);
+           \draw (0, \size) -- (\width, \size);
+       \draw (\smallbasex,\smallbasey) -- (\smallstopx,\smallbasey) -- (\smallstopx,\smallstopy) -- (\smallbasex,\smallstopy) -- cycle;
+       \foreach \i in {0,\sizem}{
+               \pgfmathtruncatemacro{\j}{\i+1}
+               \draw[dotted] (\width, \i) -- (\smallbasex, \smallbasey);
+               \draw[dotted] (\width, \j) -- (\smallbasex, \smallstopy);
+               \pgfmathsetmacro{\xleft}{\width}
+               \pgfmathsetmacro{\xright}{\smallbasex}%{\width/2.0+\smallbasex/2.0}
+               \pgfmathsetmacro{\yleft}{\i + 0.5}
+               \pgfmathsetmacro{\yright}{\smallbasey + 0.5}
+               \path [draw half paths={solid, -latex}{draw=none}]  (\xleft, \yleft) -- (\xright, \yright);
+           }
+           \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 0) -- (0, \size) node [pos=0.5, xshift=-1cm] {virtual};
+           \draw[decorate,line width=1pt,decoration={brace,mirror,raise=0.2cm}] (\smallstopx, \smallbasey) -- (\smallstopx, \smallstopy) node [pos=0.5, xshift=1.2cm] {physical};
+   \end{tikzpicture}}
+   \end{center}}
+   #+END_EXPORT
+   #+LaTeX: }\pause\vspace{1.5em}
+3. HPL specific tricks 
+   #+LaTeX: (\alert<3>{panel structure}, \alert<4>{reuse}, pivots, huge pages, ...)
+   #+BEGIN_EXPORT latex
+   \begin{center}
+     \only<3>{\vspace{1em}
+       \scalebox{.9}{\begin{tikzpicture}[yscale=.6,scale=1]
+         \draw [fill=gray] (3, 2) -- (6, 2) -- (6, 3) -- (3, 3) -- cycle;
+         \draw (0, 2) -- (9, 2) -- (9, 3) -- (0, 3) -- cycle;
+         \draw[dashed] (3, 2) -- (3, 3);
+         \draw[dashed] (6, 2) -- (6, 3);
+         \node(1) at (1.5, 2.5) {matrix parts};
+         \node(2) at (4.5, 2.5) {indices};
+         \node(3) at (7.5, 2.5) {matrix parts};
+         \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0.2, 3) -- (2.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+         \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (6.2, 3) -- (8.8, 3) node [pos=0.5, yshift=0.5cm] {can be shared};
+         \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (3.2, 3) -- (5.8, 3) node [pos=0.5, yshift=+0.5cm] {must not be shared};
+       \end{tikzpicture}}}
+   \only<4>{
+       \scalebox{.9}{\begin{tikzpicture}[yscale=.5]
+         \draw [fill=gray] (2, 1) -- (4, 1) -- (4, 1.5) -- (2, 1.5) --cycle;
+         \draw (0, 1) -- (6, 1) -- (6, 1.5) -- (0, 1.5) -- cycle;
+         \draw[dashed] (2, 1) -- (2, 1.5);
+         \draw[dashed] (4, 1) -- (4, 1.5);
+
+         \draw [fill=gray] (2, 0) -- (3, 0) -- (3, .5) -- (2, .5) --cycle;
+         \draw (1, 0) -- (4, 0) -- (4, .5) -- (1, .5) -- cycle;
+         \draw[dashed] (2, 0) -- (2, .5);
+         \draw[dashed] (3, 0) -- (3, .5);
+
+         \draw[-latex] (2, 1) -- (2, .5);
+         \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm}] (0, 1.5) -- (6, 1.5) node [pos=0.5, yshift=0.5cm] {initial buffer};
+         \draw[decorate,line width=1pt,decoration={brace,raise=0.2cm, mirror}] (1, 0) -- (4, 0) node [pos=0.5, yshift=-0.5cm] {current buffer};
+       \end{tikzpicture}}}
+   \end{center}
+   #+END_EXPORT
+
+#+LaTeX: \pause
+#+LaTeX: \only<5>{\vspace{-.5cm}\alert{Reality}: \qquad Computations $=\Theta(N^3)$ \qquad Communications $=\Theta(N^2)$\\}
+#+LaTeX: \only<5>{\alert{Simulation}: Duration  $\approx \Theta(N^2.#Procs)$\\}
+#+LaTeX: \includegraphics<5>[width=\linewidth,page=2]{./figures/scalability_plot_size.pdf}
+#+BEGIN_EXPORT latex
+\only<6>{\vspace{-1.5em}\alert{Take-Away Message}: It works! (\approx 50/16,000 lines in 14/150 files)
+   \begin{center}
+   \scalebox{.9}{\begin{tabular}{ll|l@{~~~}l}
+            && \alert{Reality} & \alert{Simulation}\\[.2em]
+            \hline
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{  Dahu  }}} & \#nodes~/~\#processes & \Num{32}~/~\Num{1024} & \Num{1}~/~\Num{1}\\
+             & Memory & \NSI{2}{\tera\byte} & \NSI{9}{\giga\byte}\\
+             & Duration   (hours) & \Num{1} & \Num{5} \\
+             & Resources (node hours) & \Num{32} & \Num{1}\\[.2em]
+             \hline
+            \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{\alert{Stampede}}}} & \#nodes~/~\#processes & \emph{6006}~/~\Num{6006} & \emph{1}~/~\Num{1}\\
+             & Memory & \emph{120 TB} & \emph{19 GB}\\
+             & Duration   (hours) & \emph{2} & \emph{62}\\
+             & Resources (node hours)& \Num{12000} & \Num{62} \\
+        \end{tabular}}\end{center}}
+#+END_EXPORT
+#+LaTeX: \vspace{10cm}
+** Step 2: Modeling Commputations
+# #+LaTeX: \hfill{\small (\alert{Double Precision Matrix Matrix Multiplication})}
+
+#+BEGIN_EXPORT latex
+\vspace{-2em}\begin{equation*}
+  \texttt{DGEMM}_{\only<2->{i}}(M,N,K) =
+     \only<1>{\alpha.M.N.K}\only<2->{\underbrace{\alpha_i.M.N.K}_{\text{per host}}}
+  \uncover<3->{+ \underbrace{\beta_i.M.N +  \gamma_i.N.K + \dots }_{\text{polynomial model}}}
+  \uncover<4->{+ \underbrace{\norm(0,œ\alpha'_i.M.N.K + \dots)}_{\text{polynomial noise}}}
+\end{equation*}
+#+END_EXPORT
+
+#+BEGIN_EXPORT latex
+\vspace{-1em}\begin{center}
+  \only<2-4>{Different color $\Rightarrow$ different host}\only<5>{For a particular host}
+
+  \includegraphics<2-4>[width=.7\linewidth]{figures/kernels/dgemm_heterogeneity_calib.png}
+  \includegraphics<5>[width=.7\linewidth]{figures/kernels/dgemm_model_calib.png}
+\end{center}
+#+END_EXPORT
+#+LaTeX: \only<6>{\vspace{1cm}
+*Take-Away Message*: 
+- Both *spatial* and *temporal* variability
+- "Sophisticated" linear models are *excellent predictors* (for every function -- =DTRSM=, =DAXPY=, ...)
+#+LaTeX: }\vspace{10cm}
+** Step 2': Modeling Communications
+*Hand-crafted non-blocking collective operations* intertwinned with computations
+
+#+LaTeX: {\centering \includegraphics<1>[width=.9\linewidth]{./figures/network/calibration.png}}
+
+#+LaTeX: \only<2>{\vspace{1.5cm}
+*Take-Away Message*: 
+- For small messages, the *variability can be huge*
+- *Piece-wise* *mixture* of *linear* regressions
+#+LaTeX: }\vspace{10cm}
+* Does all this matter ?
+** HPL Structure: Prediction vs. Reality (Dahu @ G5K)
+32 nodes (2 Intel Xeon Gold 6130 CPU with 16 cores each), Omnipath\medskip
+
+#+BEGIN_EXPORT latex
+\newcommand{\ganttcaption}[2]{\rotatebox{90}{\hspace{.6cm}$\text{#1}\atop \text{#2}$\hspace{-1cm}}}%
+\begin{overlayarea}{\linewidth}{7cm}
+  \begin{tabular}{c@{}c}
+    \ganttcaption{\hspace{.3cm}Reality}{}                        & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_reality.png} \\
+    \only<+>{\ganttcaption{Simple kernel}{Simple network}    & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_deterministic-network.png}\\}%
+    \only<+>{\ganttcaption{Simple kernel}{Complex network}    & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_deterministic-CPU_linear-DGEMM_stochastic-network.png}\\}%
+    \only<+>{\ganttcaption{Complex kernel}{Simple network}   & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_deterministic-network.png}\\}%
+    \only<+>{\ganttcaption{Complex kernel}{Complex network}  & \includegraphics[width=.93\linewidth]{./figures/gantt_charts/gantt_simulation_stochastic-CPU_polynomial-DGEMM_stochastic-network.png} \\}%
+  \end{tabular}
+\end{overlayarea}
+#+END_EXPORT
+** HPL Performance: Prediction vs. Reality (Dahu @ G5K)
+#+BEGIN_EXPORT latex
+\tikzstyle{model_label}=[anchor=south west, font=\scriptsize]
+    % \centering
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] at (0,0) {\hbox{\hspace{-.05\linewidth}\resizebox{.9\linewidth}{!}{\input{figures/validation_performance.tex}}\hspace{-.05\linewidth}}\vspace{-1em}};
+        \draw[-latex] (9.1, 5.4) to[bend left] node [midway, right, model_label, anchor=west] {\emph{\textbf{Heterogeneity}}} (9.1, 4.7) ;
+        \draw[-latex] (9.1, 4.7) to[bend left] node [midway, right, model_label, anchor=west] {\emph{\textbf{Variability}}} (9.1, 4.3) ;
+    \end{tikzpicture}
+#+END_EXPORT
+*Take-Away Message*: /accurate prediction/
+- Modeling both *spatial* and *temporal* computation variability is essential
+- Network did not matter much here. But it could have...
+
+** Stampede Archeology (2013): Down the Rabbit Hole
+#+BEGIN_CENTER
+#+LaTeX: \includegraphics<1>[width=.5\linewidth,page=2]{./figures/stampede_knc_model.pdf} 
+#+LaTeX: \includegraphics<2>[width=.8\linewidth,page=1]{./figures/stampede_simgrid.pdf}\vspace{-1em}
+#+END_CENTER
+\pause\pause
+
+#+LaTeX: \scalebox{.9}{\begin{minipage}{1.2\linewidth}\tt\scriptsize
+#+LaTeX: ================================================================================
+
+/HPLinpack 2.1/  --  High-Performance Linpack benchmark  --  October 26, 2012
+
+Written by  /A. Petitet/ and /R. Clint Whaley/,  Innovative Computing Laboratory, UTK
+
+Modified by /Piotr Luszczek/, Innovative Computing Laboratory, UTK
+
+Modified by /Julien Langou/, University of Colorado Denver
+
+#+LaTeX: ================================================================================
+
+The following parameter values will be used:
+
+N        : 3875000
+
+NB       : 1024
+
+PMAP     : Column-major process mapping
+
+...
+
+/BCAST/    :  /BlongM/
+
+/DEPTH/    :       /0/ 
+
+/SWAP/     : /Binary-exchange/
+
+...
+
+#+LaTeX: \end{minipage}}
+
+#+BEGIN_EXPORT latex
+\begin{overlayarea}{\linewidth}{0cm}
+  \vspace{-2.5cm}
+  \begin{flushright}
+    \includegraphics[width=.3\linewidth,page=1]{./figures/fullscale_unzoomed.png}\vspace{-.5em}
+  \end{flushright}
+\end{overlayarea}
+#+END_EXPORT
+*Take-Away Message*: 
+- _Intel HPL_ was used (=HPL_bcast_bpush=, non-blocking sends)
+- The _reported input is wrong_ (total =Update= time $\gg$ makespan)
+* Perspectives
+** Stepping Back (1/2)
+- HPLinpack vs. Intel HPL :: We have a good _HPL "surrogate"_
+  - Modeling _complexity_:
+    - *Spatial* variability was expected
+    - *Temporal* variability is important (system noise, *temperature*)\medskip
+    - Only =DGEMM= requires a faithful model
+  - I'm sick of _open secrets_ (*Ghidra*
+    \includegraphics[height=1.5em]{images/GhidraLogo64.png}, NSA
+    reverse engineering)\medskip
+    - Anyone interested in helping with a *large-scale validation* or
+      *useful applications*?
+** Stepping Back (2/2)
+- Calibrating a platform :: toward a =libsimblas= and SMPI calibration
+  - _Generic_ fitting through *Bayesian sampling* with *STAN* \includegraphics[height=1.5em]{images/stan_logo.png}
+    #+BEGIN_EXPORT latex
+    $$\underbrace{y}_{\text{\texttt{DGEMM} duration}} \sim 
+         \underbrace{\mathcal{M}}_{\text{Polynomial}}(\underbrace{\text{\emph{$\theta$}}}_{\text{Parameters}},\underbrace{x}_{M,N,K})$$ \pause
+    #+END_EXPORT
+    #+BEGIN_EXPORT latex
+    \begin{overlayarea}{\linewidth}{0cm}
+      \begin{center}\includegraphics<2>[width=.6\linewidth]{./images/ex1_pairs.png}\end{center}
+    \end{overlayarea}\pause\vspace{-.3cm}
+    #+END_EXPORT
+  - *Hierarchical modeling* to _extrapolate_ from a few machines
+    #+BEGIN_EXPORT latex
+    \begin{columns}
+      \fbox{\begin{column}{.55\linewidth}
+        $y_i\sim \mathcal{M}(\theta_i,x)$ for each $i$\smallskip
+
+        $\theta_i\sim \mathcal{M'}(\theta')$ \hfill\small (e.g., Gaussian Mixture)
+      \end{column}}
+      \begin{column}{.4\linewidth}
+        \begin{overlayarea}{\linewidth}{3.7cm}\vspace{-1.4cm}
+          \includegraphics<3>[clip=true,bb={0 0 310 390}, width=\linewidth]{./images/mu_on_sigma_ellipses.png}
+        \end{overlayarea}
+      \end{column}
+    \end{columns}
+    #+END_EXPORT
+
+\vspace{10cm}
