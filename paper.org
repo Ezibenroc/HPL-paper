@@ -1327,7 +1327,7 @@ zlib 1.0
 * Abstract                                                           :ignore:
 #+Latex:\begin{abstract}
 Finely tuning MPI applications (number of processes, granularity, collective
-operation algorithms, geometry and process placement) is critical to obtain good performance on
+operation algorithms, topology and process placement) is critical to obtain good performance on
 supercomputers.  With a rising cost of modern supercomputers, running parallel
 applications at scale solely to optimize their performance is extremely
 expensive. Having inexpensive but faithful predictions of expected performance
@@ -1336,10 +1336,10 @@ The methodology we propose captures the complexity of adaptive applications by
 emulating the MPI code while skipping insignificant parts. We demonstrate its
 capability with High Performance Linpack (HPL), the benchmark used to rank
 supercomputers in the TOP500 and which requires a careful tuning.  We explain
-how we both (1) extended the SimGrid's SMPI simulator and slightly modified the
+(1) how we both extended the SimGrid's SMPI simulator and slightly modified the
 open-source version of HPL to allow a fast emulation on a single commodity
 server at the scale of a supercomputer and (2) how to model the different
-components (network, BLAS, ...) of the platform.  We show that a careful
+components (network, BLAS, ...) of the system.  We show that a careful
 modeling of both spatial and temporal node variability allows us to obtain
 predictions within a few percents of real experiments (see Figure 1).
 #+LaTeX: \end{abstract}
