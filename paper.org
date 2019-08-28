@@ -1298,7 +1298,7 @@ zlib 1.0
             \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{  Dahu  }}} & \#nodes~/~\#processes & \Num{32}~/~\Num{1024} & \Num{1}~/~\Num{1}\\
              & Memory & \NSI{2}{\tera\byte} & \NSI{9}{\giga\byte}\\
              & Duration   (hours) & \Num{1} & \Num{5} \\
-             & Resources (node hours) & \Num{32} & \Num{1}\\[.2em]
+             & Resources (node hours) & \Num{32} & \Num{5}\\[.2em]
              \hline
             \parbox[t]{2mm}{\multirow{4}{*}{\rotatebox[origin=c]{90}{Stampede}}} & \#nodes~/~\#processes & \Num{6006}~/~\Num{6006} & \Num{1}~/~\Num{1}\\
              & Memory & \NSI{120}{\tera\byte} & \NSI{19}{\giga\byte}\\
